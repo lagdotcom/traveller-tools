@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Traveller Tools — MgT2</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0b0e14;
+      }
+      #app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      header {
+        color: #c9a227;
+        font-family: monospace;
+        padding: 8px 12px;
+        border-bottom: 1px solid #222;
+      }
+      #terminal {
+        flex: 1;
+        padding: 8px;
+        min-height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>Traveller Tools — Mongoose Traveller 2nd Edition</header>
+      <div id="terminal"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
