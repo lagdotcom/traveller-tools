@@ -6,6 +6,7 @@ import {
   ENTER,
   type InkHarness,
   renderInk,
+  TAB,
 } from './testkit.js';
 
 /** Drives the ship builder through real Ink (see testkit). */
@@ -30,6 +31,18 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.frame()).toContain('Hull:');
     // The default 100-ton loadout is within budget.
     expect(ui.frame()).toContain('No issues');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
+  it('switches sections with Tab', async () => {
+    const ui = await openBuilder();
+    // Hull section is active first: its fields show, Drives fields do not.
+    expect(ui.frame()).toContain('Hull tonnage');
+    expect(ui.frame()).not.toContain('Thrust (M-drive)');
+    await ui.type(TAB); // -> Drives & Power
+    expect(ui.frame()).toContain('Thrust (M-drive)');
+    expect(ui.frame()).not.toContain('Hull tonnage');
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });

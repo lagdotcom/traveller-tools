@@ -13,7 +13,7 @@ import {
   type ShipParams,
 } from '@traveller-tools/core';
 import { Box, Text, useInput } from 'ink';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { BudgetBar } from '../components/BudgetBar.js';
 import { ChoiceField } from '../components/ChoiceField.js';
@@ -70,8 +70,99 @@ export function ShipBuilderScreen({
     turrets: '0',
     crewType: 'commercial',
   });
+
+  type FormKey = keyof typeof form.values;
+  interface FieldDef {
+    key: FormKey;
+    label: string;
+    options?: string[];
+  }
+  const sections: { label: string; fields: FieldDef[] }[] = [
+    {
+      label: 'Hull',
+      fields: [
+        { key: 'hull', label: 'Hull tonnage' },
+        { key: 'tl', label: 'Tech level' },
+        {
+          key: 'config',
+          label: 'Hull config',
+          options: ['standard', 'streamlined', 'dispersed'],
+        },
+      ],
+    },
+    {
+      label: 'Drives & Power',
+      fields: [
+        { key: 'thrust', label: 'Thrust (M-drive)' },
+        { key: 'jump', label: 'Jump (J-drive)' },
+        {
+          key: 'plant',
+          label: 'Power plant',
+          options: ['TL8', 'TL12', 'TL15'],
+        },
+        { key: 'power', label: 'Power plant (tons)' },
+        { key: 'fuel', label: 'Fuel (tons)' },
+        { key: 'fuelProc', label: 'Fuel processor (t)' },
+        { key: 'scoop', label: 'Fuel scoop', options: ['no', 'yes'] },
+      ],
+    },
+    {
+      label: 'Defences',
+      fields: [
+        {
+          key: 'armourType',
+          label: 'Armour type',
+          options: Object.keys(ARMOUR_TYPES),
+        },
+        { key: 'armour', label: 'Armour points' },
+        { key: 'computer', label: 'Computer', options: Object.keys(COMPUTERS) },
+        { key: 'bis', label: 'Computer /bis', options: ['no', 'yes'] },
+        { key: 'sensors', label: 'Sensors', options: Object.keys(SENSORS) },
+      ],
+    },
+    {
+      label: 'Accommodation',
+      fields: [
+        { key: 'staterooms', label: 'Staterooms' },
+        { key: 'lowBerths', label: 'Low berths' },
+        { key: 'common', label: 'Common areas (t)' },
+      ],
+    },
+    {
+      label: 'Systems',
+      fields: [
+        { key: 'probe', label: 'Probe drones (t)' },
+        { key: 'repair', label: 'Repair drones (t)' },
+        { key: 'turrets', label: 'Turrets' },
+      ],
+    },
+    {
+      label: 'Crew',
+      fields: [
+        { key: 'crewType', label: 'Crew', options: ['commercial', 'military'] },
+      ],
+    },
+  ];
+
+  const flat = sections.flatMap((section, sectionIndex) =>
+    section.fields.map((field) => ({ ...field, sectionIndex })),
+  );
+
+  const [active, setActive] = useState(0);
+  const activeSection = flat[active]!.sectionIndex;
+
+  const gotoSection = (sectionIndex: number) => {
+    const idx = flat.findIndex((f) => f.sectionIndex === sectionIndex);
+    if (idx >= 0) setActive(idx);
+  };
+
   useInput((_input, key) => {
     if (key.escape) onBack();
+    else if (key.downArrow) setActive((i) => Math.min(i + 1, flat.length - 1));
+    else if (key.upArrow) setActive((i) => Math.max(i - 1, 0));
+    else if (key.tab && key.shift)
+      gotoSection((activeSection - 1 + sections.length) % sections.length);
+    else if (key.tab) gotoSection((activeSection + 1) % sections.length);
   });
 
   const params: ShipParams = {
@@ -103,74 +194,52 @@ export function ShipBuilderScreen({
   const usage = SHIP_RESOURCES.map((r) => summary.resources[r.key]!);
   const { thrust, jump, hullPoints } = summary.stats;
 
-  const fields: Array<{
-    key: keyof typeof form.values;
-    label: string;
-    options?: string[];
-  }> = [
-    { key: 'hull', label: 'Hull tonnage' },
-    { key: 'tl', label: 'Tech level' },
-    {
-      key: 'config',
-      label: 'Hull config',
-      options: ['standard', 'streamlined', 'dispersed'],
-    },
-    { key: 'thrust', label: 'Thrust (M-drive)' },
-    { key: 'jump', label: 'Jump (J-drive)' },
-    { key: 'plant', label: 'Power plant', options: ['TL8', 'TL12', 'TL15'] },
-    { key: 'power', label: 'Power plant (tons)' },
-    { key: 'fuel', label: 'Fuel (tons)' },
-    { key: 'fuelProc', label: 'Fuel processor (t)' },
-    { key: 'scoop', label: 'Fuel scoop', options: ['no', 'yes'] },
-    {
-      key: 'armourType',
-      label: 'Armour type',
-      options: Object.keys(ARMOUR_TYPES),
-    },
-    { key: 'armour', label: 'Armour points' },
-    { key: 'computer', label: 'Computer', options: Object.keys(COMPUTERS) },
-    { key: 'bis', label: 'Computer /bis', options: ['no', 'yes'] },
-    { key: 'sensors', label: 'Sensors', options: Object.keys(SENSORS) },
-    { key: 'staterooms', label: 'Staterooms' },
-    { key: 'lowBerths', label: 'Low berths' },
-    { key: 'common', label: 'Common areas (t)' },
-    { key: 'probe', label: 'Probe drones (t)' },
-    { key: 'repair', label: 'Repair drones (t)' },
-    { key: 'turrets', label: 'Turrets' },
-    { key: 'crewType', label: 'Crew', options: ['commercial', 'military'] },
-  ];
+  const advance = () => setActive((i) => Math.min(i + 1, flat.length - 1));
 
   return (
     <Box flexDirection="column">
       <Text bold color="yellow">
         Ship Builder
       </Text>
-      <Text dimColor>Core Rulebook (2022) spacecraft design.</Text>
+
+      <Box marginTop={1}>
+        {sections.map((section, index) => (
+          <Box key={section.label} marginRight={2}>
+            <Text
+              bold={index === activeSection}
+              color={index === activeSection ? 'cyan' : undefined}
+              dimColor={index !== activeSection}
+            >
+              {section.label}
+            </Text>
+          </Box>
+        ))}
+      </Box>
 
       <Box marginTop={1}>
         <BudgetBar resources={usage} />
       </Box>
 
       <Box flexDirection="column" marginTop={1}>
-        {fields.map((f, index) =>
-          f.options ? (
+        {flat.map((f, index) =>
+          f.sectionIndex !== activeSection ? null : f.options ? (
             <ChoiceField
               key={f.key}
               label={f.label}
               options={f.options}
               value={form.values[f.key]}
-              isActive={form.activeIndex === index}
+              isActive={index === active}
               onChange={form.setters[f.key]}
-              onSubmit={form.next}
+              onSubmit={advance}
             />
           ) : (
             <Field
               key={f.key}
               label={f.label}
               value={form.values[f.key]}
-              isActive={form.activeIndex === index}
+              isActive={index === active}
               onChange={form.setters[f.key]}
-              onSubmit={form.next}
+              onSubmit={advance}
             />
           ),
         )}
@@ -197,7 +266,9 @@ export function ShipBuilderScreen({
       </Box>
 
       <Box marginTop={1}>
-        <Text dimColor>Enter: next field · Esc: back to menu</Text>
+        <Text dimColor>
+          ↑/↓ field · Tab/⇧Tab section · Enter next · Esc menu
+        </Text>
       </Box>
     </Box>
   );
