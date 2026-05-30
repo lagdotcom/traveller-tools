@@ -12,6 +12,8 @@ import { EventEmitter } from 'events';
 export function createStreams(term: Terminal): {
   stdin: NodeJS.ReadStream;
   stdout: NodeJS.WriteStream;
+  /** Inject a raw key sequence into stdin (e.g. from on-screen buttons). */
+  sendKey: (data: string) => void;
 } {
   const stdout = new EventEmitter() as unknown as NodeJS.WriteStream & {
     columns: number;
@@ -45,16 +47,20 @@ export function createStreams(term: Terminal): {
     return data;
   }) as NodeJS.ReadStream['read'];
 
-  term.onData((data) => {
+  // The single path that delivers a chunk to Ink — used both by real xterm
+  // keystrokes and by synthetic keys from the on-screen control bar.
+  const sendKey = (data: string) => {
     pending = data;
     stdin.emit('readable');
     stdin.emit('data', data);
-  });
+  };
+
+  term.onData(sendKey);
   term.onResize(({ cols, rows }) => {
     stdout.columns = cols;
     stdout.rows = rows;
     stdout.emit('resize');
   });
 
-  return { stdin, stdout };
+  return { stdin, stdout, sendKey };
 }

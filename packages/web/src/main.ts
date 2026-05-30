@@ -7,6 +7,7 @@ import chalk from 'chalk';
 
 import { localStore } from './localStore';
 import { createStreams } from './ptyAdapter';
+import { installTouchControls } from './touchControls';
 
 const term = new Terminal({
   convertEol: true,
@@ -48,7 +49,7 @@ window.addEventListener('unhandledrejection', (event) =>
 );
 
 try {
-  const { stdin, stdout } = createStreams(term);
+  const { stdin, stdout, sendKey } = createStreams(term);
   mount({
     stdin,
     stdout,
@@ -57,6 +58,10 @@ try {
     patchConsole: false,
     store: localStore(),
   });
+  // On touch devices, add an on-screen control bar (arrows / Esc / Tab / …).
+  // It steals vertical space, so re-fit the terminal once it's in place.
+  const app = document.getElementById('app');
+  if (app && installTouchControls(app, sendKey)) fit.fit();
   term.focus();
 } catch (error) {
   showError('Failed to start the TUI:', error);

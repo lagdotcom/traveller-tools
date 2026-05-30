@@ -79,4 +79,17 @@ describe('xterm <-> Ink bridge', () => {
     expect(term.output).toContain('Fuel = 10% of hull tonnage');
     app.unmount();
   });
+
+  it('feeds synthetic keys (on-screen controls) into stdin', () => {
+    const term = new FakeTerminal();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { stdin, sendKey } = createStreams(term as any);
+    const seen: string[] = [];
+    stdin.on('data', (d) => seen.push(String(d)));
+
+    sendKey('\x1b[B'); // arrow down, as an on-screen button would send
+    sendKey('\r'); // enter
+
+    expect(seen).toEqual(['\x1b[B', '\r']);
+  });
 });

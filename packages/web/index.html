@@ -27,6 +27,38 @@
         padding: 8px;
         min-height: 0;
       }
+      /* On-screen key bar for touch devices (added by touchControls.ts). */
+      .touch-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px;
+        border-top: 1px solid #222;
+        background: #0b0e14;
+        user-select: none;
+      }
+      .touch-row {
+        display: flex;
+        gap: 6px;
+      }
+      .touch-controls button {
+        flex: 1;
+        min-height: 44px;
+        font-family: monospace;
+        font-size: 16px;
+        color: #d3d7de;
+        background: #161b26;
+        border: 1px solid #2a3142;
+        border-radius: 6px;
+        touch-action: manipulation;
+      }
+      .touch-controls button:active {
+        background: #2a3142;
+        color: #c9a227;
+      }
+      .touch-controls button.wide {
+        flex: 2;
+      }
     </style>
   </head>
   <body>
