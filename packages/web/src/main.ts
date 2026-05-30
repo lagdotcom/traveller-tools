@@ -3,6 +3,7 @@ import '@xterm/xterm/css/xterm.css';
 import { mount } from '@traveller-tools/tui';
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
+import chalk from 'chalk';
 
 import { createStreams } from './ptyAdapter';
 
@@ -34,7 +35,7 @@ function showError(label: string, error: unknown): void {
     error instanceof Error ? (error.stack ?? error.message) : String(error);
   // eslint-disable-next-line no-console
   console.error(label, error);
-  term.write(`\r\n\x1b[31m${label}\x1b[0m\r\n`);
+  term.write(`\r\n${chalk.red(label)}\r\n`);
   term.write(message.replace(/\n/g, '\r\n') + '\r\n');
 }
 
