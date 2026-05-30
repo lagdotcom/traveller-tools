@@ -658,6 +658,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       const t = inst.rating ?? 0;
       return { tons: -t, power: -t, cost: 0.05 * t };
     },
+    describe: (inst) => `Fuel Processor — ${(inst.rating ?? 0) * 20} tons/day`,
   },
   fuelScoop: {
     id: 'fuelScoop',
@@ -1022,6 +1023,7 @@ export interface ShipEvaluation {
     manoeuvre: number;
     jump: number;
     sensors: number;
+    fuelProcessor: number;
   };
   /** Operating crew (commercial or military). */
   crew: CrewMember[];
@@ -1149,7 +1151,13 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
         { severity: 'error', message: 'Hull tonnage must be greater than 0' },
       ],
       cargoTons: 0,
-      powerRequirements: { basic: 0, manoeuvre: 0, jump: 0, sensors: 0 },
+      powerRequirements: {
+        basic: 0,
+        manoeuvre: 0,
+        jump: 0,
+        sensors: 0,
+        fuelProcessor: 0,
+      },
       crew: [],
       runningCosts: {
         purchaseMCr: 0,
@@ -1196,6 +1204,10 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       manoeuvre: params.hullTons * DRIVE_POWER_PER_RATING * params.thrust,
       jump: params.hullTons * DRIVE_POWER_PER_RATING * params.jump,
       sensors: SENSORS[params.sensors]?.power ?? 0,
+      // Fuel processors draw 1 Power per ton installed.
+      fuelProcessor: params.systems
+        .filter((s) => s.type === 'fuelProcessor')
+        .reduce((sum, s) => sum + Math.max(0, s.amount), 0),
     },
     crew,
     runningCosts: {

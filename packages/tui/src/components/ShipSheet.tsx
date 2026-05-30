@@ -26,13 +26,13 @@ function SheetRow({
           {row.name}
         </Text>
       </Box>
-      <Box width={8} justifyContent="flex-end">
-        <Text bold={bold} dimColor={dim}>
+      <Box width={13} justifyContent="flex-end">
+        <Text bold={bold} dimColor={dim} wrap="truncate-end">
           {row.tons}
         </Text>
       </Box>
-      <Box width={10} justifyContent="flex-end">
-        <Text bold={bold} dimColor={dim}>
+      <Box width={11} justifyContent="flex-end">
+        <Text bold={bold} dimColor={dim} wrap="truncate-end">
           {row.cost}
         </Text>
       </Box>
@@ -54,6 +54,7 @@ export interface ShipSheetProps {
     manoeuvre: number;
     jump: number;
     sensors: number;
+    fuelProcessor: number;
   };
   crew: CrewMember[];
   runningCosts: {
@@ -65,6 +66,17 @@ export interface ShipSheetProps {
 
 /** A book-style ship sheet: component breakdown plus derived stats / power. */
 export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
+  // Power draws, in book order; zero draws are omitted so the panel stays tight.
+  const powerRows: [string, number][] = (
+    [
+      ['Basic', props.powerRequirements.basic],
+      ['Manoeuvre', props.powerRequirements.manoeuvre],
+      ['Jump', props.powerRequirements.jump],
+      ['Sensors', props.powerRequirements.sensors],
+      ['Fuel Processor', props.powerRequirements.fuelProcessor],
+    ] as [string, number][]
+  ).filter(([, value]) => value > 0);
+
   const componentRows: Row[] = props.lineItems.map((item) => {
     const tons = item.resources.tons ?? 0;
     const cost = item.resources.cost ?? 0;
@@ -111,10 +123,11 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
           <Text bold color="yellow">
             Power
           </Text>
-          <Text>Basic {fmt(props.powerRequirements.basic)}</Text>
-          <Text>Manoeuvre {fmt(props.powerRequirements.manoeuvre)}</Text>
-          <Text>Jump {fmt(props.powerRequirements.jump)}</Text>
-          <Text>Sensors {fmt(props.powerRequirements.sensors)}</Text>
+          {powerRows.map(([label, value]) => (
+            <Text key={label}>
+              {label} {fmt(value)}
+            </Text>
+          ))}
         </Box>
         <Box marginTop={1} flexDirection="column">
           <Text bold color="yellow">

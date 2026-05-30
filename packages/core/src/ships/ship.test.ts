@@ -259,6 +259,9 @@ describe('evaluateShip', () => {
     });
     expect(line('fuelProcessor', fp).resources.tons).toBe(-2);
     expect(line('fuelProcessor', fp).resources.cost).toBeCloseTo(0.1, 6);
+    // 1 Power per ton, and the sheet reports the daily refining capacity.
+    expect(fp.powerRequirements.fuelProcessor).toBe(2);
+    expect(line('fuelProcessor', fp).name).toBe('Fuel Processor — 40 tons/day');
   });
 
   it('costs ship software with no tonnage', () => {
