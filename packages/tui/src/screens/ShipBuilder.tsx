@@ -3,6 +3,7 @@ import {
   type ArmourTypeId,
   type ComputerId,
   COMPUTERS,
+  type CrewType,
   evaluateShip,
   type HullConfigId,
   type PowerPlantId,
@@ -62,6 +63,7 @@ export function ShipBuilderScreen({
     lowBerths: '0',
     common: '0',
     turrets: '0',
+    crewType: 'commercial',
   });
   useInput((_input, key) => {
     if (key.escape) onBack();
@@ -84,6 +86,7 @@ export function ShipBuilderScreen({
     lowBerths: num(form.values.lowBerths),
     commonAreasTons: num(form.values.common),
     turrets: num(form.values.turrets),
+    crewType: form.values.crewType as CrewType,
   };
   const { summary, issues, cargoTons, powerRequirements, crew, runningCosts } =
     evaluateShip(params);
@@ -119,6 +122,7 @@ export function ShipBuilderScreen({
     { key: 'lowBerths', label: 'Low berths' },
     { key: 'common', label: 'Common areas (t)' },
     { key: 'turrets', label: 'Turrets' },
+    { key: 'crewType', label: 'Crew', options: ['commercial', 'military'] },
   ];
 
   return (

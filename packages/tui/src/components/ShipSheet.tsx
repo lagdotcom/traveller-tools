@@ -51,7 +51,11 @@ export interface ShipSheetProps {
   cargoTons: number;
   powerRequirements: { basic: number; manoeuvre: number; jump: number };
   crew: CrewMember[];
-  runningCosts: { purchaseMCr: number; monthlyMaintenanceCr: number };
+  runningCosts: {
+    purchaseMCr: number;
+    monthlyMaintenanceCr: number;
+    monthlySalaryCr: number;
+  };
 }
 
 /** A book-style ship sheet: component breakdown plus derived stats / power. */
@@ -125,6 +129,7 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
           <Text>
             Maint Cr{Math.round(props.runningCosts.monthlyMaintenanceCr)}/mo
           </Text>
+          <Text>Pay Cr{Math.round(props.runningCosts.monthlySalaryCr)}/mo</Text>
         </Box>
       </Box>
     </Box>

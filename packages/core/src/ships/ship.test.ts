@@ -19,6 +19,7 @@ const baseParams: ShipParams = {
   lowBerths: 0,
   commonAreasTons: 0,
   turrets: 0,
+  crewType: 'commercial',
 };
 
 describe('evaluateShip', () => {
@@ -183,6 +184,18 @@ describe('evaluateShip', () => {
       (runningCosts.purchaseMCr * 1000) / 12,
       6,
     );
+  });
+
+  it('applies the commercial/military crew split', () => {
+    const turreted = { ...baseParams, turrets: 2 };
+    const commercial = evaluateShip({ ...turreted, crewType: 'commercial' });
+    const military = evaluateShip({ ...turreted, crewType: 'military' });
+    const count = (crew: { role: string; count: number }[], role: string) =>
+      crew.find((c) => c.role === role)?.count ?? 0;
+    expect(count(commercial.crew, 'Pilot')).toBe(1);
+    expect(count(military.crew, 'Pilot')).toBe(3);
+    expect(count(commercial.crew, 'Gunner')).toBe(2); // 1 per turret
+    expect(count(military.crew, 'Gunner')).toBe(4); // 2 per turret
   });
 
   it('reports remaining tonnage as cargo for a valid ship', () => {

@@ -419,6 +419,8 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
 
 // --- Assembly + rules -------------------------------------------------------
 
+export type CrewType = 'commercial' | 'military';
+
 export interface ShipParams {
   hullTons: number;
   tl: number;
@@ -436,6 +438,7 @@ export interface ShipParams {
   lowBerths: number;
   commonAreasTons: number;
   turrets: number;
+  crewType: CrewType;
 }
 
 function shipHull(
@@ -637,16 +640,30 @@ export interface CrewMember {
   count: number;
 }
 
+/** Monthly salary in Credits for skill-level-1 crew (Crew Requirements table). */
+const CREW_SALARY: Record<string, number> = {
+  Pilot: 6000,
+  Astrogator: 5000,
+  Engineer: 4000,
+  Medic: 4000,
+  Gunner: 2000,
+  Steward: 2000,
+};
+
 export interface ShipEvaluation {
   summary: DesignSummary<ShipStats>;
   issues: Issue[];
   cargoTons: number;
   /** Power demand breakdown (for a book-style Power Requirements panel). */
   powerRequirements: { basic: number; manoeuvre: number; jump: number };
-  /** Minimum operating crew. Medic/Steward are passenger-driven (TODO). */
+  /** Operating crew (commercial or military). */
   crew: CrewMember[];
-  /** Purchase price (MCr) and monthly maintenance (Cr). */
-  runningCosts: { purchaseMCr: number; monthlyMaintenanceCr: number };
+  /** Purchase price (MCr), monthly maintenance and crew salary (Cr). */
+  runningCosts: {
+    purchaseMCr: number;
+    monthlyMaintenanceCr: number;
+    monthlySalaryCr: number;
+  };
 }
 
 /** Drive + power plant tonnage, used for the engineer crew requirement. */
@@ -663,15 +680,33 @@ function driveAndPlantTons(params: ShipParams): number {
   return m + j + params.powerPlantTons;
 }
 
-/** Minimum operating crew (commercial). Medic/Steward depend on passengers. */
-function minimumCrew(params: ShipParams): CrewMember[] {
-  const crew: CrewMember[] = [{ role: 'Pilot', count: 1 }];
-  if (params.jump > 0) crew.push({ role: 'Astrogator', count: 1 });
+/**
+ * Operating crew per the Crew Requirements table. Staterooms beyond the
+ * operating crew are treated as (Middle) passengers for the medic/steward
+ * counts; those formula minimums only add crew on large/passenger ships, so
+ * book example sheets sometimes list a recommended medic/steward beyond this.
+ */
+function crewRoster(params: ShipParams): CrewMember[] {
+  const military = params.crewType === 'military';
+  const roster: CrewMember[] = [{ role: 'Pilot', count: military ? 3 : 1 }];
+  if (params.jump > 0) roster.push({ role: 'Astrogator', count: 1 });
   const engineers = Math.ceil(driveAndPlantTons(params) / 35);
-  if (engineers > 0) crew.push({ role: 'Engineer', count: engineers });
-  if (params.turrets > 0) crew.push({ role: 'Gunner', count: params.turrets });
-  return crew;
+  if (engineers > 0) roster.push({ role: 'Engineer', count: engineers });
+  if (params.turrets > 0)
+    roster.push({ role: 'Gunner', count: params.turrets * (military ? 2 : 1) });
+
+  const operating = roster.reduce((sum, c) => sum + c.count, 0);
+  const passengers = Math.max(0, params.staterooms - operating);
+  const medicBase = military ? operating : operating + passengers;
+  const medics = Math.floor(medicBase / 120);
+  if (medics > 0) roster.push({ role: 'Medic', count: medics });
+  const stewards = Math.floor(passengers / 100); // Middle passengers
+  if (stewards > 0) roster.push({ role: 'Steward', count: stewards });
+  return roster;
 }
+
+const crewSalary = (crew: CrewMember[]): number =>
+  crew.reduce((sum, c) => sum + c.count * (CREW_SALARY[c.role] ?? 0), 0);
 
 const NUMERIC_FIELDS: Array<keyof ShipParams> = [
   'tl',
@@ -751,7 +786,11 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       cargoTons: 0,
       powerRequirements: { basic: 0, manoeuvre: 0, jump: 0 },
       crew: [],
-      runningCosts: { purchaseMCr: 0, monthlyMaintenanceCr: 0 },
+      runningCosts: {
+        purchaseMCr: 0,
+        monthlyMaintenanceCr: 0,
+        monthlySalaryCr: 0,
+      },
     };
   }
 
@@ -776,6 +815,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
   }
 
   const purchaseMCr = summary.resources.cost?.used ?? 0;
+  const crew = crewRoster(params);
   return {
     summary,
     issues: [...inputIssues, ...issues, ...extra],
@@ -785,11 +825,12 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       manoeuvre: params.hullTons * DRIVE_POWER_PER_RATING * params.thrust,
       jump: params.hullTons * DRIVE_POWER_PER_RATING * params.jump,
     },
-    crew: minimumCrew(params),
+    crew,
     runningCosts: {
       purchaseMCr,
       // Maintenance: cost / 1000 per year, divided by 12 months (in Credits).
       monthlyMaintenanceCr: (purchaseMCr * 1000) / 12,
+      monthlySalaryCr: crewSalary(crew),
     },
   };
 }
