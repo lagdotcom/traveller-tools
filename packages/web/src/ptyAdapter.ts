@@ -27,6 +27,10 @@ export function createStreams(term: Terminal): {
     return true;
   }) as NodeJS.WriteStream['write'];
 
+  // Ink reads input via the 'readable' event followed by `read()` (as well as
+  // 'data'), so we mirror the contract ink-testing-library uses: stash the
+  // latest chunk, emit both events, and hand it back from `read()`.
+  let pending: string | null = null;
   const stdin = new EventEmitter() as unknown as NodeJS.ReadStream;
   stdin.isTTY = true;
   stdin.setRawMode = () => stdin;
@@ -35,9 +39,17 @@ export function createStreams(term: Terminal): {
   stdin.pause = () => stdin;
   stdin.ref = () => stdin;
   stdin.unref = () => stdin;
-  stdin.read = () => null;
+  stdin.read = (() => {
+    const data = pending;
+    pending = null;
+    return data;
+  }) as NodeJS.ReadStream['read'];
 
-  term.onData((data) => stdin.emit('data', data));
+  term.onData((data) => {
+    pending = data;
+    stdin.emit('readable');
+    stdin.emit('data', data);
+  });
   term.onResize(({ cols, rows }) => {
     stdout.columns = cols;
     stdout.rows = rows;
