@@ -316,7 +316,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     tl: 15,
     thrust: 9,
     jump: 0,
-    powerPlantType: 'fusionTL15',
+    powerPlantType: 'fusionTL12', // book uses a TL12 plant: 16t × 15 = Power 240
     powerPlantTons: 16,
     fuelTons: 6,
     reinforcementTons: 10,
