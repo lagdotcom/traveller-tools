@@ -72,6 +72,26 @@ describe('evaluateShip', () => {
     });
   });
 
+  it('caps Jump at 6 but allows Thrust up to 9', () => {
+    expect(
+      evaluateShip({ ...baseParams, jump: 7, fuelTons: 100 }).issues,
+    ).toContainEqual({
+      severity: 'error',
+      message: 'Jump-7 exceeds the maximum of 6',
+    });
+    // Thrust 9 is allowed (no "exceeds the maximum" issue) at high TL.
+    const thrust9 = evaluateShip({
+      ...baseParams,
+      tl: 15,
+      thrust: 9,
+      jump: 0,
+      powerPlantTons: 30,
+    });
+    expect(
+      thrust9.issues.some((i) => i.message.includes('Thrust-9 exceeds')),
+    ).toBe(false);
+  });
+
   it('matches Core Rulebook numbers for a 100-ton ship', () => {
     const { summary } = evaluateShip(baseParams);
     // 1 Hull Point per 2.5 tons -> 40.

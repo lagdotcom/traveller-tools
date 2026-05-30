@@ -6,9 +6,9 @@ simpler, self-contained subset; High Guard can extend it later). Scope:
 **Essentials**.
 
 Remaining/assumed: standard hull configuration only (no streamlined/dispersed
-modifiers yet); computer/sensors/armour/common-areas not yet builder fields; and
-the **jump-drive minimum-TL-per-rating** values are assumed pending confirmation
-(the source table's TL column was ambiguous — see `JUMP_TL` in `ships/ship.ts`).
+modifiers yet); computer/sensors/armour/common-areas not yet builder fields;
+Thrust runs 1-9 and Jump 1-6, but the minimum TLs for **Thrust 7-9** are not yet
+confirmed (those ratings are allowed but not TL-gated — see `THRUST_TL`).
 
 ## Context & goal
 

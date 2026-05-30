@@ -18,8 +18,8 @@ import { jumpFuel } from '../jump.js';
  * Standard hull configuration is assumed (no streamlined/dispersed cost
  * modifiers yet) and computer/sensors/armour are not yet builder fields.
  *
- * NOTE: the jump-drive minimum-TL-per-rating values are marked ASSUMED — the
- * source table's TL column was ambiguous; see JUMP_TL.
+ * Thrust ratings run 1-9 and Jump 1-6; the minimum TLs for Thrust 7-9 are not
+ * yet confirmed (see THRUST_TL).
  */
 
 export interface ShipStats extends Record<string, number> {
@@ -52,7 +52,11 @@ const J_DRIVE_TON_BONUS = 5;
 const J_DRIVE_MIN_TONS = 10;
 const J_DRIVE_COST_PER_TON = 1.5; // MCr
 
-/** Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table). */
+/**
+ * Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table).
+ * Thrust runs 1-9; the TL values for Thrust 7-9 are not yet confirmed, so those
+ * ratings are allowed but not TL-gated until the numbers are supplied.
+ */
 const THRUST_TL: Record<number, number> = {
   1: 9,
   2: 11,
@@ -60,8 +64,9 @@ const THRUST_TL: Record<number, number> = {
   4: 13,
   5: 14,
   6: 15,
+  // 7, 8, 9: TODO confirm minimum TL
 };
-/** Minimum TL by Jump rating — ASSUMED (see note above), pending confirmation. */
+/** Minimum TL by Jump rating (mirrors the Thrust column; Jump runs 1-6). */
 const JUMP_TL: Record<number, number> = {
   1: 9,
   2: 11,
@@ -70,7 +75,8 @@ const JUMP_TL: Record<number, number> = {
   5: 14,
   6: 15,
 };
-const MAX_DRIVE_RATING = 6;
+const MAX_THRUST = 9;
+const MAX_JUMP = 6;
 
 /** Power plant generation/cost per ton, by best type the TL allows. */
 function powerPlantSpec(tl: number): {
@@ -263,20 +269,21 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
       ? [{ severity: 'error', message: 'Drives require a power plant' }]
       : [];
   },
-  // Drive ratings are capped at 6 and gated by tech level.
+  // Drives are gated by tech level and capped (Thrust 9, Jump 6).
   ({ design, context }) => {
     const issues: Issue[] = [];
     const check = (
       defId: string,
       label: string,
       table: Record<number, number>,
+      max: number,
     ) => {
       const rating = design.installed.find((c) => c.defId === defId)?.rating;
       if (!rating) return;
-      if (rating > MAX_DRIVE_RATING) {
+      if (rating > max) {
         issues.push({
           severity: 'error',
-          message: `${label}-${rating} exceeds the maximum of ${MAX_DRIVE_RATING}`,
+          message: `${label}-${rating} exceeds the maximum of ${max}`,
         });
       } else if (table[rating] !== undefined && context.tl < table[rating]!) {
         issues.push({
@@ -285,8 +292,8 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
         });
       }
     };
-    check('mDrive', 'Thrust', THRUST_TL);
-    check('jDrive', 'Jump', JUMP_TL);
+    check('mDrive', 'Thrust', THRUST_TL, MAX_THRUST);
+    check('jDrive', 'Jump', JUMP_TL, MAX_JUMP);
     return issues;
   },
 ];
