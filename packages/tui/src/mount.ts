@@ -1,5 +1,6 @@
-import React from 'react';
 import { render, type RenderOptions } from 'ink';
+import React from 'react';
+
 import { App } from './app.js';
 
 /**

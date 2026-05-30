@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import process, { stderr, stdout } from './process';
 
 describe('process shim', () => {

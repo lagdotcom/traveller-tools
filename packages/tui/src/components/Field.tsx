@@ -1,6 +1,6 @@
-import React from 'react';
-import { Box, Text } from 'ink';
 import { TextInput } from '@inkjs/ui';
+import { Box, Text } from 'ink';
+import React from 'react';
 
 export interface FieldProps {
   label: string;

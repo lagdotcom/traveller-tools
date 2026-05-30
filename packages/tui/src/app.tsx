@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Box, Text, useApp, useInput } from 'ink';
 import { Select } from '@inkjs/ui';
+import { Box, Text, useApp, useInput } from 'ink';
+import React, { useState } from 'react';
+
 import { JumpFuelScreen } from './screens/JumpFuel.js';
 import { TravelScreen } from './screens/Travel.js';
 

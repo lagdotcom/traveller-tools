@@ -1,11 +1,12 @@
-import React from 'react';
-import { Box, Text, useInput } from 'ink';
 import {
   jumpDuration,
   jumpFuel,
   MAX_JUMP,
   validateJump,
 } from '@traveller-tools/core';
+import { Box, Text, useInput } from 'ink';
+import React from 'react';
+
 import { Field } from '../components/Field.js';
 import { useForm } from '../components/useForm.js';
 
