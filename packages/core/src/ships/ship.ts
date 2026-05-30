@@ -239,6 +239,30 @@ export const SENSORS: Record<SensorId, SensorSuite> = {
   },
 };
 
+/**
+ * Tonnage-based optional systems offered by the builder's Systems list. Each
+ * entry's `type` matches the catalog component id, so they map directly.
+ */
+export type SystemTypeId =
+  | 'fuelProcessor'
+  | 'probeDrones'
+  | 'repairDrones'
+  | 'miningDrones';
+export const SYSTEM_TYPES: Record<
+  SystemTypeId,
+  { id: SystemTypeId; label: string }
+> = {
+  fuelProcessor: { id: 'fuelProcessor', label: 'Fuel Processor' },
+  probeDrones: { id: 'probeDrones', label: 'Probe Drones' },
+  repairDrones: { id: 'repairDrones', label: 'Repair Drones' },
+  miningDrones: { id: 'miningDrones', label: 'Mining Drones' },
+};
+export interface SystemEntry {
+  type: SystemTypeId;
+  /** Tons allocated. */
+  amount: number;
+}
+
 /** Bridge tonnage by ship size (Bridges table). */
 function bridgeTons(hull: number): number {
   if (hull <= 50) return 3;
@@ -456,6 +480,16 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return { tons: -t, cost: 0.2 * t };
     },
   },
+  miningDrones: {
+    id: 'miningDrones',
+    name: 'Mining Drones',
+    category: 'miningDrones',
+    // rating = tons: 5 drones & MCr1 per 10 tons.
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: 0.1 * t };
+    },
+  },
 };
 
 // --- Assembly + rules -------------------------------------------------------
@@ -479,10 +513,9 @@ export interface ShipParams {
   staterooms: number;
   lowBerths: number;
   commonAreasTons: number;
-  fuelProcessorTons: number;
   fuelScoop: boolean;
-  probeDroneTons: number;
-  repairDroneTons: number;
+  /** Optional tonnage-based systems (fuel processor, drones, …). */
+  systems: SystemEntry[];
   turrets: number;
   crewType: CrewType;
 }
@@ -550,19 +583,14 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   installed.push({ defId: 'sensors', options: { grade: params.sensors } });
   if (params.turrets > 0)
     installed.push({ defId: 'turret', quantity: params.turrets });
-  if (params.fuelProcessorTons > 0)
-    installed.push({
-      defId: 'fuelProcessor',
-      rating: params.fuelProcessorTons,
-    });
   // Streamlined hulls have fuel scoops built in (free), so only add the
   // component (MCr1) on other configurations.
   if (params.fuelScoop && params.hullConfig !== 'streamlined')
     installed.push({ defId: 'fuelScoop' });
-  if (params.probeDroneTons > 0)
-    installed.push({ defId: 'probeDrones', rating: params.probeDroneTons });
-  if (params.repairDroneTons > 0)
-    installed.push({ defId: 'repairDrones', rating: params.repairDroneTons });
+  for (const sys of params.systems) {
+    if (SYSTEM_TYPES[sys.type] && sys.amount > 0)
+      installed.push({ defId: sys.type, rating: sys.amount });
+  }
   if (params.staterooms > 0)
     installed.push({ defId: 'stateroom', quantity: params.staterooms });
   if (params.lowBerths > 0)
@@ -782,9 +810,6 @@ const NUMERIC_FIELDS: Array<keyof ShipParams> = [
   'staterooms',
   'lowBerths',
   'commonAreasTons',
-  'fuelProcessorTons',
-  'probeDroneTons',
-  'repairDroneTons',
   'turrets',
 ];
 const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
@@ -797,9 +822,6 @@ const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
   staterooms: 'Staterooms',
   lowBerths: 'Low berths',
   commonAreasTons: 'Common areas',
-  fuelProcessorTons: 'Fuel processor',
-  probeDroneTons: 'Probe drones',
-  repairDroneTons: 'Repair drones',
   turrets: 'Turrets',
 };
 const INTEGER_FIELDS: Array<keyof ShipParams> = [

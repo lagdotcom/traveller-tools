@@ -19,10 +19,8 @@ const baseParams: ShipParams = {
   staterooms: 2,
   lowBerths: 0,
   commonAreasTons: 0,
-  fuelProcessorTons: 0,
   fuelScoop: false,
-  probeDroneTons: 0,
-  repairDroneTons: 0,
+  systems: [],
   turrets: 0,
   crewType: 'commercial',
 };
@@ -213,8 +211,11 @@ describe('evaluateShip', () => {
       computerBis: true,
     });
     expect(line('computer', bis).resources.cost).toBeCloseTo(0.045, 6);
-    // Fuel processor 2t: -2 tons, -2 Power, MCr0.1.
-    const fp = evaluateShip({ ...baseParams, fuelProcessorTons: 2 });
+    // Fuel processor 2t (from the systems list): -2 tons, -2 Power, MCr0.1.
+    const fp = evaluateShip({
+      ...baseParams,
+      systems: [{ type: 'fuelProcessor', amount: 2 }],
+    });
     expect(line('fuelProcessor', fp).resources.tons).toBe(-2);
     expect(line('fuelProcessor', fp).resources.cost).toBeCloseTo(0.1, 6);
   });

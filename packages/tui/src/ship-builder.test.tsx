@@ -61,10 +61,21 @@ describe('Ship builder (real Ink)', () => {
 
   it('toggles a yes/no option with an arrow key', async () => {
     const ui = await openBuilder();
-    // Drives & Power section: thrust, jump, plant, power, fuel, fuelProc, scoop.
-    for (let i = 0; i < 9; i++) await ui.type(ENTER); // -> Fuel scoop
+    // Drives & Power section: thrust, jump, plant, power, fuel, scoop (idx 8).
+    for (let i = 0; i < 8; i++) await ui.type(ENTER); // -> Fuel scoop
     await ui.type(ARROW_RIGHT); // no -> yes (one keypress)
     await ui.waitFor('Fuel Scoop'); // the component now appears in the sheet
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
+  it('adds a system from the Systems list', async () => {
+    const ui = await openBuilder();
+    // Tab to the Systems section (Hull→Drives→Defences→Accom→Weapons→Systems).
+    for (let i = 0; i < 5; i++) await ui.type(TAB);
+    // The "Add system" picker defaults to the first available type; Enter adds.
+    await ui.type(ENTER);
+    await ui.waitFor('Fuel Processor'); // now a line item in the sheet
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });
@@ -84,7 +95,7 @@ describe('Ship builder (real Ink)', () => {
     const ui = await openBuilder();
     // Advance to the Turrets field (last field) and add more turrets than the
     // 100-ton hull's single hardpoint allows.
-    for (let i = 0; i < 20; i++) await ui.type(ENTER);
+    for (let i = 0; i < 17; i++) await ui.type(ENTER);
     await ui.type('9');
     await ui.waitFor('Hardpoints exceeds capacity');
     ui.unmount();
