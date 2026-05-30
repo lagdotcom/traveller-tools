@@ -11,13 +11,25 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
 
 ## Tools
 
+- **Ship builder** — design MgT2 ships component-by-component with live
+  tonnage / power / cost / hardpoint budgets, a book-style sheet, derived stats,
+  crew and running costs. Mounts (incl. mixed-weapon turrets), the full Core
+  "spacecraft equipment" list, and carried craft — ships or catalogue vehicles,
+  with one level of nesting (e.g. an ATV on a launch). `Ctrl+S/E/I` to
+  save / export / import a design (JSON).
+- **Ship library** — load any of the 24 built-in common spacecraft or your saved
+  designs into the builder; import a design from pasted JSON.
+- **Vehicle catalogue** — the Core Rulebook vehicles, with stat blocks, also
+  selectable as carried craft.
 - **Jump & Fuel** — jump fuel by hull tonnage and jump number, jump validity
   against the installed drive, and jump duration.
 - **Travel time (velocity)** — flip-and-burn travel time and peak velocity for a
   distance (km/AU) at a given thrust (G).
 
-More tools (ship / weapon / vehicle / robot builders) are planned; the rules
-engine is structured so they slot in as new modules + screens.
+Ship construction follows the **Core Rulebook (2022)**; non-Core (High Guard)
+options are flagged, and the ship sheet lists which rulebooks a design needs.
+Weapon and robot builders are planned; the rules engine is structured so they
+slot in as new modules + screens.
 
 ## Project layout
 

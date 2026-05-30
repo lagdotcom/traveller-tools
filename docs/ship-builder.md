@@ -1,14 +1,29 @@
 # Ship Builder — design plan
 
-Status: **engine + ship domain + TUI built; catalog populated from the Core
-Rulebook (2022)**. Target ruleset: **MgT2 Core Rulebook** spacecraft design (the
-simpler, self-contained subset; High Guard can extend it later). Scope:
-**Essentials**.
+Status: **shipped.** Core Rulebook (2022) ship construction is essentially
+complete — hull configs, armour, drives, power plants, bridges, computers,
+sensors, the full spacecraft-equipment list, weapons (incl. mixed-weapon turrets
+and firmpoints), crew/costs, the ship library (save/export/import + 24 built-in
+common spacecraft), the vehicle catalogue, and carried/nested craft. Non-Core
+(High Guard) options are flagged; the sheet lists the rulebooks a design needs.
 
-Remaining: standard hull configuration only (no streamlined/dispersed modifiers
-yet); computer/sensors/armour/common-areas not yet builder fields. Drive tables
-are confirmed: Thrust 1-9 (drive = Thrust% of hull), Jump 1-6 (drive =
-Jump × 2.5% of hull, +5t, min 10t).
+This file is the **original design plan**, kept for rationale. The authoritative
+as-built reference is `CLAUDE.md`. Notable divergences from the plan below:
+
+- The engine validator is **`evaluate`** (not `validate`), `ResourceDef` carries
+  `overflowSeverity`, and `ComponentDef` gained `describe`, `source`, and
+  `options: string[]`.
+- The ship domain is consolidated in a single **`ships/ship.ts`** (catalog +
+  rules + `evaluateShip`/`makeShipDesign`) rather than the split
+  `hulls.ts`/`drives.ts`/… files sketched below, with `library.ts`,
+  `builtins.ts`, and `vehicles.ts` alongside it.
+- The TUI builder holds state with **`useForm`** directly in `ShipBuilder.tsx`
+  (no `useDesign` hook), and the sheet is `ShipSheet.tsx`.
+- Catalog values are **real Core Rulebook numbers**, not stubs; the `// TODO
+verify` / "High Guard p.NN" tags in the snippets below never shipped.
+
+Drive tables (confirmed): Thrust 1-9 (drive = Thrust% of hull), Jump 1-6
+(drive = Jump × 2.5% of hull, +5t, min 10t).
 
 ## Context & goal
 
@@ -206,11 +221,11 @@ and a menu option in `app.tsx`.
 - `npm run dev` — manually build a stock 200-ton trader and eyeball the budgets.
 - `npm run build:web` — the builder renders in the browser terminal.
 
-## To confirm before/while building
+## Values
 
-- The Core Rulebook drive/power sizing, hull costs, hull-point formula, bridge
-  sizing, and component costs come from you (stub fill).
-- Section ordering above follows the Core Rulebook sequence; easy to reorder.
+All Core Rulebook drive/power sizing, hull costs, the hull-point formula, bridge
+sizing, armour, sensors and component costs are filled in from the book (the
+"stub fill" is done). Section ordering follows the Core Rulebook sequence.
 
 ## Supporting High Guard later (design notes)
 

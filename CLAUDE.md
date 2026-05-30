@@ -78,6 +78,10 @@ Conventions that matter:
   every built-in builds with no error-severity issues and non-negative cargo.
 - Serialization (`library.ts`): a versioned JSON envelope; `parseShip` is
   tolerant (fills defaults, drops unknowns, accepts a legacy single `weapon`).
+- **Provenance.** `ComponentDef.source` tags a non-base book (e.g.
+  `'High Guard'`); `evaluateShip` collects these into `sources` and the sheet
+  shows a "Sources" panel of the rulebooks a design needs. Orthogonal to the
+  verified/derived warning (`source` = which book, warning = not yet confirmed).
 
 ### Adding a component / system
 
