@@ -1,5 +1,5 @@
 import { Box, Text, useInput } from 'ink';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface ChoiceFieldProps {
   label: string;
@@ -28,49 +28,47 @@ function matchOption(query: string, options: string[]): string | undefined {
  * yes/no); typing jumps to the closest matching option (no need to clear the
  * field first); Enter advances. A filtered list shows the options with the
  * current one highlighted.
+ *
+ * The key handler is stable (reads latest props/query from a ref) so Ink's
+ * useInput doesn't re-subscribe every render and churn its raw-mode effect.
  */
-export function ChoiceField({
-  label,
-  value,
-  options,
-  isActive,
-  onChange,
-  onSubmit,
-}: ChoiceFieldProps): React.JSX.Element {
+export function ChoiceField(props: ChoiceFieldProps): React.JSX.Element {
+  const { label, value, options, isActive } = props;
   const [query, setQuery] = useState('');
   useEffect(() => {
     if (!isActive) setQuery('');
   }, [isActive]);
 
-  const index = Math.max(0, options.indexOf(value));
-  const cycle = (delta: number) => {
-    setQuery('');
-    onChange(options[(index + delta + options.length) % options.length]!);
-  };
+  const ref = useRef({ props, query });
+  ref.current = { props, query };
 
-  useInput(
-    (input, key) => {
-      if (key.leftArrow) cycle(-1);
-      else if (key.rightArrow) cycle(1);
-      else if (key.return) {
-        setQuery('');
-        onSubmit();
-      } else if (key.backspace || key.delete) {
-        const q = query.slice(0, -1);
-        setQuery(q);
-        const m = matchOption(q, options);
-        if (m) onChange(m);
-      } else if (input && !key.ctrl && !key.meta && !key.tab) {
-        const printable = input.replace(/[^\x20-\x7e]/g, '');
-        if (!printable) return;
-        const q = query + printable;
-        setQuery(q);
-        const m = matchOption(q, options);
-        if (m) onChange(m);
-      }
-    },
-    { isActive },
-  );
+  const handle = useCallback((input: string, key: { [k: string]: boolean }) => {
+    const { props: p, query: q } = ref.current;
+    const index = Math.max(0, p.options.indexOf(p.value));
+    if (key.leftArrow || key.rightArrow) {
+      setQuery('');
+      const delta = key.leftArrow ? -1 : 1;
+      p.onChange(
+        p.options[(index + delta + p.options.length) % p.options.length]!,
+      );
+    } else if (key.return) {
+      setQuery('');
+      p.onSubmit();
+    } else if (key.backspace || key.delete) {
+      const next = q.slice(0, -1);
+      setQuery(next);
+      const m = matchOption(next, p.options);
+      if (m) p.onChange(m);
+    } else if (input && !key.ctrl && !key.meta && !key.tab) {
+      const printable = input.replace(/[^\x20-\x7e]/g, '');
+      if (!printable) return;
+      const next = q + printable;
+      setQuery(next);
+      const m = matchOption(next, p.options);
+      if (m) p.onChange(m);
+    }
+  }, []);
+  useInput(handle, { isActive });
 
   return (
     <Box flexDirection="column">
