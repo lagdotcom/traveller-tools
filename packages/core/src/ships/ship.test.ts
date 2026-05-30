@@ -111,6 +111,19 @@ describe('evaluateShip', () => {
     expect(lb.name).toBe('Low Berths ×20');
   });
 
+  it('always lists the fuel scoop (free on streamlined, MCr1 otherwise)', () => {
+    const streamlined = evaluateShip({
+      ...baseParams,
+      hullConfig: 'streamlined',
+      fuelScoop: true,
+    });
+    const scoop = (s: ReturnType<typeof evaluateShip>) =>
+      s.summary.lineItems.find((l) => l.id === 'fuelScoop');
+    expect(scoop(streamlined)?.resources.cost ?? 0).toBe(0); // free, but listed
+    const standard = evaluateShip({ ...baseParams, fuelScoop: true });
+    expect(scoop(standard)?.resources.cost).toBe(1);
+  });
+
   it('mounts mixed weapons in one turret', () => {
     // A double turret with a beam laser + a sandcaster: 1 ton, MCr0.5 (mount) +
     // 0.5 (beam) + 0.25 (sandcaster) = 1.25, power 4 (beam only).

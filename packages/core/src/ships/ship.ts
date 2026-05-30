@@ -770,9 +770,9 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     name: 'Fuel Scoop',
     category: 'fuelScoop',
     unique: true,
-    // No tonnage; MCr1 (streamlined hulls have scoops built in, so are added
-    // without this component).
-    resources: () => ({ cost: 1 }),
+    // No tonnage; MCr1, but free on streamlined hulls (built in). Shown as a
+    // line item either way (options.free marks the streamlined case).
+    resources: (inst) => ({ cost: inst.options?.free ? 0 : 1 }),
   },
   probeDrones: {
     id: 'probeDrones',
@@ -1070,10 +1070,13 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
       options: { mount: wpn.mount, weapons: wpn.weapons },
     });
   }
-  // Streamlined hulls have fuel scoops built in (free), so only add the
-  // component (MCr1) on other configurations.
-  if (params.fuelScoop && params.hullConfig !== 'streamlined')
-    installed.push({ defId: 'fuelScoop' });
+  // Always list the fuel scoop; it's free on streamlined hulls (built in) and
+  // MCr1 on other configurations.
+  if (params.fuelScoop)
+    installed.push({
+      defId: 'fuelScoop',
+      options: { free: params.hullConfig === 'streamlined' ? 1 : 0 },
+    });
   for (const sys of params.systems) {
     if (SYSTEM_TYPES[sys.type] && sys.amount > 0)
       installed.push({ defId: sys.type, rating: sys.amount });
