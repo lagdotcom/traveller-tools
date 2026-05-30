@@ -17,7 +17,17 @@
     "build": "tsc --build",
     "dev:web": "npm run build && vite --config packages/web/vite.config.ts",
     "build:web": "npm run build && vite build --config packages/web/vite.config.ts",
-    "preview:web": "vite preview --config packages/web/vite.config.ts"
+    "preview:web": "vite preview --config packages/web/vite.config.ts",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,cjs,mjs,json,md,yml,yaml,css,html}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -26,6 +36,10 @@
     "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

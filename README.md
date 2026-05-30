@@ -43,6 +43,14 @@ npm run build      # typecheck/build core + tui
 and web app import the compiled `core`/`tui` packages — so a fresh checkout
 works without a separate build step.
 
+### Linting & pre-commit
+
+ESLint runs with `@typescript-eslint` plus the React and React Hooks plugins —
+`react-hooks/exhaustive-deps` in particular guards against unstable-callback
+render loops. A **Husky** `pre-commit` hook runs **lint-staged**, which applies
+`eslint --fix` and `prettier --write` to staged files. The hook installs
+automatically via the `prepare` script on `npm install`.
+
 ### Web (browser terminal)
 
 ```bash
