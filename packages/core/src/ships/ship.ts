@@ -323,7 +323,6 @@ export type SoftwareTypeId =
   | 'evade'
   | 'fireControl'
   | 'autoRepair'
-  | 'countermeasures'
   | 'manoeuvre'
   | 'intellect'
   | 'library';
@@ -356,14 +355,6 @@ export const SOFTWARE_TYPES: Record<
     label: 'Auto-Repair',
     costPerLevel: 5,
     leveled: true,
-  },
-  countermeasures: {
-    id: 'countermeasures',
-    label: 'Countermeasures',
-    // Derived: electronic countermeasures program, priced near Fire Control.
-    costPerLevel: 2,
-    leveled: true,
-    unverified: true,
   },
   // Manoeuvre/0 and Intellect ship in every loadout at no listed cost in the
   // common-spacecraft examples.
@@ -1017,6 +1008,19 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return sw.leveled ? `${sw.label}/${inst.rating ?? 0}` : sw.label;
     },
   },
+  // Holographic hull (TL10): no tonnage; Cr100,000 per ton of hull and 1 Power
+  // for every two tons of hull.
+  holographicHull: {
+    id: 'holographicHull',
+    name: 'Holographic Hull',
+    category: 'holographicHull',
+    unique: true,
+    minTL: 10,
+    resources: (_inst, ctx) => ({
+      cost: 0.1 * ctx.chassisSize,
+      power: -Math.ceil(ctx.chassisSize / 2),
+    }),
+  },
   // Carried craft (ship or vehicle): consumes Core docking space (craft tons +
   // 10%) and adds both the bay's cost and the craft's own purchase price.
   carriedCraft: {
@@ -1097,6 +1101,8 @@ export interface ShipParams {
   lowBerths: number;
   commonAreasTons: number;
   fuelScoop: boolean;
+  /** Holographic hull skin (TL10): cosmetic, draws power, no tonnage. */
+  holographicHull: boolean;
   /** Structural reinforcement, in tons (derived rules — see SHIP_RULES). */
   reinforcementTons: number;
   /** Optional tonnage-based systems (fuel processor, drones, …). */
@@ -1198,6 +1204,7 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
       defId: 'fuelScoop',
       options: { free: params.hullConfig === 'streamlined' ? 1 : 0 },
     });
+  if (params.holographicHull) installed.push({ defId: 'holographicHull' });
   for (const sys of params.systems) {
     if (SYSTEM_TYPES[sys.type] && sys.amount > 0)
       installed.push({ defId: sys.type, rating: sys.amount });

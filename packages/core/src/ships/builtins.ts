@@ -309,8 +309,8 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     staterooms: 11,
     commonAreasTons: 20, // 13t common areas + 7t trophy lounge
   }),
-  // TODO: reinforced hull, armoured bulkheads and the countermeasures sensor
-  // suite are approximate; cargo runs a little high versus the book.
+  // TODO: reinforced hull and armoured bulkheads are approximate (cargo runs a
+  // little high), and the sensors' countermeasures suite isn't modelled yet.
   ship('System Defence Boat', '200-ton TL15 non-jump system defender.', {
     hullTons: 200,
     tl: 15,
@@ -342,7 +342,6 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'autoRepair', level: 1 },
       { type: 'evade', level: 2 },
       { type: 'fireControl', level: 2 },
-      { type: 'countermeasures', level: 2 },
       { type: 'library', level: 0 },
       { type: 'manoeuvre', level: 0 },
       { type: 'intellect', level: 0 },

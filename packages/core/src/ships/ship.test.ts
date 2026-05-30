@@ -21,6 +21,7 @@ const baseParams: ShipParams = {
   lowBerths: 0,
   commonAreasTons: 0,
   fuelScoop: false,
+  holographicHull: false,
   reinforcementTons: 0,
   systems: [],
   software: [],
@@ -470,6 +471,27 @@ describe('evaluateShip', () => {
     ).toBe(false);
   });
 
+  it('costs a holographic hull by hull tonnage and draws power', () => {
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullTons: 200,
+      holographicHull: true,
+    });
+    const line = summary.lineItems.find((l) => l.id === 'holographicHull')!;
+    // Cr100,000/ton -> MCr20 on 200t; 1 Power per 2 tons -> 100; no tonnage.
+    expect(line.resources.cost).toBeCloseTo(20, 6);
+    expect(line.resources.power).toBe(-100);
+    expect(line.resources.tons ?? 0).toBe(0);
+    // Gated to TL10.
+    expect(
+      evaluateShip({
+        ...baseParams,
+        tl: 9,
+        holographicHull: true,
+      }).issues.some((i) => i.severity === 'error' && /TL/.test(i.message)),
+    ).toBe(true);
+  });
+
   it('keeps the Library room and the Library software distinct', () => {
     const { summary } = evaluateShip({
       ...baseParams,
@@ -507,18 +529,6 @@ describe('evaluateShip', () => {
     expect(line('luxuryStateroom').resources.cost).toBeCloseTo(1.5, 6);
     expect(line('luxuryStateroom').name).toBe('Luxury Staterooms ×1');
     expect(line('medicalBay').resources.power).toBe(-1);
-  });
-
-  it('warns when unverified countermeasures software is installed', () => {
-    const { issues } = evaluateShip({
-      ...baseParams,
-      software: [{ type: 'countermeasures', level: 1 }],
-    });
-    expect(
-      issues.some(
-        (i) => i.severity === 'warning' && /derived rules/.test(i.message),
-      ),
-    ).toBe(true);
   });
 
   it('installs an empty turret (the mount, with no weapon)', () => {
