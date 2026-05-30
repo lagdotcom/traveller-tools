@@ -12,7 +12,18 @@ export interface ChoiceFieldProps {
   onSubmit: () => void;
 }
 
-/** First option matching a typed query (exact > prefix > substring). */
+const sortOptions = (options: string[]): string[] =>
+  [...options].sort((a, b) => a.localeCompare(b));
+
+/** Options matching a query (case-insensitive substring), in sorted order. */
+function filterOptions(query: string, options: string[]): string[] {
+  const sorted = sortOptions(options);
+  if (!query) return sorted;
+  const q = query.toLowerCase();
+  return sorted.filter((o) => o.toLowerCase().includes(q));
+}
+
+/** Best option for a typed query (exact > prefix > substring). */
 function matchOption(query: string, options: string[]): string | undefined {
   if (!query) return undefined;
   const q = query.toLowerCase();
@@ -24,10 +35,9 @@ function matchOption(query: string, options: string[]): string | undefined {
 }
 
 /**
- * A labelled picker. Left/Right cycle the options (one keypress to toggle
- * yes/no); typing jumps to the closest matching option (no need to clear the
- * field first); Enter advances. A filtered list shows the options with the
- * current one highlighted.
+ * A labelled picker. Left/Right cycle the (sorted) options; typing filters the
+ * list to matching options and jumps to the closest one; Enter advances. A
+ * short scrolling window of the filtered options shows, current one highlighted.
  *
  * The key handler is stable (reads latest props/query from a ref) so Ink's
  * useInput doesn't re-subscribe every render and churn its raw-mode effect.
@@ -44,46 +54,47 @@ export function ChoiceField(props: ChoiceFieldProps): React.JSX.Element {
 
   const handle = useCallback((input: string, key: { [k: string]: boolean }) => {
     const { props: p, query: q } = ref.current;
-    const index = Math.max(0, p.options.indexOf(p.value));
     if (key.leftArrow || key.rightArrow) {
+      // Arrows cycle the full sorted list (and clear any filter).
       setQuery('');
+      const sorted = sortOptions(p.options);
+      const index = Math.max(0, sorted.indexOf(p.value));
       const delta = key.leftArrow ? -1 : 1;
-      p.onChange(
-        p.options[(index + delta + p.options.length) % p.options.length]!,
-      );
+      p.onChange(sorted[(index + delta + sorted.length) % sorted.length]!);
     } else if (key.return) {
       setQuery('');
       p.onSubmit();
     } else if (key.backspace || key.delete) {
       const next = q.slice(0, -1);
       setQuery(next);
-      const m = matchOption(next, p.options);
+      const m = matchOption(next, sortOptions(p.options));
       if (m) p.onChange(m);
     } else if (input && !key.ctrl && !key.meta && !key.tab) {
       const printable = input.replace(/[^\x20-\x7e]/g, '');
       if (!printable) return;
       const next = q + printable;
       setQuery(next);
-      const m = matchOption(next, p.options);
+      const m = matchOption(next, sortOptions(p.options));
       if (m) p.onChange(m);
     }
   }, []);
   useInput(handle, { isActive });
 
-  // Show a short, vertical, scrolling window of options around the current one
-  // (a single horizontal row wraps badly with many or long-named choices).
+  // Short, vertical, scrolling window of the (filtered) options around the
+  // current one — a single horizontal row wraps badly with many/long choices.
   const WINDOW = 6;
-  const currentIndex = Math.max(0, options.indexOf(value));
+  const list = filterOptions(query, options);
+  const currentIndex = Math.max(0, list.indexOf(value));
   const start = Math.max(
     0,
     Math.min(
       currentIndex - Math.floor(WINDOW / 2),
-      Math.max(0, options.length - WINDOW),
+      Math.max(0, list.length - WINDOW),
     ),
   );
-  const visible = options.slice(start, start + WINDOW);
+  const visible = list.slice(start, start + WINDOW);
   const hiddenAbove = start;
-  const hiddenBelow = options.length - (start + visible.length);
+  const hiddenBelow = list.length - (start + visible.length);
 
   return (
     <Box flexDirection="column">
@@ -103,6 +114,7 @@ export function ChoiceField(props: ChoiceFieldProps): React.JSX.Element {
       </Box>
       {isActive && (
         <Box marginLeft={24} flexDirection="column">
+          {list.length === 0 && <Text dimColor>(no matches)</Text>}
           {hiddenAbove > 0 && <Text dimColor>↑ {hiddenAbove} more</Text>}
           {visible.map((option) => (
             <Box key={option} width={40}>

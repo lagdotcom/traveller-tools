@@ -13,6 +13,7 @@ import {
   type MountId,
   MOUNTS,
   parseShip,
+  POWER_PLANTS,
   type PowerPlantId,
   type SensorId,
   SENSORS,
@@ -54,18 +55,10 @@ function parseConfig(value: string): HullConfigId {
   return 'standard';
 }
 
-function parsePlant(value: string): PowerPlantId {
-  const v = value.trim().toLowerCase();
-  if (v.includes('8')) return 'fusionTL8';
-  if (v.includes('15')) return 'fusionTL15';
-  return 'fusionTL12';
-}
-
-const PLANT_TO_FORM: Record<PowerPlantId, string> = {
-  fusionTL8: 'TL8',
-  fusionTL12: 'TL12',
-  fusionTL15: 'TL15',
-};
+const PLANT_IDS = Object.keys(POWER_PLANTS) as PowerPlantId[];
+const PLANT_LABELS = PLANT_IDS.map((id) => POWER_PLANTS[id].name);
+const plantByLabel = (label: string): PowerPlantId =>
+  PLANT_IDS.find((id) => POWER_PLANTS[id].name === label) ?? 'fusionTL12';
 
 /** Initial text-field values for the builder form, from a set of ship params. */
 function formValues(p: ShipParams) {
@@ -75,7 +68,7 @@ function formValues(p: ShipParams) {
     config: p.hullConfig,
     thrust: String(p.thrust),
     jump: String(p.jump),
-    plant: PLANT_TO_FORM[p.powerPlantType],
+    plant: POWER_PLANTS[p.powerPlantType].name,
     power: String(p.powerPlantTons),
     fuel: String(p.fuelTons),
     bridge: p.bridge,
@@ -343,7 +336,7 @@ export function ShipBuilderScreen({
         {
           key: 'plant',
           label: 'Power plant',
-          options: ['TL8', 'TL12', 'TL15'],
+          options: PLANT_LABELS,
         },
         { key: 'power', label: 'Power plant (tons)' },
         { key: 'fuel', label: 'Fuel (tons)' },
@@ -544,7 +537,7 @@ export function ShipBuilderScreen({
     hullConfig: parseConfig(form.values.config),
     thrust: num(form.values.thrust),
     jump: num(form.values.jump),
-    powerPlantType: parsePlant(form.values.plant),
+    powerPlantType: plantByLabel(form.values.plant),
     powerPlantTons: num(form.values.power),
     fuelTons: num(form.values.fuel),
     bridge: form.values.bridge as BridgeId,
