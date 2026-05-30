@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { ARROW_DOWN, ENTER, type InkHarness, renderInk } from './testkit.js';
+import {
+  ARROW_DOWN,
+  BACKSPACE,
+  ENTER,
+  type InkHarness,
+  renderInk,
+} from './testkit.js';
 
 /** Drives the ship builder through real Ink (see testkit). */
 describe('Ship builder (real Ink)', () => {
@@ -23,6 +29,17 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.frame()).toContain('No issues');
     ui.unmount();
     expect(ui.errors()).toEqual([]);
+  });
+
+  it('does not crash when the hull field is cleared', async () => {
+    const ui = await openBuilder();
+    // Hull is the first field, pre-filled "100"; clear it entirely.
+    await ui.type(BACKSPACE);
+    await ui.type(BACKSPACE);
+    await ui.type(BACKSPACE);
+    await ui.waitFor('Hull tonnage must be greater than 0');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]); // no thrown render error captured
   });
 
   it('flags exceeding the hull hardpoints', async () => {

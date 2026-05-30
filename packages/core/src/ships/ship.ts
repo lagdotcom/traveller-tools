@@ -190,7 +190,14 @@ export function evaluateShip(params: ShipParams): ShipEvaluation {
   );
 
   const extra: Issue[] = [];
-  if (params.jump > 0) {
+  if (params.hullTons <= 0) {
+    // Guard before jumpFuel (which rejects non-positive tonnage) so an empty
+    // or zero hull field reports an issue instead of throwing.
+    extra.push({
+      severity: 'error',
+      message: 'Hull tonnage must be greater than 0',
+    });
+  } else if (params.jump > 0) {
     const needed = jumpFuel(params.hullTons, params.jump).fuelTons;
     if (params.fuelTons < needed) {
       extra.push({

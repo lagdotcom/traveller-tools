@@ -22,6 +22,7 @@ export const ARROW_DOWN = String.fromCharCode(ESC_CODE, CSI, 0x42); // ESC [ B
 export const ARROW_UP = String.fromCharCode(ESC_CODE, CSI, 0x41); // ESC [ A
 export const ENTER = '\r';
 export const ESC = String.fromCharCode(ESC_CODE);
+export const BACKSPACE = String.fromCharCode(127);
 
 export interface InkHarness {
   /** The current rendered frame (latest write with text, ANSI stripped). */
