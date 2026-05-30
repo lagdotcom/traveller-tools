@@ -1,6 +1,7 @@
-import React from 'react';
 import { render } from 'ink-testing-library';
+import React from 'react';
 import { describe, expect, it } from 'vitest';
+
 import { App } from './app.js';
 
 const ARROW_DOWN = '[B';

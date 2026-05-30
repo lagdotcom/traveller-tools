@@ -11,13 +11,25 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
 
 ## Tools
 
+- **Ship builder** — design MgT2 ships component-by-component with live
+  tonnage / power / cost / hardpoint budgets, a book-style sheet, derived stats,
+  crew and running costs. Mounts (incl. mixed-weapon turrets), the full Core
+  "spacecraft equipment" list, and carried craft — ships or catalogue vehicles,
+  with one level of nesting (e.g. an ATV on a launch). `Ctrl+S/E/I` to
+  save / export / import a design (JSON).
+- **Ship library** — load any of the 24 built-in common spacecraft or your saved
+  designs into the builder; import a design from pasted JSON.
+- **Vehicle catalogue** — the Core Rulebook vehicles, with stat blocks, also
+  selectable as carried craft.
 - **Jump & Fuel** — jump fuel by hull tonnage and jump number, jump validity
   against the installed drive, and jump duration.
 - **Travel time (velocity)** — flip-and-burn travel time and peak velocity for a
   distance (km/AU) at a given thrust (G).
 
-More tools (ship / weapon / vehicle / robot builders) are planned; the rules
-engine is structured so they slot in as new modules + screens.
+Ship construction follows the **Core Rulebook (2022)**; non-Core (High Guard)
+options are flagged, and the ship sheet lists which rulebooks a design needs.
+Weapon and robot builders are planned; the rules engine is structured so they
+slot in as new modules + screens.
 
 ## Project layout
 
@@ -33,16 +45,27 @@ This is an npm-workspaces monorepo:
 
 ```bash
 npm install        # install all workspaces
-npm run dev        # run the TUI in your terminal
+npm run dev        # build the libs, then run the TUI in your terminal
 npm test           # run the unit + TUI render tests
 npm run lint       # eslint + prettier check
 npm run build      # typecheck/build core + tui
 ```
 
+`dev`, `dev:web`, and `build:web` all run `npm run build` first, since the TUI
+and web app import the compiled `core`/`tui` packages — so a fresh checkout
+works without a separate build step.
+
+### Linting & pre-commit
+
+ESLint runs with `@typescript-eslint` plus the React and React Hooks plugins —
+`react-hooks/exhaustive-deps` in particular guards against unstable-callback
+render loops. A **Husky** `pre-commit` hook runs **lint-staged**, which applies
+`eslint --fix` and `prettier --write` to staged files. The hook installs
+automatically via the `prepare` script on `npm install`.
+
 ### Web (browser terminal)
 
 ```bash
-npm run build      # build core + tui first (web imports their dist)
 npm run dev:web    # vite dev server
 npm run build:web  # production build into packages/web/dist
 npm run preview:web

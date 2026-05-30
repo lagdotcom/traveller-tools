@@ -1,7 +1,11 @@
 import '@xterm/xterm/css/xterm.css';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
+
 import { mount } from '@traveller-tools/tui';
+import { FitAddon } from '@xterm/addon-fit';
+import { Terminal } from '@xterm/xterm';
+import chalk from 'chalk';
+
+import { localStore } from './localStore';
 import { createStreams } from './ptyAdapter';
 
 const term = new Terminal({
@@ -26,14 +30,34 @@ term.open(container);
 fit.fit();
 window.addEventListener('resize', () => fit.fit());
 
-const { stdin, stdout } = createStreams(term);
+/** Surface any runtime failure directly in the terminal (and the console). */
+function showError(label: string, error: unknown): void {
+  const message =
+    error instanceof Error ? (error.stack ?? error.message) : String(error);
+  // eslint-disable-next-line no-console
+  console.error(label, error);
+  term.write(`\r\n${chalk.red(label)}\r\n`);
+  term.write(message.replace(/\n/g, '\r\n') + '\r\n');
+}
 
-mount({
-  stdin,
-  stdout,
-  stderr: stdout,
-  exitOnCtrlC: false,
-  patchConsole: false,
-});
+window.addEventListener('error', (event) =>
+  showError('Uncaught error:', event.error),
+);
+window.addEventListener('unhandledrejection', (event) =>
+  showError('Unhandled promise rejection:', event.reason),
+);
 
-term.focus();
+try {
+  const { stdin, stdout } = createStreams(term);
+  mount({
+    stdin,
+    stdout,
+    stderr: stdout,
+    exitOnCtrlC: false,
+    patchConsole: false,
+    store: localStore(),
+  });
+  term.focus();
+} catch (error) {
+  showError('Failed to start the TUI:', error);
+}

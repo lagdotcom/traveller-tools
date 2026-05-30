@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
 import { mount } from '@traveller-tools/tui';
+import { describe, expect, it } from 'vitest';
+
 import { createStreams } from './ptyAdapter';
 
 /**

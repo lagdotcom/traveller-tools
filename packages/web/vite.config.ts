@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url';
+
 import { defineConfig, type Plugin } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import wasm from 'vite-plugin-wasm';

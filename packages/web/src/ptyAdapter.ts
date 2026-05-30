@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
 import type { Terminal } from '@xterm/xterm';
+import { EventEmitter } from 'events';
 
 /**
  * Bridge an xterm.js Terminal to the Node-style stdin/stdout streams that Ink's

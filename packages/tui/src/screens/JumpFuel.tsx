@@ -1,11 +1,12 @@
-import React from 'react';
-import { Box, Text, useInput } from 'ink';
 import {
   jumpDuration,
   jumpFuel,
   MAX_JUMP,
   validateJump,
 } from '@traveller-tools/core';
+import { Box, Text, useInput } from 'ink';
+import React from 'react';
+
 import { Field } from '../components/Field.js';
 import { useForm } from '../components/useForm.js';
 
@@ -44,7 +45,7 @@ export function JumpFuelScreen({
           placeholder="e.g. 200"
           value={form.values.hull}
           isActive={form.activeIndex === 0}
-          onChange={form.set('hull')}
+          onChange={form.setters.hull}
           onSubmit={form.next}
         />
         <Field
@@ -52,7 +53,7 @@ export function JumpFuelScreen({
           placeholder="1-6"
           value={form.values.jump}
           isActive={form.activeIndex === 1}
-          onChange={form.set('jump')}
+          onChange={form.setters.jump}
           onSubmit={form.next}
         />
         <Field
@@ -60,7 +61,7 @@ export function JumpFuelScreen({
           placeholder={`default ${MAX_JUMP}`}
           value={form.values.drive}
           isActive={form.activeIndex === 2}
-          onChange={form.set('drive')}
+          onChange={form.setters.drive}
           onSubmit={form.next}
         />
       </Box>

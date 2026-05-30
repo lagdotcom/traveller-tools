@@ -4,7 +4,9 @@
 // 'node:process'`. We pass real stdin/stdout into Ink ourselves, so the stream
 // fields here are intentionally absent.
 
-export const env: Record<string, string | undefined> = {};
+// FORCE_COLOR makes chalk (used by Ink and @inkjs/ui) emit colour even though
+// our stream stand-ins report isTTY: false; xterm.js renders truecolor fine.
+export const env: Record<string, string | undefined> = { FORCE_COLOR: '3' };
 export const argv: string[] = ['browser'];
 export const platform = 'browser';
 export const arch = 'browser';
@@ -17,6 +19,15 @@ export const browser = true;
 export function cwd(): string {
   return '/';
 }
+
+// Ink's actual output goes through the stdout/stdin we pass to render(). These
+// stream stand-ins exist only so libraries that fall back to process.stdout /
+// process.stderr (e.g. cli-cursor, which reads `.isTTY`) don't hit `undefined`.
+// `isTTY: false` makes those fallbacks cleanly no-op.
+const noopWrite = () => true;
+export const stdout = { isTTY: false, columns: 80, rows: 24, write: noopWrite };
+export const stderr = { isTTY: false, write: noopWrite };
+export const stdin = { isTTY: false, read: () => null };
 
 export function nextTick(
   callback: (...args: unknown[]) => void,
@@ -37,6 +48,9 @@ const process = {
   pid,
   title,
   browser,
+  stdout,
+  stderr,
+  stdin,
   cwd,
   nextTick,
   on: noop,

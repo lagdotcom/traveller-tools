@@ -6,6 +6,11 @@
     "jsx": "react-jsx"
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "src/**/*.test.ts", "src/**/*.test.tsx"],
+  "exclude": [
+    "dist",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/testkit.tsx"
+  ],
   "references": [{ "path": "../core" }]
 }

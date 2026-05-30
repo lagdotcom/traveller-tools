@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { jumpDuration, jumpFuel, validateJump } from './jump.js';
 
 describe('jumpFuel', () => {

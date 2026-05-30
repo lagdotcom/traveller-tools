@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { humanizeDuration, travel } from './travel.js';
 
 describe('travel (flip and burn)', () => {
