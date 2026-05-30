@@ -14,10 +14,15 @@ const baseParams: ShipParams = {
   armourType: 'crystaliron',
   armourPoints: 0,
   computer: '/5',
+  computerBis: false,
   sensors: 'basic',
   staterooms: 2,
   lowBerths: 0,
   commonAreasTons: 0,
+  fuelProcessorTons: 0,
+  fuelScoop: false,
+  probeDroneTons: 0,
+  repairDroneTons: 0,
   turrets: 0,
   crewType: 'commercial',
 };
@@ -196,6 +201,22 @@ describe('evaluateShip', () => {
     expect(count(military.crew, 'Pilot')).toBe(3);
     expect(count(commercial.crew, 'Gunner')).toBe(2); // 1 per turret
     expect(count(military.crew, 'Gunner')).toBe(4); // 2 per turret
+  });
+
+  it('costs the /bis computer and fuel processor', () => {
+    const line = (id: string, s: ReturnType<typeof evaluateShip>) =>
+      s.summary.lineItems.find((l) => l.id === id)!;
+    // Computer/5bis = 0.03 × 1.5 = 0.045.
+    const bis = evaluateShip({
+      ...baseParams,
+      computer: '/5',
+      computerBis: true,
+    });
+    expect(line('computer', bis).resources.cost).toBeCloseTo(0.045, 6);
+    // Fuel processor 2t: -2 tons, -2 Power, MCr0.1.
+    const fp = evaluateShip({ ...baseParams, fuelProcessorTons: 2 });
+    expect(line('fuelProcessor', fp).resources.tons).toBe(-2);
+    expect(line('fuelProcessor', fp).resources.cost).toBeCloseTo(0.1, 6);
   });
 
   it('reports remaining tonnage as cargo for a valid ship', () => {

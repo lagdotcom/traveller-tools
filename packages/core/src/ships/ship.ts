@@ -16,8 +16,7 @@ import { jumpFuel } from '../jump.js';
  * Rulebook (2022) spacecraft-construction values.
  *
  * Thrust ratings run 1-9 (drive = Thrust% of hull); Jump 1-6 (drive =
- * Jump × 2.5% of hull, +5t, minimum 10t). Computer/sensors/armour are not yet
- * builder fields.
+ * Jump × 2.5% of hull, +5t, minimum 10t).
  */
 
 export interface ShipStats extends Record<string, number> {
@@ -379,11 +378,14 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     name: 'Computer',
     category: 'computer',
     unique: true,
-    // No tonnage; options.model picks the model.
-    resources: (inst) => ({
-      cost: (COMPUTERS[inst.options?.model as ComputerId] ?? COMPUTERS['/5'])
-        .cost,
-    }),
+    // No tonnage; options.model picks the model, options.bis adds +50% cost
+    // (Jump Control Specialisation).
+    resources: (inst) => {
+      const base = (
+        COMPUTERS[inst.options?.model as ComputerId] ?? COMPUTERS['/5']
+      ).cost;
+      return { cost: inst.options?.bis ? base * 1.5 : base };
+    },
   },
   sensors: {
     id: 'sensors',
@@ -415,6 +417,45 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return { tons: -t, cost: 0.1 * t };
     },
   },
+  fuelProcessor: {
+    id: 'fuelProcessor',
+    name: 'Fuel Processor',
+    category: 'fuelProcessor',
+    // rating = tons: Cr50,000/ton, 1 Power/ton (processes 20t/day per ton).
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, power: -t, cost: 0.05 * t };
+    },
+  },
+  fuelScoop: {
+    id: 'fuelScoop',
+    name: 'Fuel Scoop',
+    category: 'fuelScoop',
+    unique: true,
+    // No tonnage; MCr1 (streamlined hulls have scoops built in, so are added
+    // without this component).
+    resources: () => ({ cost: 1 }),
+  },
+  probeDrones: {
+    id: 'probeDrones',
+    name: 'Probe Drones',
+    category: 'probeDrones',
+    // rating = tons: 5 drones & MCr0.5 per ton.
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: 0.5 * t };
+    },
+  },
+  repairDrones: {
+    id: 'repairDrones',
+    name: 'Repair Drones',
+    category: 'repairDrones',
+    // rating = tons: MCr0.2 per ton (1% of hull recommended, min 1t).
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: 0.2 * t };
+    },
+  },
 };
 
 // --- Assembly + rules -------------------------------------------------------
@@ -433,10 +474,15 @@ export interface ShipParams {
   armourType: ArmourTypeId;
   armourPoints: number;
   computer: ComputerId;
+  computerBis: boolean;
   sensors: SensorId;
   staterooms: number;
   lowBerths: number;
   commonAreasTons: number;
+  fuelProcessorTons: number;
+  fuelScoop: boolean;
+  probeDroneTons: number;
+  repairDroneTons: number;
   turrets: number;
   crewType: CrewType;
 }
@@ -477,7 +523,10 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
 
   const installed: Design<ShipStats>['installed'] = [
     { defId: 'bridge' },
-    { defId: 'computer', options: { model: params.computer } },
+    {
+      defId: 'computer',
+      options: { model: params.computer, bis: params.computerBis ? 1 : 0 },
+    },
     { defId: 'sensors', options: { grade: params.sensors } },
   ];
   if (params.powerPlantTons > 0)
@@ -503,6 +552,19 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
     installed.push({ defId: 'lowBerth', rating: params.lowBerths });
   if (params.commonAreasTons > 0)
     installed.push({ defId: 'commonArea', rating: params.commonAreasTons });
+  if (params.fuelProcessorTons > 0)
+    installed.push({
+      defId: 'fuelProcessor',
+      rating: params.fuelProcessorTons,
+    });
+  // Streamlined hulls have fuel scoops built in (free), so only add the
+  // component (MCr1) on other configurations.
+  if (params.fuelScoop && params.hullConfig !== 'streamlined')
+    installed.push({ defId: 'fuelScoop' });
+  if (params.probeDroneTons > 0)
+    installed.push({ defId: 'probeDrones', rating: params.probeDroneTons });
+  if (params.repairDroneTons > 0)
+    installed.push({ defId: 'repairDrones', rating: params.repairDroneTons });
   if (params.turrets > 0)
     installed.push({ defId: 'turret', quantity: params.turrets });
 
@@ -718,6 +780,9 @@ const NUMERIC_FIELDS: Array<keyof ShipParams> = [
   'staterooms',
   'lowBerths',
   'commonAreasTons',
+  'fuelProcessorTons',
+  'probeDroneTons',
+  'repairDroneTons',
   'turrets',
 ];
 const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
@@ -730,6 +795,9 @@ const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
   staterooms: 'Staterooms',
   lowBerths: 'Low berths',
   commonAreasTons: 'Common areas',
+  fuelProcessorTons: 'Fuel processor',
+  probeDroneTons: 'Probe drones',
+  repairDroneTons: 'Repair drones',
   turrets: 'Turrets',
 };
 const INTEGER_FIELDS: Array<keyof ShipParams> = [
