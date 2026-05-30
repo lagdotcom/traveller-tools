@@ -8,15 +8,15 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "tsx packages/tui/src/cli.tsx",
+    "dev": "npm run build && tsx packages/tui/src/cli.tsx",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc --build",
     "build": "tsc --build",
-    "dev:web": "vite --config packages/web/vite.config.ts",
-    "build:web": "vite build --config packages/web/vite.config.ts",
+    "dev:web": "npm run build && vite --config packages/web/vite.config.ts",
+    "build:web": "npm run build && vite build --config packages/web/vite.config.ts",
     "preview:web": "vite preview --config packages/web/vite.config.ts"
   },
   "devDependencies": {

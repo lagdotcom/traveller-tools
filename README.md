@@ -33,16 +33,19 @@ This is an npm-workspaces monorepo:
 
 ```bash
 npm install        # install all workspaces
-npm run dev        # run the TUI in your terminal
+npm run dev        # build the libs, then run the TUI in your terminal
 npm test           # run the unit + TUI render tests
 npm run lint       # eslint + prettier check
 npm run build      # typecheck/build core + tui
 ```
 
+`dev`, `dev:web`, and `build:web` all run `npm run build` first, since the TUI
+and web app import the compiled `core`/`tui` packages — so a fresh checkout
+works without a separate build step.
+
 ### Web (browser terminal)
 
 ```bash
-npm run build      # build core + tui first (web imports their dist)
 npm run dev:web    # vite dev server
 npm run build:web  # production build into packages/web/dist
 npm run preview:web

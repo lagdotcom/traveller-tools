@@ -25,8 +25,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # The web app imports the built core + tui packages.
-      - run: npm run build
+      # build:web compiles the core + tui packages first, then bundles the app.
       - run: npm run build:web
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
