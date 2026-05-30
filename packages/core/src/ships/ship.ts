@@ -521,37 +521,35 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   const config = HULL_CONFIGS[params.hullConfig] ?? HULL_CONFIGS.standard;
   const hullCost = params.hullTons * HULL_COST_PER_TON * config.costMult;
 
-  const installed: Design<ShipStats>['installed'] = [
-    { defId: 'bridge' },
-    {
-      defId: 'computer',
-      options: { model: params.computer, bis: params.computerBis ? 1 : 0 },
-    },
-    { defId: 'sensors', options: { grade: params.sensors } },
-  ];
-  if (params.powerPlantTons > 0)
-    installed.push({
-      defId: 'powerPlant',
-      rating: params.powerPlantTons,
-      options: { type: params.powerPlantType },
-    });
-  if (params.thrust > 0)
-    installed.push({ defId: 'mDrive', rating: params.thrust });
-  if (params.jump > 0) installed.push({ defId: 'jDrive', rating: params.jump });
-  if (params.fuelTons > 0)
-    installed.push({ defId: 'fuel', rating: params.fuelTons });
+  // Installed in Core Rulebook sheet order (the hull chassis is listed first):
+  // Armour, M-Drive, J-Drive, Power Plant, Fuel, Bridge, Computer, Sensors,
+  // Weapons, Systems, Staterooms, Low Berths, Common Areas.
+  const installed: Design<ShipStats>['installed'] = [];
   if (params.armourPoints > 0)
     installed.push({
       defId: 'armour',
       rating: params.armourPoints,
       options: { type: params.armourType, hullCost },
     });
-  if (params.staterooms > 0)
-    installed.push({ defId: 'stateroom', quantity: params.staterooms });
-  if (params.lowBerths > 0)
-    installed.push({ defId: 'lowBerth', rating: params.lowBerths });
-  if (params.commonAreasTons > 0)
-    installed.push({ defId: 'commonArea', rating: params.commonAreasTons });
+  if (params.thrust > 0)
+    installed.push({ defId: 'mDrive', rating: params.thrust });
+  if (params.jump > 0) installed.push({ defId: 'jDrive', rating: params.jump });
+  if (params.powerPlantTons > 0)
+    installed.push({
+      defId: 'powerPlant',
+      rating: params.powerPlantTons,
+      options: { type: params.powerPlantType },
+    });
+  if (params.fuelTons > 0)
+    installed.push({ defId: 'fuel', rating: params.fuelTons });
+  installed.push({ defId: 'bridge' });
+  installed.push({
+    defId: 'computer',
+    options: { model: params.computer, bis: params.computerBis ? 1 : 0 },
+  });
+  installed.push({ defId: 'sensors', options: { grade: params.sensors } });
+  if (params.turrets > 0)
+    installed.push({ defId: 'turret', quantity: params.turrets });
   if (params.fuelProcessorTons > 0)
     installed.push({
       defId: 'fuelProcessor',
@@ -565,8 +563,12 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
     installed.push({ defId: 'probeDrones', rating: params.probeDroneTons });
   if (params.repairDroneTons > 0)
     installed.push({ defId: 'repairDrones', rating: params.repairDroneTons });
-  if (params.turrets > 0)
-    installed.push({ defId: 'turret', quantity: params.turrets });
+  if (params.staterooms > 0)
+    installed.push({ defId: 'stateroom', quantity: params.staterooms });
+  if (params.lowBerths > 0)
+    installed.push({ defId: 'lowBerth', rating: params.lowBerths });
+  if (params.commonAreasTons > 0)
+    installed.push({ defId: 'commonArea', rating: params.commonAreasTons });
 
   return {
     chassis: shipHull(params.hullTons, params.tl, params.hullConfig),

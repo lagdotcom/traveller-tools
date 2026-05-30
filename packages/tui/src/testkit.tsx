@@ -20,6 +20,8 @@ const CSI = 0x5b; // '['
 
 export const ARROW_DOWN = String.fromCharCode(ESC_CODE, CSI, 0x42); // ESC [ B
 export const ARROW_UP = String.fromCharCode(ESC_CODE, CSI, 0x41); // ESC [ A
+export const ARROW_RIGHT = String.fromCharCode(ESC_CODE, CSI, 0x43); // ESC [ C
+export const ARROW_LEFT = String.fromCharCode(ESC_CODE, CSI, 0x44); // ESC [ D
 export const ENTER = '\r';
 export const ESC = String.fromCharCode(ESC_CODE);
 export const BACKSPACE = String.fromCharCode(127);

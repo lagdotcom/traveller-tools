@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ARROW_DOWN,
+  ARROW_RIGHT,
   BACKSPACE,
   ENTER,
   type InkHarness,
@@ -47,18 +48,23 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
-  it('selects a hull configuration by closest-match completion', async () => {
+  it('picks a choice option by typing, without clearing first', async () => {
     const ui = await openBuilder();
-    // Move to the Hull config choice field (hull, tl, config = 3rd field).
     await ui.type(ENTER); // -> tech level
-    await ui.type(ENTER); // -> hull config
-    // Clear the default "standard" then type a prefix and submit; it should
-    // snap to the canonical "streamlined" option.
-    for (let i = 0; i < 'standard'.length; i++) await ui.type(BACKSPACE);
-    await ui.type('stream');
-    await ui.type(ENTER);
-    // Streamlined hull on 100t costs 6 MCr (100 × 0.05 × 1.2).
-    await ui.waitFor('Streamlined');
+    await ui.type(ENTER); // -> hull config (still showing "standard")
+    // Typing jumps to the closest match; no need to delete "standard" first.
+    await ui.type('disp');
+    await ui.waitFor('Dispersed'); // hull name reflects the dispersed config
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
+  it('toggles a yes/no option with an arrow key', async () => {
+    const ui = await openBuilder();
+    // Drives & Power section: thrust, jump, plant, power, fuel, fuelProc, scoop.
+    for (let i = 0; i < 9; i++) await ui.type(ENTER); // -> Fuel scoop
+    await ui.type(ARROW_RIGHT); // no -> yes (one keypress)
+    await ui.waitFor('Fuel Scoop'); // the component now appears in the sheet
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });

@@ -1,6 +1,5 @@
-import { TextInput } from '@inkjs/ui';
-import { Box, Text } from 'ink';
-import React from 'react';
+import { Box, Text, useInput } from 'ink';
+import React, { useEffect, useState } from 'react';
 
 export interface ChoiceFieldProps {
   label: string;
@@ -13,23 +12,22 @@ export interface ChoiceFieldProps {
   onSubmit: () => void;
 }
 
-/** Resolve typed text to the best matching option (exact > prefix > substring). */
-export function closestOption(value: string, options: string[]): string {
-  const v = value.trim().toLowerCase();
-  if (!v) return options[0] ?? value;
+/** First option matching a typed query (exact > prefix > substring). */
+function matchOption(query: string, options: string[]): string | undefined {
+  if (!query) return undefined;
+  const q = query.toLowerCase();
   return (
-    options.find((o) => o.toLowerCase() === v) ??
-    options.find((o) => o.toLowerCase().startsWith(v)) ??
-    options.find((o) => o.toLowerCase().includes(v)) ??
-    value
+    options.find((o) => o.toLowerCase() === q) ??
+    options.find((o) => o.toLowerCase().startsWith(q)) ??
+    options.find((o) => o.toLowerCase().includes(q))
   );
 }
 
 /**
- * A labelled choice input. While focused it uses @inkjs/ui's autocomplete
- * (inline closest-match ghost text + Tab/Enter to complete), shows a filtered
- * list of matching options with the best one highlighted, and snaps the value
- * to a canonical option on submit.
+ * A labelled picker. Left/Right cycle the options (one keypress to toggle
+ * yes/no); typing jumps to the closest matching option (no need to clear the
+ * field first); Enter advances. A filtered list shows the options with the
+ * current one highlighted.
  */
 export function ChoiceField({
   label,
@@ -39,10 +37,40 @@ export function ChoiceField({
   onChange,
   onSubmit,
 }: ChoiceFieldProps): React.JSX.Element {
-  const query = value.trim().toLowerCase();
-  const matches = options.filter((o) => o.toLowerCase().includes(query));
-  const visible = matches.length > 0 ? matches : options;
-  const best = closestOption(value, options);
+  const [query, setQuery] = useState('');
+  useEffect(() => {
+    if (!isActive) setQuery('');
+  }, [isActive]);
+
+  const index = Math.max(0, options.indexOf(value));
+  const cycle = (delta: number) => {
+    setQuery('');
+    onChange(options[(index + delta + options.length) % options.length]!);
+  };
+
+  useInput(
+    (input, key) => {
+      if (key.leftArrow) cycle(-1);
+      else if (key.rightArrow) cycle(1);
+      else if (key.return) {
+        setQuery('');
+        onSubmit();
+      } else if (key.backspace || key.delete) {
+        const q = query.slice(0, -1);
+        setQuery(q);
+        const m = matchOption(q, options);
+        if (m) onChange(m);
+      } else if (input && !key.ctrl && !key.meta && !key.tab) {
+        const printable = input.replace(/[^\x20-\x7e]/g, '');
+        if (!printable) return;
+        const q = query + printable;
+        setQuery(q);
+        const m = matchOption(q, options);
+        if (m) onChange(m);
+      }
+    },
+    { isActive },
+  );
 
   return (
     <Box flexDirection="column">
@@ -54,33 +82,25 @@ export function ChoiceField({
           </Text>
         </Box>
         <Box>
-          {isActive ? (
-            <TextInput
-              defaultValue={value}
-              suggestions={options}
-              onChange={onChange}
-              onSubmit={(submitted) => {
-                onChange(closestOption(submitted, options));
-                onSubmit();
-              }}
-            />
-          ) : (
-            <Text>{value}</Text>
-          )}
+          <Text color={isActive ? 'cyan' : undefined}>
+            {value}
+            {isActive && query ? ` (${query})` : ''}
+          </Text>
         </Box>
       </Box>
       {isActive && (
         <Box marginLeft={24}>
-          {visible.map((option) => (
+          {options.map((option) => (
             <Box key={option} marginRight={2}>
               <Text
-                color={option === best ? 'cyan' : undefined}
-                dimColor={option !== best}
+                color={option === value ? 'cyan' : undefined}
+                dimColor={option !== value}
               >
                 {option}
               </Text>
             </Box>
           ))}
+          <Text dimColor>←/→</Text>
         </Box>
       )}
     </Box>
