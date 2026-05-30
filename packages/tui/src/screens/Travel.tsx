@@ -72,7 +72,7 @@ export function TravelScreen({
         />
         <Field
           label="Thrust (G)"
-          placeholder="1-6"
+          placeholder="e.g. 1-9"
           value={form.values.thrust}
           isActive={form.activeIndex === 2}
           onChange={form.setters.thrust}
