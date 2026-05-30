@@ -172,6 +172,19 @@ describe('evaluateShip', () => {
     expect(line('sensors').resources.cost).toBe(4.1);
   });
 
+  it('computes minimum crew and monthly maintenance', () => {
+    const { crew, runningCosts } = evaluateShip(baseParams);
+    const roles = crew.map((c) => c.role);
+    expect(roles).toContain('Pilot');
+    expect(roles).toContain('Astrogator'); // has a jump drive
+    expect(roles).toContain('Engineer'); // 15t drives+plant -> 1
+    // Maintenance = purchase (MCr) / 1000 / 12, expressed in Credits.
+    expect(runningCosts.monthlyMaintenanceCr).toBeCloseTo(
+      (runningCosts.purchaseMCr * 1000) / 12,
+      6,
+    );
+  });
+
   it('reports remaining tonnage as cargo for a valid ship', () => {
     const { cargoTons, issues } = evaluateShip(baseParams);
     expect(issues).toEqual([]);

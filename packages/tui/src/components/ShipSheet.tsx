@@ -1,4 +1,4 @@
-import type { LineItem } from '@traveller-tools/core';
+import type { CrewMember, LineItem } from '@traveller-tools/core';
 import { Box, Text } from 'ink';
 import React from 'react';
 
@@ -50,6 +50,8 @@ export interface ShipSheetProps {
   jump: number;
   cargoTons: number;
   powerRequirements: { basic: number; manoeuvre: number; jump: number };
+  crew: CrewMember[];
+  runningCosts: { purchaseMCr: number; monthlyMaintenanceCr: number };
 }
 
 /** A book-style ship sheet: component breakdown plus derived stats / power. */
@@ -103,6 +105,26 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
           <Text>Basic {fmt(props.powerRequirements.basic)}</Text>
           <Text>Manoeuvre {fmt(props.powerRequirements.manoeuvre)}</Text>
           <Text>Jump {fmt(props.powerRequirements.jump)}</Text>
+        </Box>
+        <Box marginTop={1} flexDirection="column">
+          <Text bold color="yellow">
+            Crew
+          </Text>
+          {props.crew.map((member) => (
+            <Text key={member.role}>
+              {member.role}
+              {member.count > 1 ? ` ×${member.count}` : ''}
+            </Text>
+          ))}
+        </Box>
+        <Box marginTop={1} flexDirection="column">
+          <Text bold color="yellow">
+            Running costs
+          </Text>
+          <Text>Buy MCr{fmt(props.runningCosts.purchaseMCr)}</Text>
+          <Text>
+            Maint Cr{Math.round(props.runningCosts.monthlyMaintenanceCr)}/mo
+          </Text>
         </Box>
       </Box>
     </Box>

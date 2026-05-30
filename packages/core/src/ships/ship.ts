@@ -632,12 +632,45 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
   },
 ];
 
+export interface CrewMember {
+  role: string;
+  count: number;
+}
+
 export interface ShipEvaluation {
   summary: DesignSummary<ShipStats>;
   issues: Issue[];
   cargoTons: number;
   /** Power demand breakdown (for a book-style Power Requirements panel). */
   powerRequirements: { basic: number; manoeuvre: number; jump: number };
+  /** Minimum operating crew. Medic/Steward are passenger-driven (TODO). */
+  crew: CrewMember[];
+  /** Purchase price (MCr) and monthly maintenance (Cr). */
+  runningCosts: { purchaseMCr: number; monthlyMaintenanceCr: number };
+}
+
+/** Drive + power plant tonnage, used for the engineer crew requirement. */
+function driveAndPlantTons(params: ShipParams): number {
+  const m = params.hullTons * M_DRIVE_HULL_PCT_PER_THRUST * params.thrust;
+  const j =
+    params.jump > 0
+      ? Math.max(
+          J_DRIVE_MIN_TONS,
+          params.hullTons * J_DRIVE_HULL_PCT_PER_JUMP * params.jump +
+            J_DRIVE_TON_BONUS,
+        )
+      : 0;
+  return m + j + params.powerPlantTons;
+}
+
+/** Minimum operating crew (commercial). Medic/Steward depend on passengers. */
+function minimumCrew(params: ShipParams): CrewMember[] {
+  const crew: CrewMember[] = [{ role: 'Pilot', count: 1 }];
+  if (params.jump > 0) crew.push({ role: 'Astrogator', count: 1 });
+  const engineers = Math.ceil(driveAndPlantTons(params) / 35);
+  if (engineers > 0) crew.push({ role: 'Engineer', count: engineers });
+  if (params.turrets > 0) crew.push({ role: 'Gunner', count: params.turrets });
+  return crew;
 }
 
 const NUMERIC_FIELDS: Array<keyof ShipParams> = [
@@ -717,6 +750,8 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       ],
       cargoTons: 0,
       powerRequirements: { basic: 0, manoeuvre: 0, jump: 0 },
+      crew: [],
+      runningCosts: { purchaseMCr: 0, monthlyMaintenanceCr: 0 },
     };
   }
 
@@ -740,6 +775,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
     });
   }
 
+  const purchaseMCr = summary.resources.cost?.used ?? 0;
   return {
     summary,
     issues: [...inputIssues, ...issues, ...extra],
@@ -748,6 +784,12 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       basic: params.hullTons * BASIC_SYSTEMS_POWER,
       manoeuvre: params.hullTons * DRIVE_POWER_PER_RATING * params.thrust,
       jump: params.hullTons * DRIVE_POWER_PER_RATING * params.jump,
+    },
+    crew: minimumCrew(params),
+    runningCosts: {
+      purchaseMCr,
+      // Maintenance: cost / 1000 per year, divided by 12 months (in Credits).
+      monthlyMaintenanceCr: (purchaseMCr * 1000) / 12,
     },
   };
 }

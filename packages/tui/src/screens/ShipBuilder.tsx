@@ -85,7 +85,7 @@ export function ShipBuilderScreen({
     commonAreasTons: num(form.values.common),
     turrets: num(form.values.turrets),
   };
-  const { summary, issues, cargoTons, powerRequirements } =
+  const { summary, issues, cargoTons, powerRequirements, crew, runningCosts } =
     evaluateShip(params);
   const usage = SHIP_RESOURCES.map((r) => summary.resources[r.key]!);
   const { thrust, jump, hullPoints } = summary.stats;
@@ -168,6 +168,8 @@ export function ShipBuilderScreen({
           jump={jump}
           cargoTons={cargoTons}
           powerRequirements={powerRequirements}
+          crew={crew}
+          runningCosts={runningCosts}
         />
       </Box>
 
