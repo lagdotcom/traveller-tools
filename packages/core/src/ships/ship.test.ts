@@ -128,6 +128,20 @@ describe('evaluateShip', () => {
     expect(name('missileStorage')).toBe('Missile Storage (144 missiles)');
   });
 
+  it('labels fuel with jump number and weeks of plant operation', () => {
+    // Scout: 100t, Jump-2 (20t), 4t plant (1t/4wks); 23t fuel -> 3t spare ->
+    // 12 weeks.
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullConfig: 'streamlined',
+      jump: 2,
+      powerPlantTons: 4,
+      fuelTons: 23,
+    });
+    const fuel = summary.lineItems.find((l) => l.id === 'fuel')!;
+    expect(fuel.name).toBe('Fuel — 23 tons (J-2, 12 weeks operation)');
+  });
+
   it('always lists the fuel scoop (free on streamlined, MCr1 otherwise)', () => {
     const streamlined = evaluateShip({
       ...baseParams,

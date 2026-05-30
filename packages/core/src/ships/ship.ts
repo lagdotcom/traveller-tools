@@ -602,9 +602,23 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     id: 'fuel',
     name: 'Fuel',
     category: 'fuel',
-    // rating = tons of fuel. No cost for fuel tankage.
+    // rating = tons of fuel. No cost for fuel tankage. options.jump and
+    // options.plantTons let the label show "J-n, N weeks operation" — the jump
+    // capacity and how long the leftover fuel runs the power plant.
     resources: (inst) => ({ tons: -(inst.rating ?? 0) }),
-    describe: (inst) => `Fuel — ${inst.rating ?? 0} tons`,
+    describe: (inst, ctx) => {
+      const fuel = inst.rating ?? 0;
+      const jump = Number(inst.options?.jump ?? 0);
+      const plantTons = Number(inst.options?.plantTons ?? 0);
+      const jumpTons =
+        jump > 0 && ctx.chassisSize > 0
+          ? jumpFuel(ctx.chassisSize, jump).fuelTons
+          : 0;
+      const per4Weeks = powerPlantFuel(plantTons);
+      const weeks = Math.max(0, Math.floor((fuel - jumpTons) / per4Weeks)) * 4;
+      const jumpText = jump > 0 ? `J-${jump}, ` : '';
+      return `Fuel — ${fuel} tons (${jumpText}${weeks} weeks operation)`;
+    },
   },
   stateroom: {
     id: 'stateroom',
@@ -1059,7 +1073,11 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
       options: { type: params.powerPlantType },
     });
   if (params.fuelTons > 0)
-    installed.push({ defId: 'fuel', rating: params.fuelTons });
+    installed.push({
+      defId: 'fuel',
+      rating: params.fuelTons,
+      options: { jump: params.jump, plantTons: params.powerPlantTons },
+    });
   installed.push({ defId: 'bridge', options: { variant: params.bridge } });
   installed.push({
     defId: 'computer',
