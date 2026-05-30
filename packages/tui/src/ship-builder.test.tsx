@@ -132,6 +132,22 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('nests a vehicle inside a carried ship', async () => {
+    const ui = await openBuilder();
+    for (let i = 0; i < 7; i++) await ui.type(TAB); // Craft section
+    await ui.type('Launch'); // carry a Launch (a ship)
+    await ui.type(ENTER);
+    await ui.waitFor('Launch (hangar');
+    // After adding the ship, a "↳ carry in Launch" nested-add row appears;
+    // ↓ to it, pick the ATV, and carry it inside.
+    await ui.type(ARROW_DOWN); // move to the nested-add row
+    await ui.type('ATV');
+    await ui.type(ENTER);
+    await ui.waitFor('carrying ATV'); // "Launch (hangar 22t) — carrying ATV"
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('browses the vehicle catalogue', async () => {
     const ui = renderInk();
     await ui.waitFor('Traveller Tools');

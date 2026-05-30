@@ -130,7 +130,7 @@ interface ListConfig {
   onAdd: () => void;
   hint: string;
 }
-type ListId = 'systems' | 'software' | 'craft';
+type ListId = 'systems' | 'software';
 
 export function ShipBuilderScreen({
   onBack,
@@ -157,6 +157,7 @@ export function ShipBuilderScreen({
   const [addSoftware, setAddSoftware] = useState('');
   const [addWeapon, setAddWeapon] = useState('');
   const [addCraft, setAddCraft] = useState('');
+  const [addNestedName, setAddNestedName] = useState('');
   const [active, setActive] = useState(0);
   // Library actions: save, export JSON, import JSON (paste).
   const [mode, setMode] = useState<'edit' | 'save' | 'export' | 'import'>(
@@ -272,30 +273,6 @@ export function ShipBuilderScreen({
       },
       hint: 'Enter on a 0-level program removes it.',
     },
-    craft: {
-      count: carried.length,
-      itemLabel: (i) => `${carried[i]!.name} (qty)`,
-      itemValue: (i) => String(carried[i]!.count),
-      setItem: (i, v) =>
-        setCarried((prev) =>
-          prev.map((e, k) => (k === i ? { ...e, count: num(v) } : e)),
-        ),
-      isEmpty: (i) => carried[i]!.count <= 0,
-      remove: (i) => setCarried((prev) => prev.filter((_, k) => k !== i)),
-      addOptions: craftAvailable,
-      addValue: effective(addCraft, craftAvailable),
-      onAddChange: setAddCraft,
-      onAdd: () => {
-        const cand = craftCandidates.find(
-          (c) => c.name === effective(addCraft, craftAvailable),
-        );
-        if (cand) {
-          setCarried((prev) => [...prev, cand.make()]);
-          setAddCraft('');
-        }
-      },
-      hint: 'Carry library ships or catalogue vehicles. Enter on qty 0 removes it.',
-    },
   };
 
   interface FieldDef {
@@ -309,13 +286,18 @@ export function ShipBuilderScreen({
     | { section: number; kind: 'listAdd'; list: ListId }
     | { section: number; kind: 'wpnMount'; index: number }
     | { section: number; kind: 'wpnSlot'; index: number; slot: number }
-    | { section: number; kind: 'wpnAdd' };
+    | { section: number; kind: 'wpnAdd' }
+    | { section: number; kind: 'craftItem'; index: number }
+    | { section: number; kind: 'craftNested'; index: number; nested: number }
+    | { section: number; kind: 'craftNestedAdd'; index: number }
+    | { section: number; kind: 'craftAdd' };
 
   const sectionDefs: {
     label: string;
     fields?: FieldDef[];
     list?: ListId;
     weapons?: true;
+    craft?: true;
   }[] = [
     {
       label: 'Hull',
@@ -376,7 +358,7 @@ export function ShipBuilderScreen({
     { label: 'Weapons', weapons: true },
     { label: 'Systems', list: 'systems' },
     { label: 'Software', list: 'software' },
-    { label: 'Craft', list: 'craft' },
+    { label: 'Craft', craft: true },
     {
       label: 'Crew',
       fields: [
@@ -400,6 +382,18 @@ export function ShipBuilderScreen({
           rows.push({ section: si, kind: 'wpnSlot', index, slot });
       });
       rows.push({ section: si, kind: 'wpnAdd' });
+    } else if (section.craft) {
+      carried.forEach((entry, index) => {
+        rows.push({ section: si, kind: 'craftItem', index });
+        // A carried ship can itself carry craft (one level): an ATV on a launch.
+        if (entry.kind === 'ship') {
+          (entry.ship?.carried ?? []).forEach((_, nested) =>
+            rows.push({ section: si, kind: 'craftNested', index, nested }),
+          );
+          rows.push({ section: si, kind: 'craftNestedAdd', index });
+        }
+      });
+      rows.push({ section: si, kind: 'craftAdd' });
     } else if (section.list) {
       const list = lists[section.list];
       for (let index = 0; index < list.count; index++)
@@ -532,6 +526,71 @@ export function ShipBuilderScreen({
       ...prev,
       { mount: mountByLabel(effectiveAddWeapon), weapons: ['beamLaser'] },
     ]);
+
+  // --- Carried craft (and one level of nesting) ---
+  const makeCarried = (name: string): CarriedCraft | undefined =>
+    craftCandidates.find((c) => c.name === name)?.make();
+  const effectiveAddCraft = effective(addCraft, craftAvailable);
+  const setCraftCount = (i: number, v: string) =>
+    setCarried((prev) =>
+      prev.map((e, k) => (k === i ? { ...e, count: num(v) } : e)),
+    );
+  const removeCraft = (i: number) =>
+    setCarried((prev) => prev.filter((_, k) => k !== i));
+  const addCraftEntry = () => {
+    const c = makeCarried(effectiveAddCraft);
+    if (c) {
+      setCarried((prev) => [...prev, c]);
+      setAddCraft('');
+    }
+  };
+  // Re-snapshot a carrier ship's cost after its nested cargo changes.
+  const withNested = (
+    e: CarriedCraft,
+    nested: CarriedCraft[],
+  ): CarriedCraft => {
+    const ship = { ...e.ship!, carried: nested };
+    return { ...e, ship, cost: evaluateShip(ship).summary.resources.cost.used };
+  };
+  const nestedAvailable = (i: number): string[] =>
+    craftCandidates
+      .map((c) => c.name)
+      .filter(
+        (n) => !(carried[i]!.ship?.carried ?? []).some((c) => c.name === n),
+      );
+  const setNestedCount = (i: number, j: number, v: string) =>
+    setCarried((prev) =>
+      prev.map((e, k) =>
+        k === i
+          ? withNested(
+              e,
+              e.ship!.carried.map((c, m) =>
+                m === j ? { ...c, count: num(v) } : c,
+              ),
+            )
+          : e,
+      ),
+    );
+  const removeNested = (i: number, j: number) =>
+    setCarried((prev) =>
+      prev.map((e, k) =>
+        k === i
+          ? withNested(
+              e,
+              e.ship!.carried.filter((_, m) => m !== j),
+            )
+          : e,
+      ),
+    );
+  const addNested = (i: number, name: string) => {
+    const c = makeCarried(name);
+    if (!c) return;
+    setCarried((prev) =>
+      prev.map((e, k) =>
+        k === i ? withNested(e, [...e.ship!.carried, c]) : e,
+      ),
+    );
+  };
 
   const params: ShipParams = {
     hullTons: num(form.values.hull),
@@ -709,6 +768,67 @@ export function ShipBuilderScreen({
               />
             );
           }
+          if (row.kind === 'craftItem') {
+            const i = row.index;
+            return (
+              <Field
+                key={`craft-${i}`}
+                label={`${carried[i]!.name} (qty)`}
+                value={String(carried[i]!.count)}
+                isActive={mode === 'edit' && index === safeActive}
+                onChange={(v) => setCraftCount(i, v)}
+                onSubmit={() =>
+                  carried[i]!.count <= 0 ? removeCraft(i) : advance()
+                }
+              />
+            );
+          }
+          if (row.kind === 'craftNested') {
+            const { index: i, nested: j } = row;
+            const c = carried[i]!.ship!.carried[j]!;
+            return (
+              <Field
+                key={`craft-${i}-n${j}`}
+                label={`  ↳ ${c.name} (qty)`}
+                value={String(c.count)}
+                isActive={mode === 'edit' && index === safeActive}
+                onChange={(v) => setNestedCount(i, j, v)}
+                onSubmit={() => (c.count <= 0 ? removeNested(i, j) : advance())}
+              />
+            );
+          }
+          if (row.kind === 'craftNestedAdd') {
+            const i = row.index;
+            const avail = nestedAvailable(i);
+            return (
+              <ChoiceField
+                key={`craft-${i}-add`}
+                label={`  ↳ carry in ${carried[i]!.name}`}
+                options={avail.length > 0 ? avail : ['—']}
+                value={avail.length > 0 ? effective(addNestedName, avail) : '—'}
+                isActive={mode === 'edit' && index === safeActive}
+                onChange={setAddNestedName}
+                onSubmit={() =>
+                  avail.length > 0
+                    ? addNested(i, effective(addNestedName, avail))
+                    : advance()
+                }
+              />
+            );
+          }
+          if (row.kind === 'craftAdd') {
+            return (
+              <ChoiceField
+                key="craft-add"
+                label="Add craft"
+                options={craftAvailable.length > 0 ? craftAvailable : ['—']}
+                value={craftAvailable.length > 0 ? effectiveAddCraft : '—'}
+                isActive={mode === 'edit' && index === safeActive}
+                onChange={setAddCraft}
+                onSubmit={craftAvailable.length > 0 ? addCraftEntry : advance}
+              />
+            );
+          }
           const list = lists[row.list];
           if (row.kind === 'listItem') {
             const i = row.index;
@@ -740,6 +860,12 @@ export function ShipBuilderScreen({
           <Text dimColor>
             Turrets hold multiple weapons; set Turret to “✗ remove turret” to
             delete.
+          </Text>
+        )}
+        {sectionDefs[activeSection]?.craft && (
+          <Text dimColor>
+            Library ships and catalogue vehicles. A carried ship can itself
+            carry craft (e.g. an ATV on a launch). Enter on qty 0 removes it.
           </Text>
         )}
       </Box>
