@@ -7,6 +7,8 @@ import {
   type CrewType,
   evaluateShip,
   type HullConfigId,
+  type MountId,
+  MOUNTS,
   type PowerPlantId,
   type SensorId,
   SENSORS,
@@ -18,6 +20,9 @@ import {
   SYSTEM_TYPES,
   type SystemEntry,
   type SystemTypeId,
+  type WeaponEntry,
+  type WeaponId,
+  WEAPONS,
 } from '@traveller-tools/core';
 import { Box, Text, useInput } from 'ink';
 import React, { useState } from 'react';
@@ -50,6 +55,20 @@ function parsePlant(value: string): PowerPlantId {
 
 const SYSTEM_IDS = Object.keys(SYSTEM_TYPES) as SystemTypeId[];
 const SOFTWARE_IDS = Object.keys(SOFTWARE_TYPES) as SoftwareTypeId[];
+const MOUNT_IDS = Object.keys(MOUNTS) as MountId[];
+const WEAPON_IDS = Object.keys(WEAPONS) as WeaponId[];
+const MOUNT_LABELS = MOUNT_IDS.map((id) => MOUNTS[id].label);
+const REMOVE_WEAPON = '✗ remove';
+const WEAPON_LABELS = [
+  ...WEAPON_IDS.map((id) => WEAPONS[id].label),
+  REMOVE_WEAPON,
+];
+const mountByLabel = (label: string): MountId =>
+  MOUNT_IDS.find((id) => MOUNTS[id].label === label) ?? 'single';
+const weaponByLabel = (label: string): WeaponId | 'none' =>
+  label === REMOVE_WEAPON
+    ? 'none'
+    : (WEAPON_IDS.find((id) => WEAPONS[id].label === label) ?? 'beamLaser');
 const labelToId = <T extends string>(
   ids: T[],
   labelOf: (id: T) => string,
@@ -88,6 +107,7 @@ export function ShipBuilderScreen({
     fuel: '12',
     bridge: 'standard',
     scoop: 'no',
+    // turrets removed: weapons are managed in the Weapons list.
     armourType: 'crystaliron',
     armour: '0',
     computer: '/5',
@@ -96,15 +116,16 @@ export function ShipBuilderScreen({
     staterooms: '2',
     lowBerths: '0',
     common: '0',
-    turrets: '0',
     crewType: 'commercial',
   });
   type FormKey = keyof typeof form.values;
 
   const [systems, setSystems] = useState<SystemEntry[]>([]);
   const [software, setSoftware] = useState<SoftwareEntry[]>([]);
+  const [weapons, setWeapons] = useState<WeaponEntry[]>([]);
   const [addSystem, setAddSystem] = useState('');
   const [addSoftware, setAddSoftware] = useState('');
+  const [addWeapon, setAddWeapon] = useState('');
   const [active, setActive] = useState(0);
 
   const sysLabel = (id: SystemTypeId) => SYSTEM_TYPES[id].label;
@@ -186,12 +207,16 @@ export function ShipBuilderScreen({
   type Row =
     | { section: number; kind: 'field'; field: FieldDef }
     | { section: number; kind: 'listItem'; list: ListId; index: number }
-    | { section: number; kind: 'listAdd'; list: ListId };
+    | { section: number; kind: 'listAdd'; list: ListId }
+    | { section: number; kind: 'wpnMount'; index: number }
+    | { section: number; kind: 'wpnWeapon'; index: number }
+    | { section: number; kind: 'wpnAdd' };
 
   const sectionDefs: {
     label: string;
     fields?: FieldDef[];
     list?: ListId;
+    weapons?: true;
   }[] = [
     {
       label: 'Hull',
@@ -247,7 +272,7 @@ export function ShipBuilderScreen({
         { key: 'common', label: 'Common areas (t)' },
       ],
     },
-    { label: 'Weapons', fields: [{ key: 'turrets', label: 'Turrets' }] },
+    { label: 'Weapons', weapons: true },
     { label: 'Systems', list: 'systems' },
     { label: 'Software', list: 'software' },
     {
@@ -260,7 +285,13 @@ export function ShipBuilderScreen({
 
   const rows: Row[] = [];
   sectionDefs.forEach((section, si) => {
-    if (section.list) {
+    if (section.weapons) {
+      weapons.forEach((_, index) => {
+        rows.push({ section: si, kind: 'wpnMount', index });
+        rows.push({ section: si, kind: 'wpnWeapon', index });
+      });
+      rows.push({ section: si, kind: 'wpnAdd' });
+    } else if (section.list) {
       const list = lists[section.list];
       for (let index = 0; index < list.count; index++)
         rows.push({ section: si, kind: 'listItem', list: section.list, index });
@@ -291,6 +322,27 @@ export function ShipBuilderScreen({
     else if (key.tab) gotoSection((activeSection + 1) % sectionDefs.length);
   });
 
+  const effectiveAddWeapon = MOUNT_LABELS.includes(addWeapon)
+    ? addWeapon
+    : MOUNT_LABELS[0]!;
+  const setWeaponMount = (i: number, label: string) =>
+    setWeapons((prev) =>
+      prev.map((e, k) => (k === i ? { ...e, mount: mountByLabel(label) } : e)),
+    );
+  const setWeaponWeapon = (i: number, label: string) =>
+    setWeapons((prev) =>
+      prev.map((e, k) =>
+        k === i ? { ...e, weapon: weaponByLabel(label) } : e,
+      ),
+    );
+  const removeWeapon = (i: number) =>
+    setWeapons((prev) => prev.filter((_, k) => k !== i));
+  const addWeaponEntry = () =>
+    setWeapons((prev) => [
+      ...prev,
+      { mount: mountByLabel(effectiveAddWeapon), weapon: 'beamLaser' },
+    ]);
+
   const params: ShipParams = {
     hullTons: num(form.values.hull),
     tl: num(form.values.tl),
@@ -312,7 +364,7 @@ export function ShipBuilderScreen({
     commonAreasTons: num(form.values.common),
     systems,
     software,
-    turrets: num(form.values.turrets),
+    weapons,
     crewType: form.values.crewType as CrewType,
   };
   const { summary, issues, cargoTons, powerRequirements, crew, runningCosts } =
@@ -372,6 +424,50 @@ export function ShipBuilderScreen({
               />
             );
           }
+          if (row.kind === 'wpnMount') {
+            const i = row.index;
+            return (
+              <ChoiceField
+                key={`wpn-mount-${i}`}
+                label="Turret"
+                options={MOUNT_LABELS}
+                value={MOUNTS[weapons[i]!.mount].label}
+                isActive={index === safeActive}
+                onChange={(v) => setWeaponMount(i, v)}
+                onSubmit={advance}
+              />
+            );
+          }
+          if (row.kind === 'wpnWeapon') {
+            const i = row.index;
+            const w = weapons[i]!.weapon;
+            return (
+              <ChoiceField
+                key={`wpn-weapon-${i}`}
+                label="Weapon"
+                options={WEAPON_LABELS}
+                value={w === 'none' ? REMOVE_WEAPON : WEAPONS[w].label}
+                isActive={index === safeActive}
+                onChange={(v) => setWeaponWeapon(i, v)}
+                onSubmit={() =>
+                  weapons[i]!.weapon === 'none' ? removeWeapon(i) : advance()
+                }
+              />
+            );
+          }
+          if (row.kind === 'wpnAdd') {
+            return (
+              <ChoiceField
+                key="wpn-add"
+                label="Add turret"
+                options={MOUNT_LABELS}
+                value={effectiveAddWeapon}
+                isActive={index === safeActive}
+                onChange={setAddWeapon}
+                onSubmit={addWeaponEntry}
+              />
+            );
+          }
           const list = lists[row.list];
           if (row.kind === 'listItem') {
             const i = row.index;
@@ -399,6 +495,9 @@ export function ShipBuilderScreen({
           );
         })}
         {activeList && <Text dimColor>{lists[activeList].hint}</Text>}
+        {sectionDefs[activeSection]?.weapons && (
+          <Text dimColor>Set Weapon to “✗ remove” then Enter to delete.</Text>
+        )}
       </Box>
 
       <Box marginTop={1}>

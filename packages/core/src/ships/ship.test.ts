@@ -23,7 +23,7 @@ const baseParams: ShipParams = {
   fuelScoop: false,
   systems: [],
   software: [],
-  turrets: 0,
+  weapons: [],
   crewType: 'commercial',
 };
 
@@ -57,19 +57,51 @@ describe('evaluateShip', () => {
   it('clamps negative component values and reports them', () => {
     const { summary, issues } = evaluateShip({
       ...baseParams,
-      turrets: -5,
       powerPlantTons: -4,
-    });
-    expect(issues).toContainEqual({
-      severity: 'error',
-      message: 'Turrets cannot be negative',
     });
     expect(issues).toContainEqual({
       severity: 'error',
       message: 'Power plant tonnage cannot be negative',
     });
-    // Clamped to 0, so budgets stay sane (no negative hardpoints/power used).
-    expect(summary.resources.hardpoints.used).toBe(0);
+    // Clamped to 0, so budgets stay sane (no negative power used).
+    expect(summary.resources.power.provided).toBe(0);
+  });
+
+  it('builds turret weapons and limits them to the hull hardpoints', () => {
+    // 100t hull = 1 hardpoint. A triple turret of beam lasers: 1t, power 12
+    // (4×3), cost mount 1 + 0.5×3 = 2.5; two of them exceed the hardpoint.
+    const one = evaluateShip({
+      ...baseParams,
+      weapons: [{ mount: 'triple', weapon: 'beamLaser' }],
+    });
+    const line = one.summary.lineItems.find((l) => l.id === 'weapon')!;
+    expect(line.resources.tons).toBe(-1);
+    expect(line.resources.power).toBe(-12);
+    expect(line.resources.cost).toBeCloseTo(2.5, 6);
+    expect(line.name).toBe('Triple Turret — Beam Laser ×3');
+
+    const two = evaluateShip({
+      ...baseParams,
+      weapons: [
+        { mount: 'single', weapon: 'beamLaser' },
+        { mount: 'single', weapon: 'pulseLaser' },
+      ],
+    });
+    expect(two.issues.some((i) => i.message.startsWith('Hardpoints'))).toBe(
+      true,
+    );
+  });
+
+  it('costs a particle barbette as a 5-ton mount', () => {
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullTons: 400,
+      weapons: [{ mount: 'single', weapon: 'particleBarbette' }],
+    });
+    const line = summary.lineItems.find((l) => l.id === 'weapon')!;
+    expect(line.resources.tons).toBe(-5);
+    expect(line.resources.cost).toBe(8);
+    expect(line.name).toBe('Particle Barbette');
   });
 
   it('flags insufficient jump fuel', () => {
@@ -192,7 +224,14 @@ describe('evaluateShip', () => {
   });
 
   it('applies the commercial/military crew split', () => {
-    const turreted = { ...baseParams, turrets: 2 };
+    const turreted = {
+      ...baseParams,
+      hullTons: 200,
+      weapons: [
+        { mount: 'single' as const, weapon: 'beamLaser' as const },
+        { mount: 'single' as const, weapon: 'beamLaser' as const },
+      ],
+    };
     const commercial = evaluateShip({ ...turreted, crewType: 'commercial' });
     const military = evaluateShip({ ...turreted, crewType: 'military' });
     const count = (crew: { role: string; count: number }[], role: string) =>

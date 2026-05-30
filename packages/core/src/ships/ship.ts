@@ -26,6 +26,7 @@ export interface ShipStats extends Record<string, number> {
   armour: number;
   staterooms: number;
   turrets: number;
+  weapons: number;
 }
 
 export const SHIP_RESOURCES: ResourceDef[] = [
@@ -307,6 +308,113 @@ export interface SoftwareEntry {
   level: number;
 }
 
+/** Turret / fixed mounts (Turrets and Fixed Mounts table). */
+export type MountId = 'fixed' | 'single' | 'double' | 'triple';
+export const MOUNTS: Record<
+  MountId,
+  {
+    id: MountId;
+    label: string;
+    tons: number;
+    cost: number;
+    capacity: number;
+    minTL: number;
+  }
+> = {
+  fixed: {
+    id: 'fixed',
+    label: 'Fixed Mount',
+    tons: 0,
+    cost: 0.1,
+    capacity: 1,
+    minTL: 0,
+  },
+  single: {
+    id: 'single',
+    label: 'Single Turret',
+    tons: 1,
+    cost: 0.2,
+    capacity: 1,
+    minTL: 7,
+  },
+  double: {
+    id: 'double',
+    label: 'Double Turret',
+    tons: 1,
+    cost: 0.5,
+    capacity: 2,
+    minTL: 8,
+  },
+  triple: {
+    id: 'triple',
+    label: 'Triple Turret',
+    tons: 1,
+    cost: 1,
+    capacity: 3,
+    minTL: 9,
+  },
+};
+
+/** Turret weapons (Turret Weapons table). Particle barbette is a 5-ton mount. */
+export type WeaponId =
+  | 'beamLaser'
+  | 'pulseLaser'
+  | 'missileRack'
+  | 'sandcaster'
+  | 'particleBarbette';
+export const WEAPONS: Record<
+  WeaponId,
+  {
+    id: WeaponId;
+    label: string;
+    power: number;
+    cost: number;
+    minTL: number;
+    barbette?: boolean;
+  }
+> = {
+  beamLaser: {
+    id: 'beamLaser',
+    label: 'Beam Laser',
+    power: 4,
+    cost: 0.5,
+    minTL: 10,
+  },
+  pulseLaser: {
+    id: 'pulseLaser',
+    label: 'Pulse Laser',
+    power: 4,
+    cost: 1,
+    minTL: 9,
+  },
+  missileRack: {
+    id: 'missileRack',
+    label: 'Missile Rack',
+    power: 0,
+    cost: 0.75,
+    minTL: 7,
+  },
+  sandcaster: {
+    id: 'sandcaster',
+    label: 'Sandcaster',
+    power: 0,
+    cost: 0.25,
+    minTL: 9,
+  },
+  particleBarbette: {
+    id: 'particleBarbette',
+    label: 'Particle Barbette',
+    power: 15,
+    cost: 8,
+    minTL: 11,
+    barbette: true,
+  },
+};
+export interface WeaponEntry {
+  mount: MountId;
+  weapon: WeaponId | 'none';
+}
+
 /** Bridge variants. Cockpit is for ships ≤50t; holographic adds +25% cost. */
 export type BridgeId = 'standard' | 'cockpit' | 'holographic';
 
@@ -437,14 +545,37 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     resources: () => ({ tons: -4, cost: 0.5 }),
     stats: () => ({ staterooms: 1 }),
   },
-  turret: {
-    id: 'turret',
-    name: 'Single Turret',
+  weapon: {
+    id: 'weapon',
+    name: 'Weapon',
     category: 'weapon',
-    minTL: 7,
-    // A single turret mount; mounted weapons add their own power/cost.
-    resources: () => ({ tons: -1, hardpoints: -1, power: -1, cost: 0.2 }),
-    stats: () => ({ turrets: 1 }),
+    // options.mount (turret type) + options.weapon. A turret holds its
+    // capacity of the weapon; a particle barbette is its own 5-ton mount.
+    resources: (inst) => {
+      const w = WEAPONS[inst.options?.weapon as WeaponId] ?? WEAPONS.beamLaser;
+      if (w.barbette)
+        return { tons: -5, power: -15, cost: w.cost, hardpoints: -1 };
+      const mount = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
+      return {
+        tons: -mount.tons,
+        power: -(w.power * mount.capacity),
+        cost: mount.cost + w.cost * mount.capacity,
+        hardpoints: -1,
+      };
+    },
+    stats: (inst) => {
+      const w = WEAPONS[inst.options?.weapon as WeaponId] ?? WEAPONS.beamLaser;
+      const cap = w.barbette
+        ? 1
+        : (MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single).capacity;
+      return { turrets: 1, weapons: cap };
+    },
+    describe: (inst) => {
+      const w = WEAPONS[inst.options?.weapon as WeaponId] ?? WEAPONS.beamLaser;
+      if (w.barbette) return 'Particle Barbette';
+      const m = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
+      return `${m.label} — ${w.label}${m.capacity > 1 ? ` ×${m.capacity}` : ''}`;
+    },
   },
   armour: {
     id: 'armour',
@@ -619,7 +750,8 @@ export interface ShipParams {
   systems: SystemEntry[];
   /** Ship's software (cost only). */
   software: SoftwareEntry[];
-  turrets: number;
+  /** Weapon mounts (turret type + weapon). */
+  weapons: WeaponEntry[];
   crewType: CrewType;
 }
 
@@ -649,6 +781,7 @@ function shipHull(
       armour: 0,
       staterooms: 0,
       turrets: 0,
+      weapons: 0,
     },
   };
 }
@@ -684,8 +817,13 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
     options: { model: params.computer, bis: params.computerBis ? 1 : 0 },
   });
   installed.push({ defId: 'sensors', options: { grade: params.sensors } });
-  if (params.turrets > 0)
-    installed.push({ defId: 'turret', quantity: params.turrets });
+  for (const wpn of params.weapons) {
+    if (wpn.weapon !== 'none')
+      installed.push({
+        defId: 'weapon',
+        options: { mount: wpn.mount, weapon: wpn.weapon },
+      });
+  }
   // Streamlined hulls have fuel scoops built in (free), so only add the
   // component (MCr1) on other configurations.
   if (params.fuelScoop && params.hullConfig !== 'streamlined')
@@ -817,6 +955,27 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
     }
     return issues;
   },
+  // Weapons (and their turret mounts) are gated by tech level.
+  ({ design, context }) => {
+    const issues: Issue[] = [];
+    const seen = new Set<string>();
+    for (const inst of design.installed) {
+      if (inst.defId !== 'weapon') continue;
+      const w = WEAPONS[inst.options?.weapon as WeaponId];
+      const m = MOUNTS[inst.options?.mount as MountId];
+      if (!w) continue;
+      const need = w.barbette ? w.minTL : Math.max(w.minTL, m?.minTL ?? 0);
+      const tag = `${w.id}-${m?.id ?? ''}`;
+      if (need > context.tl && !seen.has(tag)) {
+        seen.add(tag);
+        issues.push({
+          severity: 'error',
+          message: `${w.label}${w.barbette ? '' : ` (${m?.label})`} requires TL ${need}`,
+        });
+      }
+    }
+    return issues;
+  },
   // Hard power requirement: the plant must run basic systems + the manoeuvre
   // drive simultaneously. (Jump-at-the-same-time is only a bonus, so a total
   // overdraw is just a warning — see SHIP_RESOURCES.)
@@ -900,8 +1059,9 @@ function crewRoster(params: ShipParams): CrewMember[] {
   if (params.jump > 0) roster.push({ role: 'Astrogator', count: 1 });
   const engineers = Math.ceil(driveAndPlantTons(params) / 35);
   if (engineers > 0) roster.push({ role: 'Engineer', count: engineers });
-  if (params.turrets > 0)
-    roster.push({ role: 'Gunner', count: params.turrets * (military ? 2 : 1) });
+  const guns = params.weapons.filter((w) => w.weapon !== 'none').length;
+  if (guns > 0)
+    roster.push({ role: 'Gunner', count: guns * (military ? 2 : 1) });
 
   const operating = roster.reduce((sum, c) => sum + c.count, 0);
   const passengers = Math.max(0, params.staterooms - operating);
@@ -926,7 +1086,6 @@ const NUMERIC_FIELDS: Array<keyof ShipParams> = [
   'staterooms',
   'lowBerths',
   'commonAreasTons',
-  'turrets',
 ];
 const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
   tl: 'Tech level',
@@ -938,7 +1097,6 @@ const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
   staterooms: 'Staterooms',
   lowBerths: 'Low berths',
   commonAreasTons: 'Common areas',
-  turrets: 'Turrets',
 };
 const INTEGER_FIELDS: Array<keyof ShipParams> = [
   'tl',
@@ -947,7 +1105,6 @@ const INTEGER_FIELDS: Array<keyof ShipParams> = [
   'armourPoints',
   'staterooms',
   'lowBerths',
-  'turrets',
 ];
 
 /**

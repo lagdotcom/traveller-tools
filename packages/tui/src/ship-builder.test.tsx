@@ -110,13 +110,12 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]); // no thrown render error captured
   });
 
-  it('flags exceeding the hull hardpoints', async () => {
+  it('adds a turret weapon from the Weapons list', async () => {
     const ui = await openBuilder();
-    // Advance to the Turrets field (last field) and add more turrets than the
-    // 100-ton hull's single hardpoint allows.
-    for (let i = 0; i < 18; i++) await ui.type(ENTER);
-    await ui.type('9');
-    await ui.waitFor('Hardpoints exceeds capacity');
+    // Tab to the Weapons section (Hull→Drives→Defences→Accom→Weapons = 4).
+    for (let i = 0; i < 4; i++) await ui.type(TAB);
+    await ui.type(ENTER); // add a turret (defaults to a Beam Laser)
+    await ui.waitFor('Beam Laser');
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });
