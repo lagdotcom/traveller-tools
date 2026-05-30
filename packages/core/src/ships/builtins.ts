@@ -1,5 +1,6 @@
 import { DEFAULT_SHIP_PARAMS, type ShipDefinition } from './library.js';
-import type { CarriedCraft, ShipParams } from './ship.js';
+import { type CarriedCraft, evaluateShip, type ShipParams } from './ship.js';
+import { VEHICLE_CATALOG } from './vehicles.js';
 
 /** Build a definition from the default loadout plus the listed overrides. */
 function ship(
@@ -14,15 +15,125 @@ function ship(
   };
 }
 
-/** A carried auxiliary craft (its displacement and purchase cost). */
-function carried(
-  name: string,
-  tons: number,
-  cost: number,
-  count = 1,
-): CarriedCraft {
-  return { kind: 'ship', name, tons, cost, count };
+/** Carry a library ship, resolving its displacement and cost from its design. */
+function carryShip(def: ShipDefinition, count = 1): CarriedCraft {
+  return {
+    kind: 'ship',
+    name: def.name,
+    tons: def.params.hullTons,
+    cost: evaluateShip(def.params).summary.resources.cost.used,
+    count,
+    ship: def.params,
+  };
 }
+
+/** Carry a catalogue vehicle by name (its shipping size and cost). */
+function carryVehicle(name: string, count = 1): CarriedCraft {
+  const v = VEHICLE_CATALOG.find((veh) => veh.name === name);
+  if (!v) throw new Error(`Unknown vehicle: ${name}`);
+  return {
+    kind: 'vehicle',
+    name: v.name,
+    tons: v.shippingTons,
+    cost: v.costMCr,
+    count,
+    vehicle: v,
+  };
+}
+
+// Small craft that warships carry, defined once and reused both standalone (in
+// the catalogue below) and as carried craft via carryShip().
+const LAUNCH = ship('Launch', '20-ton utility launch / lifeboat.', {
+  hullTons: 20,
+  tl: 12,
+  hullConfig: 'streamlined',
+  thrust: 1,
+  jump: 0,
+  powerPlantType: 'fusionTL8',
+  powerPlantTons: 1,
+  fuelTons: 1,
+  computer: '/5',
+  software: [
+    { type: 'library', level: 0 },
+    { type: 'manoeuvre', level: 0 },
+    { type: 'intellect', level: 0 },
+  ],
+  staterooms: 0,
+});
+const GIG = ship('Gig', '20-ton starport gig.', {
+  hullTons: 20,
+  tl: 12,
+  hullConfig: 'streamlined',
+  thrust: 7,
+  jump: 0,
+  powerPlantTons: 2,
+  fuelTons: 1,
+  computer: '/5',
+  weapons: [{ mount: 'single', weapons: [] }],
+  systems: [{ type: 'cabinSpace', amount: 3 }],
+  software: [
+    { type: 'library', level: 0 },
+    { type: 'manoeuvre', level: 0 },
+    { type: 'intellect', level: 0 },
+  ],
+  staterooms: 0,
+});
+const SHIPS_BOAT = ship('Ship’s Boat', '30-ton general-purpose small craft.', {
+  hullTons: 30,
+  tl: 12,
+  hullConfig: 'streamlined',
+  thrust: 5,
+  jump: 0,
+  powerPlantTons: 2,
+  fuelTons: 1,
+  computer: '/5',
+  weapons: [{ mount: 'fixed', weapons: [] }],
+  systems: [{ type: 'cabinSpace', amount: 9 }],
+  software: [
+    { type: 'library', level: 0 },
+    { type: 'manoeuvre', level: 0 },
+    { type: 'intellect', level: 0 },
+  ],
+  staterooms: 0,
+});
+const PINNACE = ship('Pinnace', '40-ton small craft.', {
+  hullTons: 40,
+  tl: 12,
+  hullConfig: 'streamlined',
+  thrust: 5,
+  jump: 0,
+  powerPlantTons: 2,
+  fuelTons: 1,
+  computer: '/5',
+  weapons: [{ mount: 'fixed', weapons: [] }],
+  systems: [{ type: 'cabinSpace', amount: 9 }],
+  software: [
+    { type: 'library', level: 0 },
+    { type: 'manoeuvre', level: 0 },
+    { type: 'intellect', level: 0 },
+  ],
+  staterooms: 0,
+});
+// TODO: the detachable 30-ton module is left as cargo.
+const MODULAR_CUTTER = ship('Modular Cutter', '50-ton modular cutter.', {
+  hullTons: 50,
+  tl: 12,
+  hullConfig: 'streamlined',
+  thrust: 4,
+  jump: 0,
+  powerPlantType: 'fusionTL8',
+  powerPlantTons: 3,
+  fuelTons: 1,
+  computer: '/5',
+  weapons: [{ mount: 'fixed', weapons: [] }],
+  systems: [{ type: 'cabinSpace', amount: 6 }],
+  software: [
+    { type: 'library', level: 0 },
+    { type: 'manoeuvre', level: 0 },
+    { type: 'intellect', level: 0 },
+  ],
+  staterooms: 0,
+});
 
 /**
  * The Core Rulebook's common spacecraft, reconstructed as starting points for
@@ -63,7 +174,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'probeDrones', amount: 2 },
       { type: 'workshop', amount: 6 },
     ],
-    carried: [carried('Air/Raft', 4, 0.25)],
+    carried: [carryVehicle('Air/Raft')],
     software: [
       { type: 'jumpControl', level: 2 },
       { type: 'library', level: 0 },
@@ -173,7 +284,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'fuelProcessor', amount: 2 },
       { type: 'laboratory', amount: 16 },
     ],
-    carried: [carried('Launch', 20, 2.367), carried('Air/Raft', 4, 0.25)],
+    carried: [carryShip(LAUNCH), carryVehicle('Air/Raft')],
     software: [
       { type: 'jumpControl', level: 2 },
       { type: 'library', level: 0 },
@@ -234,7 +345,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     fuelTons: 22,
     computer: '/5',
     sensors: 'civilian',
-    carried: [carried('Air/Raft', 4, 0.25), carried('Ship’s Boat', 30, 7.272)],
+    carried: [carryVehicle('Air/Raft'), carryShip(SHIPS_BOAT)],
     software: [
       { type: 'jumpControl', level: 1 },
       { type: 'library', level: 0 },
@@ -269,7 +380,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
         { mount: 'triple', weapons: ['beamLaser', 'beamLaser', 'beamLaser'] },
       ],
       systems: [{ type: 'fuelProcessor', amount: 6 }],
-      carried: [carried('Gig', 20, 6.257)],
+      carried: [carryShip(GIG)],
       software: [
         { type: 'evade', level: 1 },
         { type: 'fireControl', level: 4 },
@@ -296,7 +407,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'probeDrones', amount: 3 },
       { type: 'laboratory', amount: 100 },
     ],
-    carried: [carried('Pinnace', 40, 8.712), carried('Air/Raft', 4, 0.25)],
+    carried: [carryShip(PINNACE), carryVehicle('Air/Raft')],
     software: [
       { type: 'jumpControl', level: 2 },
       { type: 'library', level: 0 },
@@ -332,10 +443,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       },
     ],
     systems: [{ type: 'fuelProcessor', amount: 4 }],
-    carried: [
-      carried('Ship’s Boat', 30, 7.272),
-      carried('G/Carrier', 15, 11.58),
-    ],
+    carried: [carryShip(SHIPS_BOAT), carryVehicle('G/Carrier')],
     software: [
       { type: 'evade', level: 1 },
       { type: 'fireControl', level: 1 },
@@ -360,7 +468,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     sensors: 'civilian',
     fuelScoop: true,
     systems: [{ type: 'fuelProcessor', amount: 1 }],
-    carried: [carried('Launch', 20, 2.367)],
+    carried: [carryShip(LAUNCH)],
     software: [
       { type: 'jumpControl', level: 1 },
       { type: 'library', level: 0 },
@@ -388,10 +496,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'fuelProcessor', amount: 6 },
       { type: 'laboratory', amount: 8 },
     ],
-    carried: [
-      carried('Modular Cutter', 50, 11.93),
-      carried('Air/Raft', 4, 0.25, 3),
-    ],
+    carried: [carryShip(MODULAR_CUTTER), carryVehicle('Air/Raft', 3)],
     software: [
       { type: 'jumpControl', level: 3 },
       { type: 'library', level: 0 },
@@ -411,7 +516,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     computer: '/10',
     computerBis: true,
     sensors: 'civilian',
-    carried: [carried('Launch', 20, 2.367)],
+    carried: [carryShip(LAUNCH)],
     software: [
       { type: 'jumpControl', level: 3 },
       { type: 'library', level: 0 },
@@ -448,10 +553,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { mount: 'triple', weapons: [] },
     ],
     systems: [{ type: 'repairDrones', amount: 8 }],
-    carried: [
-      carried('Air/Raft', 4, 0.25),
-      carried('Modular Cutter', 50, 10.287, 2),
-    ],
+    carried: [carryVehicle('Air/Raft'), carryShip(MODULAR_CUTTER, 2)],
     software: [
       { type: 'autoRepair', level: 2 },
       { type: 'evade', level: 1 },
@@ -487,59 +589,9 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     ],
     staterooms: 0,
   }),
-  ship('Gig', '20-ton starport gig.', {
-    hullTons: 20,
-    tl: 12,
-    hullConfig: 'streamlined',
-    thrust: 7,
-    jump: 0,
-    powerPlantTons: 2,
-    fuelTons: 1,
-    computer: '/5',
-    weapons: [{ mount: 'single', weapons: [] }],
-    systems: [{ type: 'cabinSpace', amount: 3 }],
-    software: [
-      { type: 'library', level: 0 },
-      { type: 'manoeuvre', level: 0 },
-      { type: 'intellect', level: 0 },
-    ],
-    staterooms: 0,
-  }),
-  ship('Launch', '20-ton utility launch / lifeboat.', {
-    hullTons: 20,
-    tl: 12,
-    hullConfig: 'streamlined',
-    thrust: 1,
-    jump: 0,
-    powerPlantType: 'fusionTL8',
-    powerPlantTons: 1,
-    fuelTons: 1,
-    computer: '/5',
-    software: [
-      { type: 'library', level: 0 },
-      { type: 'manoeuvre', level: 0 },
-      { type: 'intellect', level: 0 },
-    ],
-    staterooms: 0,
-  }),
-  ship('Ship’s Boat', '30-ton general-purpose small craft.', {
-    hullTons: 30,
-    tl: 12,
-    hullConfig: 'streamlined',
-    thrust: 5,
-    jump: 0,
-    powerPlantTons: 2,
-    fuelTons: 1,
-    computer: '/5',
-    weapons: [{ mount: 'fixed', weapons: [] }],
-    systems: [{ type: 'cabinSpace', amount: 9 }],
-    software: [
-      { type: 'library', level: 0 },
-      { type: 'manoeuvre', level: 0 },
-      { type: 'intellect', level: 0 },
-    ],
-    staterooms: 0,
-  }),
+  GIG,
+  LAUNCH,
+  SHIPS_BOAT,
   ship('Slow Boat', '30-ton low-thrust boat.', {
     hullTons: 30,
     tl: 12,
@@ -558,24 +610,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     ],
     staterooms: 0,
   }),
-  ship('Pinnace', '40-ton small craft.', {
-    hullTons: 40,
-    tl: 12,
-    hullConfig: 'streamlined',
-    thrust: 5,
-    jump: 0,
-    powerPlantTons: 2,
-    fuelTons: 1,
-    computer: '/5',
-    weapons: [{ mount: 'fixed', weapons: [] }],
-    systems: [{ type: 'cabinSpace', amount: 9 }],
-    software: [
-      { type: 'library', level: 0 },
-      { type: 'manoeuvre', level: 0 },
-      { type: 'intellect', level: 0 },
-    ],
-    staterooms: 0,
-  }),
+  PINNACE,
   ship('Slow Pinnace', '40-ton low-thrust pinnace.', {
     hullTons: 40,
     tl: 12,
@@ -594,26 +629,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     ],
     staterooms: 0,
   }),
-  // TODO: the detachable 30-ton module is left as cargo.
-  ship('Modular Cutter', '50-ton modular cutter.', {
-    hullTons: 50,
-    tl: 12,
-    hullConfig: 'streamlined',
-    thrust: 4,
-    jump: 0,
-    powerPlantType: 'fusionTL8',
-    powerPlantTons: 3,
-    fuelTons: 1,
-    computer: '/5',
-    weapons: [{ mount: 'fixed', weapons: [] }],
-    systems: [{ type: 'cabinSpace', amount: 6 }],
-    software: [
-      { type: 'library', level: 0 },
-      { type: 'manoeuvre', level: 0 },
-      { type: 'intellect', level: 0 },
-    ],
-    staterooms: 0,
-  }),
+  MODULAR_CUTTER,
   ship('Shuttle', '95-ton orbital shuttle.', {
     hullTons: 95,
     tl: 12,
