@@ -2,6 +2,7 @@ import {
   ARMOUR_TYPES,
   type ArmourTypeId,
   type BridgeId,
+  type CarriedCraft,
   type ComputerId,
   COMPUTERS,
   type CrewType,
@@ -65,6 +66,7 @@ export const DEFAULT_SHIP_PARAMS: ShipParams = {
   systems: [],
   software: [],
   weapons: [],
+  carried: [],
   crewType: 'commercial',
 };
 
@@ -125,6 +127,18 @@ function normalizeWeapons(v: unknown): WeaponEntry[] {
     }));
 }
 
+function normalizeCarried(v: unknown): CarriedCraft[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter(isObject).map((e) => ({
+    kind: 'ship' as const,
+    name: typeof e.name === 'string' ? e.name : 'Craft',
+    tons: num(e.tons, 0),
+    cost: num(e.cost, 0),
+    count: num(e.count, 1),
+    ...(isObject(e.ship) ? { ship: normalizeParams(e.ship) } : {}),
+  }));
+}
+
 /**
  * Coerce arbitrary parsed JSON into a complete, valid ShipParams, filling any
  * missing or malformed field from DEFAULT_SHIP_PARAMS. Never throws.
@@ -163,6 +177,7 @@ export function normalizeParams(input: unknown): ShipParams {
     systems: normalizeSystems(p.systems),
     software: normalizeSoftware(p.software),
     weapons: normalizeWeapons(p.weapons),
+    carried: normalizeCarried(p.carried),
     crewType: pick<CrewType>(
       p.crewType,
       { commercial: 1, military: 1 },

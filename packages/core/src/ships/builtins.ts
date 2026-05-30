@@ -1,5 +1,5 @@
 import { DEFAULT_SHIP_PARAMS, type ShipDefinition } from './library.js';
-import type { ShipParams } from './ship.js';
+import { type CarriedCraft, evaluateShip, type ShipParams } from './ship.js';
 
 /** Build a definition from the default loadout plus the listed overrides. */
 function ship(
@@ -14,6 +14,46 @@ function ship(
   };
 }
 
+/** Snapshot a ship definition as a carried craft (resolving its tons + cost). */
+function carry(def: ShipDefinition, count: number): CarriedCraft {
+  const { summary } = evaluateShip(def.params);
+  return {
+    kind: 'ship',
+    name: def.name,
+    tons: def.params.hullTons,
+    cost: summary.resources.cost.used,
+    count,
+    ship: def.params,
+  };
+}
+
+// Small craft reused both standalone and as carried craft on the warships below.
+const LIGHT_FIGHTER = ship('Light Fighter', '10-ton fighter.', {
+  hullTons: 10,
+  tl: 12,
+  thrust: 6,
+  jump: 0,
+  powerPlantType: 'fusionTL12',
+  powerPlantTons: 1,
+  fuelTons: 1,
+  bridge: 'cockpit',
+  staterooms: 0,
+  weapons: [{ mount: 'fixed', weapon: 'beamLaser' }],
+});
+const SHIPS_BOAT = ship('Ship’s Boat', '30-ton general-purpose small craft.', {
+  hullTons: 30,
+  tl: 10,
+  hullConfig: 'streamlined',
+  thrust: 3,
+  jump: 0,
+  powerPlantType: 'fusionTL8',
+  powerPlantTons: 2,
+  fuelTons: 2,
+  bridge: 'cockpit',
+  staterooms: 0,
+  fuelScoop: true,
+});
+
 /**
  * Common spacecraft from the Core Rulebook, as starting points for the builder.
  * These are faithful reconstructions with the components modelled so far; tweak
@@ -21,8 +61,8 @@ function ship(
  *
  * TODO: components not yet modelled, so the ships below approximate them (see
  * the per-ship notes):
- *   - Nested/carried small craft: a Hangar only models the bay tonnage, not the
- *     docked craft's own design (so carriers list a hangar, not their boats).
+ *   - Carried craft crew: a carrier doesn't yet add pilots/gunners for its
+ *     embarked small craft.
  *   - Luxuries / fittings, ship's lockers, vehicles, air/rafts, escape pods,
  *     specimen storage, ammunition for sandcasters/missiles beyond bare racks.
  *   - Mixed-weapon turrets (one weapon type per mount for now).
@@ -165,8 +205,6 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { mount: 'single', weapon: 'sandcaster' },
     ],
   }),
-  // TODO: the Patrol Corvette carries a Ship's Boat — only the hangar bay is
-  // modelled (derived), not the docked craft.
   ship('Patrol Corvette (Type T)', '400-ton system patrol corvette.', {
     hullTons: 400,
     tl: 13,
@@ -179,7 +217,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     sensors: 'military',
     staterooms: 8,
     crewType: 'military',
-    systems: [{ type: 'hangar', amount: 30 }],
+    carried: [carry(SHIPS_BOAT, 1)],
     software: [{ type: 'jumpControl', level: 3 }],
     weapons: [
       { mount: 'triple', weapon: 'beamLaser' },
@@ -248,8 +286,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { mount: 'single', weapon: 'particleBarbette' },
     ],
   }),
-  // TODO: the Mercenary Cruiser carries small craft in its hangar — only the bay
-  // tonnage is modelled, not the docked craft.
+  // The Mercenary Cruiser embarks small craft in its hangars (nested designs).
   ship('Mercenary Cruiser (Type C)', '800-ton mercenary cruiser.', {
     hullTons: 800,
     tl: 13,
@@ -262,7 +299,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     sensors: 'military',
     staterooms: 20,
     crewType: 'military',
-    systems: [{ type: 'hangar', amount: 30 }],
+    carried: [carry(LIGHT_FIGHTER, 2), carry(SHIPS_BOAT, 1)],
     software: [{ type: 'jumpControl', level: 3 }],
     weapons: [
       { mount: 'triple', weapon: 'beamLaser' },
@@ -272,32 +309,10 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     ],
   }),
   // Small craft (no jump drive; cockpit bridge). Weapons mount on firmpoints, so
-  // these use fixed mounts only (turrets need a 100-ton hull).
-  ship('Light Fighter', '10-ton fighter.', {
-    hullTons: 10,
-    tl: 12,
-    thrust: 6,
-    jump: 0,
-    powerPlantType: 'fusionTL12',
-    powerPlantTons: 1,
-    fuelTons: 1,
-    bridge: 'cockpit',
-    staterooms: 0,
-    weapons: [{ mount: 'fixed', weapon: 'beamLaser' }],
-  }),
-  ship('Ship’s Boat', '30-ton general-purpose small craft.', {
-    hullTons: 30,
-    tl: 10,
-    hullConfig: 'streamlined',
-    thrust: 3,
-    jump: 0,
-    powerPlantType: 'fusionTL8',
-    powerPlantTons: 2,
-    fuelTons: 2,
-    bridge: 'cockpit',
-    staterooms: 0,
-    fuelScoop: true,
-  }),
+  // these use fixed mounts only (turrets need a 100-ton hull). LIGHT_FIGHTER and
+  // SHIPS_BOAT are defined above so the warships can also carry them.
+  LIGHT_FIGHTER,
+  SHIPS_BOAT,
   ship('Launch', '20-ton utility launch.', {
     hullTons: 20,
     tl: 9,

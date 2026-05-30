@@ -120,6 +120,17 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('carries a craft from the Craft list', async () => {
+    const ui = await openBuilder();
+    // Tab to the Craft section (Hull→Drives→Defences→Accom→Weapons→Systems→
+    // Software→Craft = 7).
+    for (let i = 0; i < 7; i++) await ui.type(TAB);
+    await ui.type(ENTER); // add the first available craft as a carried craft
+    await ui.waitFor('hangar'); // a "… (hangar Nt)" line appears in the sheet
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('loads a built-in ship from the library', async () => {
     const ui = renderInk();
     await ui.waitFor('Traveller Tools');

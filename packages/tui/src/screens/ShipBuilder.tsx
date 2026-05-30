@@ -2,6 +2,8 @@ import {
   ARMOUR_TYPES,
   type ArmourTypeId,
   type BridgeId,
+  BUILTIN_SHIPS,
+  type CarriedCraft,
   type ComputerId,
   COMPUTERS,
   type CrewType,
@@ -126,7 +128,7 @@ interface ListConfig {
   onAdd: () => void;
   hint: string;
 }
-type ListId = 'systems' | 'software';
+type ListId = 'systems' | 'software' | 'craft';
 
 export function ShipBuilderScreen({
   onBack,
@@ -148,9 +150,11 @@ export function ShipBuilderScreen({
     startParams.software,
   );
   const [weapons, setWeapons] = useState<WeaponEntry[]>(startParams.weapons);
+  const [carried, setCarried] = useState<CarriedCraft[]>(startParams.carried);
   const [addSystem, setAddSystem] = useState('');
   const [addSoftware, setAddSoftware] = useState('');
   const [addWeapon, setAddWeapon] = useState('');
+  const [addCraft, setAddCraft] = useState('');
   const [active, setActive] = useState(0);
   // Library actions: save, export JSON, import JSON (paste).
   const [mode, setMode] = useState<'edit' | 'save' | 'export' | 'import'>(
@@ -171,6 +175,18 @@ export function ShipBuilderScreen({
   ).map(swLabel);
   const effective = (value: string, available: string[]) =>
     available.includes(value) ? value : (available[0] ?? '');
+
+  // Craft that can be carried: every built-in plus the player's saved ships,
+  // de-duplicated by name (saved ships win).
+  const craftDefs: ShipDefinition[] = [
+    ...store.list(),
+    ...BUILTIN_SHIPS.filter(
+      (b) => !store.list().some((s) => s.name === b.name),
+    ),
+  ];
+  const craftAvailable = craftDefs
+    .map((d) => d.name)
+    .filter((n) => !carried.some((c) => c.name === n));
 
   const lists: Record<ListId, ListConfig> = {
     systems: {
@@ -228,6 +244,41 @@ export function ShipBuilderScreen({
         }
       },
       hint: 'Enter on a 0-level program removes it.',
+    },
+    craft: {
+      count: carried.length,
+      itemLabel: (i) => `${carried[i]!.name} (qty)`,
+      itemValue: (i) => String(carried[i]!.count),
+      setItem: (i, v) =>
+        setCarried((prev) =>
+          prev.map((e, k) => (k === i ? { ...e, count: num(v) } : e)),
+        ),
+      isEmpty: (i) => carried[i]!.count <= 0,
+      remove: (i) => setCarried((prev) => prev.filter((_, k) => k !== i)),
+      addOptions: craftAvailable,
+      addValue: effective(addCraft, craftAvailable),
+      onAddChange: setAddCraft,
+      onAdd: () => {
+        const def = craftDefs.find(
+          (d) => d.name === effective(addCraft, craftAvailable),
+        );
+        if (def) {
+          const { summary } = evaluateShip(def.params);
+          setCarried((prev) => [
+            ...prev,
+            {
+              kind: 'ship',
+              name: def.name,
+              tons: def.params.hullTons,
+              cost: summary.resources.cost.used,
+              count: 1,
+              ship: def.params,
+            },
+          ]);
+          setAddCraft('');
+        }
+      },
+      hint: 'Carried craft use derived hangar rules. Enter on qty 0 removes it.',
     },
   };
 
@@ -308,6 +359,7 @@ export function ShipBuilderScreen({
     { label: 'Weapons', weapons: true },
     { label: 'Systems', list: 'systems' },
     { label: 'Software', list: 'software' },
+    { label: 'Craft', list: 'craft' },
     {
       label: 'Crew',
       fields: [
@@ -460,6 +512,7 @@ export function ShipBuilderScreen({
     systems,
     software,
     weapons,
+    carried,
     crewType: form.values.crewType as CrewType,
   };
   const currentDef: ShipDefinition = { name, params };

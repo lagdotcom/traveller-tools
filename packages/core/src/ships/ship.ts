@@ -58,6 +58,11 @@ const J_DRIVE_TON_BONUS = 5;
 const J_DRIVE_MIN_TONS = 10;
 const J_DRIVE_COST_PER_TON = 1.5; // MCr
 
+// Carried craft / hangars: DERIVED (not Core) — a hangar bay takes the craft's
+// own tonnage plus 30% for launch clearance and handling, at Cr25,000 per ton.
+const HANGAR_TONS_MULT = 1.3;
+const HANGAR_COST_PER_TON = 0.025; // MCr per ton of hangar / docking space
+
 /** Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table). */
 const THRUST_TL: Record<number, number> = {
   1: 9,
@@ -847,11 +852,58 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return sw.leveled ? `${sw.label}/${inst.rating ?? 0}` : sw.label;
     },
   },
+  // Carried craft: consumes hangar tonnage (craft size + overhead) and adds both
+  // the bay's cost and the craft's own purchase price. DERIVED rules — flagged.
+  carriedCraft: {
+    id: 'carriedCraft',
+    name: 'Carried Craft',
+    category: 'carriedCraft',
+    resources: (inst) => {
+      const count = Math.max(0, Number(inst.options?.count ?? 1));
+      const tons = Math.max(0, Number(inst.options?.tons ?? 0));
+      const craftCost = Math.max(0, Number(inst.options?.cost ?? 0));
+      const bay = hangarTonsFor(tons);
+      return {
+        tons: -(count * bay),
+        cost: count * (craftCost + bay * HANGAR_COST_PER_TON),
+      };
+    },
+    describe: (inst) => {
+      const count = Math.max(1, Number(inst.options?.count ?? 1));
+      const name = String(inst.options?.name ?? 'Craft');
+      const bay = hangarTonsFor(Math.max(0, Number(inst.options?.tons ?? 0)));
+      return `${count > 1 ? `${count}× ` : ''}${name} (hangar ${count * bay}t)`;
+    },
+  },
 };
 
 // --- Assembly + rules -------------------------------------------------------
 
 export type CrewType = 'commercial' | 'military';
+
+/**
+ * Something carried inside a hangar / docking space. Kept deliberately generic:
+ * the hangar maths only needs `tons`, `cost`, `count` and `name`, which a
+ * vehicle can supply just as well as a ship. The typed payload (`ship` now;
+ * `vehicle` later) is optional and only lets the UI re-open the nested design.
+ */
+export type CarriedCraftKind = 'ship'; // TODO: | 'vehicle'
+export interface CarriedCraft {
+  kind: CarriedCraftKind;
+  name: string;
+  /** The craft's own displacement in tons (drives the hangar size). */
+  tons: number;
+  /** The craft's purchase cost in MCr (added to the carrier's price). */
+  cost: number;
+  count: number;
+  /** Full nested ship design (kind === 'ship'); lets the builder re-open it. */
+  ship?: ShipParams;
+}
+
+/** Hangar space a single craft of this size requires (bay + 30% overhead). */
+export function hangarTonsFor(craftTons: number): number {
+  return Math.ceil(craftTons * HANGAR_TONS_MULT);
+}
 
 export interface ShipParams {
   hullTons: number;
@@ -880,6 +932,8 @@ export interface ShipParams {
   software: SoftwareEntry[];
   /** Weapon mounts (turret type + weapon). */
   weapons: WeaponEntry[];
+  /** Small craft (and, later, vehicles) carried in hangars / docking space. */
+  carried: CarriedCraft[];
   crewType: CrewType;
 }
 
@@ -964,6 +1018,18 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   for (const sys of params.systems) {
     if (SYSTEM_TYPES[sys.type] && sys.amount > 0)
       installed.push({ defId: sys.type, rating: sys.amount });
+  }
+  for (const craft of params.carried) {
+    if (craft.count > 0 && craft.tons > 0)
+      installed.push({
+        defId: 'carriedCraft',
+        options: {
+          name: craft.name,
+          tons: craft.tons,
+          cost: craft.cost,
+          count: craft.count,
+        },
+      });
   }
   for (const sw of params.software) {
     if (SOFTWARE_TYPES[sw.type])
@@ -1354,6 +1420,8 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
   for (const s of params.systems)
     if (s.amount > 0 && SYSTEM_TYPES[s.type]?.unverified)
       unverified.add(SYSTEM_TYPES[s.type].label);
+  if (params.carried.some((c) => c.count > 0 && c.tons > 0))
+    unverified.add('Carried craft (hangars)');
   if (unverified.size > 0) {
     extra.push({
       severity: 'warning',

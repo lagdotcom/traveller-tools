@@ -25,6 +25,7 @@ const baseParams: ShipParams = {
   systems: [],
   software: [],
   weapons: [],
+  carried: [],
   crewType: 'commercial',
 };
 
@@ -387,6 +388,28 @@ describe('evaluateShip', () => {
     expect(
       turreted.issues.some(
         (i) => i.severity === 'error' && /Small craft/.test(i.message),
+      ),
+    ).toBe(true);
+  });
+
+  it('carries nested craft, sizing the hangar and adding their cost', () => {
+    // Two 10-ton fighters (cost MCr3 each) need a hangar of ceil(10×1.3)=13t
+    // each → 26t, plus 26×0.025 = MCr0.65 of bay, plus the craft cost (MCr6).
+    const { summary, issues } = evaluateShip({
+      ...baseParams,
+      hullTons: 400,
+      carried: [
+        { kind: 'ship', name: 'Light Fighter', tons: 10, cost: 3, count: 2 },
+      ],
+    });
+    const line = summary.lineItems.find((l) => l.id === 'carriedCraft')!;
+    expect(line.resources.tons).toBe(-26);
+    expect(line.resources.cost).toBeCloseTo(2 * 3 + 26 * 0.025, 6);
+    expect(line.name).toBe('2× Light Fighter (hangar 26t)');
+    // Hangars are a derived rule, so the build warns.
+    expect(
+      issues.some(
+        (i) => i.severity === 'warning' && /derived rules/.test(i.message),
       ),
     ).toBe(true);
   });
