@@ -261,6 +261,7 @@ export type SystemTypeId =
   | 'laboratory'
   | 'workshop'
   | 'medicalBay'
+  | 'multiEnvironment'
   | 'cabinSpace'
   | 'briefingRoom'
   | 'detentionCells';
@@ -283,6 +284,10 @@ export const SYSTEM_TYPES: Record<
   laboratory: { id: 'laboratory', label: 'Laboratory' },
   workshop: { id: 'workshop', label: 'Workshop' },
   medicalBay: { id: 'medicalBay', label: 'Medical Bay' },
+  multiEnvironment: {
+    id: 'multiEnvironment',
+    label: 'Multi-Environment Space',
+  },
   cabinSpace: { id: 'cabinSpace', label: 'Cabin Space' },
   briefingRoom: {
     id: 'briefingRoom',
@@ -879,6 +884,18 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       tons: -(inst.rating ?? 0),
       cost: 0.5 * (inst.rating ?? 0),
     }),
+  },
+  multiEnvironment: {
+    id: 'multiEnvironment',
+    name: 'Multi-Environment Space',
+    category: 'multiEnvironment',
+    // rating = tons of space; 1 ton of equipment per 20 tons of space, at
+    // MCr0.5 and 1 Power per equipment ton.
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      const equipment = Math.ceil(t / 20);
+      return { tons: -t, cost: 0.5 * equipment, power: -equipment };
+    },
   },
   cabinSpace: {
     id: 'cabinSpace',

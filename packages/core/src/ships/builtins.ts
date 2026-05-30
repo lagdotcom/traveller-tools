@@ -265,8 +265,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     lowBerths: 6,
     commonAreasTons: 9,
   }),
-  // TODO: multi-environment specimen tanks approximated as laboratory space;
-  // the trophy lounge folds into common areas.
+  // TODO: the trophy lounge folds into common areas.
   ship('Safari Ship (Type K)', '200-ton streamlined expedition ship.', {
     hullTons: 200,
     tl: 12,
@@ -282,7 +281,8 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     weapons: [{ mount: 'double', weapons: [] }],
     systems: [
       { type: 'fuelProcessor', amount: 2 },
-      { type: 'laboratory', amount: 16 },
+      { type: 'multiEnvironment', amount: 8 },
+      { type: 'multiEnvironment', amount: 8 },
     ],
     carried: [carryShip(LAUNCH), carryVehicle('Air/Raft')],
     software: [

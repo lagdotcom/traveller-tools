@@ -128,6 +128,19 @@ describe('evaluateShip', () => {
     expect(name('missileStorage')).toBe('Missile Storage (144 missiles)');
   });
 
+  it('costs multi-environment space with equipment power and cost', () => {
+    // 8 tons of space -> 1 ton of equipment: 8t consumed, MCr0.5, 1 Power.
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullTons: 200,
+      systems: [{ type: 'multiEnvironment', amount: 8 }],
+    });
+    const line = summary.lineItems.find((l) => l.id === 'multiEnvironment')!;
+    expect(line.resources.tons).toBe(-8);
+    expect(line.resources.cost).toBeCloseTo(0.5, 6);
+    expect(line.resources.power).toBe(-1);
+  });
+
   it('labels fuel with jump number and weeks of plant operation', () => {
     // Scout: 100t, Jump-2 (20t), 4t plant (1t/4wks); 23t fuel -> 3t spare ->
     // 12 weeks.
