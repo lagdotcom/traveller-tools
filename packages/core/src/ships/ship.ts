@@ -259,6 +259,7 @@ export type SystemTypeId =
   | 'hangar'
   | 'cargoCrane'
   | 'laboratory'
+  | 'libraryRoom'
   | 'workshop'
   | 'medicalBay'
   | 'multiEnvironment'
@@ -287,6 +288,7 @@ export const SYSTEM_TYPES: Record<
   hangar: { id: 'hangar', label: 'Hangar / Docking Space' },
   cargoCrane: { id: 'cargoCrane', label: 'Cargo Crane' },
   laboratory: { id: 'laboratory', label: 'Laboratory' },
+  libraryRoom: { id: 'libraryRoom', label: 'Library Room' },
   workshop: { id: 'workshop', label: 'Workshop' },
   medicalBay: { id: 'medicalBay', label: 'Medical Bay' },
   multiEnvironment: {
@@ -870,6 +872,17 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     resources: (inst) => ({
       tons: -(inst.rating ?? 0),
       cost: 0.25 * (inst.rating ?? 0),
+    }),
+  },
+  libraryRoom: {
+    id: 'libraryRoom',
+    name: 'Library Room',
+    category: 'libraryRoom',
+    // A physical library: 4 tons & MCr4 (MCr1/ton) — distinct from the free
+    // Library software program.
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 1 * (inst.rating ?? 0),
     }),
   },
   workshop: {

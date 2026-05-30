@@ -470,6 +470,24 @@ describe('evaluateShip', () => {
     ).toBe(false);
   });
 
+  it('keeps the Library room and the Library software distinct', () => {
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullTons: 400,
+      systems: [{ type: 'libraryRoom', amount: 4 }], // 4t, MCr4
+      software: [{ type: 'library', level: 0 }], // free program
+    });
+    const room = summary.lineItems.find((l) => l.id === 'libraryRoom')!;
+    expect(room.name).toBe('Library Room');
+    expect(room.resources.tons).toBe(-4);
+    expect(room.resources.cost).toBeCloseTo(4, 6);
+    const sw = summary.lineItems.find(
+      (l) => l.id === 'software' && l.name === 'Library',
+    )!;
+    expect(sw.resources.tons ?? 0).toBe(0);
+    expect(sw.resources.cost ?? 0).toBe(0);
+  });
+
   it('implements the rest of the spacecraft-equipment list', () => {
     const { summary } = evaluateShip({
       ...baseParams,
