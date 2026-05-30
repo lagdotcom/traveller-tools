@@ -1,5 +1,5 @@
 import type { CrewMember, LineItem } from '@traveller-tools/core';
-import { Box, Text } from 'ink';
+import { Box, Text, useStdout } from 'ink';
 import React from 'react';
 
 const fmt = (n: number) => String(Math.round(n * 1000) / 1000);
@@ -12,17 +12,20 @@ interface Row {
 
 function SheetRow({
   row,
+  nameWidth,
   bold,
   dim,
 }: {
   row: Row;
+  nameWidth: number;
   bold?: boolean;
   dim?: boolean;
 }): React.JSX.Element {
   return (
     <Box>
-      <Box width={32}>
-        <Text bold={bold} dimColor={dim} wrap="truncate-end">
+      <Box width={nameWidth}>
+        {/* Wrap long names rather than truncate, now that the column is wide. */}
+        <Text bold={bold} dimColor={dim} wrap="wrap">
           {row.name}
         </Text>
       </Box>
@@ -90,15 +93,26 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
     };
   });
 
+  // Stretch the name column to fill the terminal, leaving room for the Tons/MCr
+  // columns (24), the gap (4) and the stats sidebar (~28). Names wrap if longer.
+  const { stdout } = useStdout();
+  const columns = stdout?.columns ?? 80;
+  const nameWidth = Math.max(24, Math.min(columns - 24 - 4 - 28, 96));
+
   return (
     <Box flexDirection="row" gap={4}>
       <Box flexDirection="column">
-        <SheetRow row={{ name: 'COMPONENT', tons: 'TONS', cost: 'MCr' }} bold />
+        <SheetRow
+          row={{ name: 'COMPONENT', tons: 'TONS', cost: 'MCr' }}
+          nameWidth={nameWidth}
+          bold
+        />
         {componentRows.map((row, i) => (
-          <SheetRow key={i} row={row} />
+          <SheetRow key={i} row={row} nameWidth={nameWidth} />
         ))}
         <SheetRow
           row={{ name: 'Cargo', tons: fmt(props.cargoTons), cost: '—' }}
+          nameWidth={nameWidth}
           dim
         />
         <SheetRow
@@ -107,6 +121,7 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
             tons: `${fmt(props.totalTons)}/${fmt(props.hullTons)}`,
             cost: fmt(props.totalCost),
           }}
+          nameWidth={nameWidth}
           bold
         />
       </Box>
