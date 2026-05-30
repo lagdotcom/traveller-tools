@@ -119,4 +119,18 @@ describe('Ship builder (real Ink)', () => {
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });
+
+  it('loads a built-in ship from the library', async () => {
+    const ui = renderInk();
+    await ui.waitFor('Traveller Tools');
+    await ui.type(ARROW_DOWN); // Travel
+    await ui.type(ARROW_DOWN); // Ship builder
+    await ui.type(ARROW_DOWN); // Ship library
+    await ui.type(ENTER);
+    await ui.waitFor('Ship Library');
+    await ui.type(ENTER); // load the first built-in (the Scout / Courier)
+    await ui.waitFor('Ship Builder — Scout');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
 });

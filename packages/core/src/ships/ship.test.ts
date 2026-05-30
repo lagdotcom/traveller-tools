@@ -21,6 +21,7 @@ const baseParams: ShipParams = {
   lowBerths: 0,
   commonAreasTons: 0,
   fuelScoop: false,
+  reinforcementTons: 0,
   systems: [],
   software: [],
   weapons: [],
@@ -297,6 +298,38 @@ describe('evaluateShip', () => {
       evaluateShip({ ...baseParams, sensors: 'military' }).powerRequirements
         .sensors,
     ).toBe(2);
+  });
+
+  it('adds reinforced-structure hull points and warns it is derived', () => {
+    const base = evaluateShip(baseParams);
+    const reinforced = evaluateShip({ ...baseParams, reinforcementTons: 10 });
+    // +1 Hull Point per ton, and the structure shows as a line item.
+    expect(reinforced.summary.stats.hullPoints).toBe(
+      base.summary.stats.hullPoints + 10,
+    );
+    const line = reinforced.summary.lineItems.find(
+      (l) => l.id === 'reinforcement',
+    )!;
+    expect(line.resources.tons).toBe(-10);
+    expect(line.resources.cost).toBeCloseTo(0.5, 6);
+    // Derived rules get a warning so the numbers aren't trusted blindly.
+    expect(
+      reinforced.issues.some(
+        (i) => i.severity === 'warning' && /derived rules/.test(i.message),
+      ),
+    ).toBe(true);
+  });
+
+  it('warns when unverified countermeasures software is installed', () => {
+    const { issues } = evaluateShip({
+      ...baseParams,
+      software: [{ type: 'countermeasures', level: 1 }],
+    });
+    expect(
+      issues.some(
+        (i) => i.severity === 'warning' && /derived rules/.test(i.message),
+      ),
+    ).toBe(true);
   });
 
   it('reports remaining tonnage as cargo for a valid ship', () => {

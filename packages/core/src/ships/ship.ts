@@ -276,10 +276,18 @@ export type SoftwareTypeId =
   | 'evade'
   | 'fireControl'
   | 'autoRepair'
+  | 'countermeasures'
   | 'library';
 export const SOFTWARE_TYPES: Record<
   SoftwareTypeId,
-  { id: SoftwareTypeId; label: string; costPerLevel: number; leveled: boolean }
+  {
+    id: SoftwareTypeId;
+    label: string;
+    costPerLevel: number;
+    leveled: boolean;
+    /** Derived from non-Core sources (High Guard); flagged in the builder. */
+    unverified?: boolean;
+  }
 > = {
   jumpControl: {
     id: 'jumpControl',
@@ -299,6 +307,14 @@ export const SOFTWARE_TYPES: Record<
     label: 'Auto-Repair',
     costPerLevel: 5,
     leveled: true,
+  },
+  countermeasures: {
+    id: 'countermeasures',
+    label: 'Countermeasures',
+    // Derived: electronic countermeasures program, priced near Fire Control.
+    costPerLevel: 2,
+    leveled: true,
+    unverified: true,
   },
   library: { id: 'library', label: 'Library', costPerLevel: 0, leveled: false },
 };
@@ -601,6 +617,21 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return `Armour — ${type.name} ${inst.rating ?? 0}`;
     },
   },
+  reinforcement: {
+    id: 'reinforcement',
+    name: 'Reinforced Structure',
+    category: 'reinforcement',
+    unique: true,
+    minTL: 9,
+    // DERIVED (not Core): structural reinforcement. Each ton adds 1 Hull Point
+    // and costs Cr50,000 — flagged as unverified by evaluateShip.
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: 0.05 * t };
+    },
+    stats: (inst) => ({ hullPoints: inst.rating ?? 0 }),
+    describe: (inst) => `Reinforced Structure — +${inst.rating ?? 0} HP`,
+  },
   computer: {
     id: 'computer',
     name: 'Computer',
@@ -747,6 +778,8 @@ export interface ShipParams {
   lowBerths: number;
   commonAreasTons: number;
   fuelScoop: boolean;
+  /** Structural reinforcement, in tons (derived rules — see SHIP_RULES). */
+  reinforcementTons: number;
   /** Optional tonnage-based systems (fuel processor, drones, …). */
   systems: SystemEntry[];
   /** Ship's software (cost only). */
@@ -800,6 +833,11 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
       defId: 'armour',
       rating: params.armourPoints,
       options: { type: params.armourType, hullCost },
+    });
+  if (params.reinforcementTons > 0)
+    installed.push({
+      defId: 'reinforcement',
+      rating: params.reinforcementTons,
     });
   if (params.thrust > 0)
     installed.push({ defId: 'mDrive', rating: params.thrust });
@@ -1190,6 +1228,19 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
     extra.push({
       severity: 'error',
       message: 'A cockpit may only be used on ships of 50 tons or less',
+    });
+  }
+
+  // Some options are derived from non-Core (High Guard) material we couldn't
+  // verify; warn whenever one is in use so the numbers aren't trusted blindly.
+  const unverified: string[] = [];
+  if (params.reinforcementTons > 0) unverified.push('Reinforced Structure');
+  if (params.software.some((s) => SOFTWARE_TYPES[s.type]?.unverified))
+    unverified.push('Countermeasures');
+  if (unverified.length > 0) {
+    extra.push({
+      severity: 'warning',
+      message: `${unverified.join(' and ')} use derived rules (not from the Core Rulebook) and may be inaccurate.`,
     });
   }
 

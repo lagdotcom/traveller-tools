@@ -5,6 +5,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
 import chalk from 'chalk';
 
+import { localStore } from './localStore';
 import { createStreams } from './ptyAdapter';
 
 const term = new Terminal({
@@ -54,6 +55,7 @@ try {
     stderr: stdout,
     exitOnCtrlC: false,
     patchConsole: false,
+    store: localStore(),
   });
   term.focus();
 } catch (error) {

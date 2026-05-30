@@ -5,14 +5,18 @@ import {
   type ComputerId,
   COMPUTERS,
   type CrewType,
+  DEFAULT_SHIP_PARAMS,
   evaluateShip,
   type HullConfigId,
   type MountId,
   MOUNTS,
+  parseShip,
   type PowerPlantId,
   type SensorId,
   SENSORS,
+  serializeShip,
   SHIP_RESOURCES,
+  type ShipDefinition,
   type ShipParams,
   SOFTWARE_TYPES,
   type SoftwareEntry,
@@ -33,6 +37,7 @@ import { Field } from '../components/Field.js';
 import { IssueList } from '../components/IssueList.js';
 import { ShipSheet } from '../components/ShipSheet.js';
 import { useForm } from '../components/useForm.js';
+import { useStore } from '../storage.js';
 
 const num = (value: string, fallback = 0) => {
   const n = Number.parseFloat(value);
@@ -51,6 +56,38 @@ function parsePlant(value: string): PowerPlantId {
   if (v.includes('8')) return 'fusionTL8';
   if (v.includes('15')) return 'fusionTL15';
   return 'fusionTL12';
+}
+
+const PLANT_TO_FORM: Record<PowerPlantId, string> = {
+  fusionTL8: 'TL8',
+  fusionTL12: 'TL12',
+  fusionTL15: 'TL15',
+};
+
+/** Initial text-field values for the builder form, from a set of ship params. */
+function formValues(p: ShipParams) {
+  return {
+    hull: String(p.hullTons),
+    tl: String(p.tl),
+    config: p.hullConfig,
+    thrust: String(p.thrust),
+    jump: String(p.jump),
+    plant: PLANT_TO_FORM[p.powerPlantType],
+    power: String(p.powerPlantTons),
+    fuel: String(p.fuelTons),
+    bridge: p.bridge,
+    scoop: p.fuelScoop ? 'yes' : 'no',
+    armourType: p.armourType,
+    armour: String(p.armourPoints),
+    reinforce: String(p.reinforcementTons),
+    computer: p.computer,
+    bis: p.computerBis ? 'yes' : 'no',
+    sensors: p.sensors,
+    staterooms: String(p.staterooms),
+    lowBerths: String(p.lowBerths),
+    common: String(p.commonAreasTons),
+    crewType: p.crewType,
+  };
 }
 
 const SYSTEM_IDS = Object.keys(SYSTEM_TYPES) as SystemTypeId[];
@@ -93,40 +130,35 @@ type ListId = 'systems' | 'software';
 
 export function ShipBuilderScreen({
   onBack,
+  initial,
+  onLoad,
 }: {
   onBack: () => void;
+  initial?: ShipDefinition;
+  onLoad: (def: ShipDefinition) => void;
 }): React.JSX.Element {
-  const form = useForm({
-    hull: '100',
-    tl: '12',
-    config: 'standard',
-    thrust: '1',
-    jump: '1',
-    plant: 'TL12',
-    power: '4',
-    fuel: '12',
-    bridge: 'standard',
-    scoop: 'no',
-    // turrets removed: weapons are managed in the Weapons list.
-    armourType: 'crystaliron',
-    armour: '0',
-    computer: '/5',
-    bis: 'no',
-    sensors: 'basic',
-    staterooms: '2',
-    lowBerths: '0',
-    common: '0',
-    crewType: 'commercial',
-  });
+  const store = useStore();
+  const startParams = initial?.params ?? DEFAULT_SHIP_PARAMS;
+  const form = useForm(formValues(startParams));
   type FormKey = keyof typeof form.values;
 
-  const [systems, setSystems] = useState<SystemEntry[]>([]);
-  const [software, setSoftware] = useState<SoftwareEntry[]>([]);
-  const [weapons, setWeapons] = useState<WeaponEntry[]>([]);
+  const [name, setName] = useState(initial?.name ?? 'Untitled Ship');
+  const [systems, setSystems] = useState<SystemEntry[]>(startParams.systems);
+  const [software, setSoftware] = useState<SoftwareEntry[]>(
+    startParams.software,
+  );
+  const [weapons, setWeapons] = useState<WeaponEntry[]>(startParams.weapons);
   const [addSystem, setAddSystem] = useState('');
   const [addSoftware, setAddSoftware] = useState('');
   const [addWeapon, setAddWeapon] = useState('');
   const [active, setActive] = useState(0);
+  // Library actions: save, export JSON, import JSON (paste).
+  const [mode, setMode] = useState<'edit' | 'save' | 'export' | 'import'>(
+    'edit',
+  );
+  const [saveName, setSaveName] = useState('');
+  const [importBuffer, setImportBuffer] = useState('');
+  const [message, setMessage] = useState('');
 
   const sysLabel = (id: SystemTypeId) => SYSTEM_TYPES[id].label;
   const swLabel = (id: SoftwareTypeId) => SOFTWARE_TYPES[id].label;
@@ -259,6 +291,7 @@ export function ShipBuilderScreen({
           options: Object.keys(ARMOUR_TYPES),
         },
         { key: 'armour', label: 'Armour points' },
+        { key: 'reinforce', label: 'Reinforcement (t)' },
         { key: 'computer', label: 'Computer', options: Object.keys(COMPUTERS) },
         { key: 'bis', label: 'Computer /bis', options: ['no', 'yes'] },
         { key: 'sensors', label: 'Sensors', options: Object.keys(SENSORS) },
@@ -311,7 +344,60 @@ export function ShipBuilderScreen({
     if (idx >= 0) setActive(idx);
   };
 
-  useInput((_input, key) => {
+  useInput((input, key) => {
+    // Import mode accumulates pasted JSON (which arrives as one burst) and
+    // loads it the moment it parses; Esc cancels.
+    if (mode === 'import') {
+      if (key.escape) {
+        setMode('edit');
+        setImportBuffer('');
+        setMessage('Import cancelled.');
+        return;
+      }
+      if (key.backspace || key.delete) {
+        setImportBuffer((b) => b.slice(0, -1));
+        return;
+      }
+      if (key.leftArrow || key.rightArrow || key.upArrow || key.downArrow)
+        return;
+      const next = importBuffer + (key.return ? '\n' : input);
+      setImportBuffer(next);
+      try {
+        const def = parseShip(next);
+        setMode('edit');
+        setImportBuffer('');
+        onLoad(def);
+      } catch {
+        // keep collecting until it parses
+      }
+      return;
+    }
+
+    // Library shortcuts are available from edit mode.
+    if (mode === 'edit' && key.ctrl && input === 's') {
+      setSaveName(name);
+      setMessage('');
+      setMode('save');
+      return;
+    }
+    if (mode === 'edit' && key.ctrl && input === 'e') {
+      setMode('export');
+      return;
+    }
+    if (mode === 'edit' && key.ctrl && input === 'i') {
+      setImportBuffer('');
+      setMessage('');
+      setMode('import');
+      return;
+    }
+
+    // Save/export overlays: Esc returns to editing; the name Field (save mode)
+    // handles its own typing, so swallow other keys here.
+    if (mode !== 'edit') {
+      if (key.escape) setMode('edit');
+      return;
+    }
+
     if (key.escape) onBack();
     else if (key.downArrow) setActive((i) => Math.min(i + 1, rows.length - 1));
     else if (key.upArrow) setActive((i) => Math.max(i - 1, 0));
@@ -321,6 +407,14 @@ export function ShipBuilderScreen({
       );
     else if (key.tab) gotoSection((activeSection + 1) % sectionDefs.length);
   });
+
+  const doSave = () => {
+    const finalName = saveName.trim() || 'Untitled Ship';
+    store.save({ name: finalName, params });
+    setName(finalName);
+    setMode('edit');
+    setMessage(`Saved “${finalName}”.`);
+  };
 
   const effectiveAddWeapon = MOUNT_LABELS.includes(addWeapon)
     ? addWeapon
@@ -362,11 +456,13 @@ export function ShipBuilderScreen({
     staterooms: num(form.values.staterooms),
     lowBerths: num(form.values.lowBerths),
     commonAreasTons: num(form.values.common),
+    reinforcementTons: num(form.values.reinforce),
     systems,
     software,
     weapons,
     crewType: form.values.crewType as CrewType,
   };
+  const currentDef: ShipDefinition = { name, params };
   const { summary, issues, cargoTons, powerRequirements, crew, runningCosts } =
     evaluateShip(params);
   const usage = SHIP_RESOURCES.map((r) => summary.resources[r.key]!);
@@ -374,11 +470,59 @@ export function ShipBuilderScreen({
 
   const activeList = sectionDefs[activeSection]!.list;
 
+  if (mode === 'export') {
+    return (
+      <Box flexDirection="column">
+        <Text bold color="yellow">
+          Export — {name}
+        </Text>
+        <Box marginTop={1}>
+          <Text dimColor>Copy the JSON below. Esc returns to the builder.</Text>
+        </Box>
+        <Box marginTop={1} borderStyle="round" borderColor="gray" paddingX={1}>
+          <Text>{serializeShip(currentDef)}</Text>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (mode === 'import') {
+    return (
+      <Box flexDirection="column">
+        <Text bold color="yellow">
+          Import Ship
+        </Text>
+        <Box marginTop={1}>
+          <Text>Paste exported ship JSON; it loads once complete.</Text>
+        </Box>
+        <Box marginTop={1}>
+          <Text dimColor>{importBuffer.length} characters received…</Text>
+        </Box>
+        <Box marginTop={1}>
+          <Text dimColor>Esc to cancel</Text>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box flexDirection="column">
       <Text bold color="yellow">
-        Ship Builder
+        Ship Builder — {name}
       </Text>
+
+      {mode === 'save' && (
+        <Box marginTop={1} flexDirection="column">
+          <Field
+            label="Save as"
+            value={saveName}
+            isActive
+            onChange={setSaveName}
+            onSubmit={doSave}
+          />
+          <Text dimColor>Enter to save · Esc to cancel</Text>
+        </Box>
+      )}
 
       <Box marginTop={1}>
         {sectionDefs.map((section, index) => (
@@ -409,7 +553,7 @@ export function ShipBuilderScreen({
                 label={f.label}
                 options={f.options}
                 value={form.values[f.key]}
-                isActive={index === safeActive}
+                isActive={mode === 'edit' && index === safeActive}
                 onChange={form.setters[f.key]}
                 onSubmit={advance}
               />
@@ -418,7 +562,7 @@ export function ShipBuilderScreen({
                 key={f.key}
                 label={f.label}
                 value={form.values[f.key]}
-                isActive={index === safeActive}
+                isActive={mode === 'edit' && index === safeActive}
                 onChange={form.setters[f.key]}
                 onSubmit={advance}
               />
@@ -432,7 +576,7 @@ export function ShipBuilderScreen({
                 label="Turret"
                 options={MOUNT_LABELS}
                 value={MOUNTS[weapons[i]!.mount].label}
-                isActive={index === safeActive}
+                isActive={mode === 'edit' && index === safeActive}
                 onChange={(v) => setWeaponMount(i, v)}
                 onSubmit={advance}
               />
@@ -447,7 +591,7 @@ export function ShipBuilderScreen({
                 label="Weapon"
                 options={WEAPON_LABELS}
                 value={w === 'none' ? REMOVE_WEAPON : WEAPONS[w].label}
-                isActive={index === safeActive}
+                isActive={mode === 'edit' && index === safeActive}
                 onChange={(v) => setWeaponWeapon(i, v)}
                 onSubmit={() =>
                   weapons[i]!.weapon === 'none' ? removeWeapon(i) : advance()
@@ -462,7 +606,7 @@ export function ShipBuilderScreen({
                 label="Add turret"
                 options={MOUNT_LABELS}
                 value={effectiveAddWeapon}
-                isActive={index === safeActive}
+                isActive={mode === 'edit' && index === safeActive}
                 onChange={setAddWeapon}
                 onSubmit={addWeaponEntry}
               />
@@ -476,7 +620,7 @@ export function ShipBuilderScreen({
                 key={`${row.list}-${i}`}
                 label={list.itemLabel(i)}
                 value={list.itemValue(i)}
-                isActive={index === safeActive}
+                isActive={mode === 'edit' && index === safeActive}
                 onChange={(v) => list.setItem(i, v)}
                 onSubmit={() => (list.isEmpty(i) ? list.remove(i) : advance())}
               />
@@ -488,7 +632,7 @@ export function ShipBuilderScreen({
               label="Add…"
               options={list.addOptions.length > 0 ? list.addOptions : ['—']}
               value={list.addOptions.length > 0 ? list.addValue : '—'}
-              isActive={index === safeActive}
+              isActive={mode === 'edit' && index === safeActive}
               onChange={list.onAddChange}
               onSubmit={list.addOptions.length > 0 ? list.onAdd : advance}
             />
@@ -520,9 +664,16 @@ export function ShipBuilderScreen({
         <IssueList issues={issues} />
       </Box>
 
+      {message ? (
+        <Box marginTop={1}>
+          <Text color="green">{message}</Text>
+        </Box>
+      ) : null}
+
       <Box marginTop={1}>
         <Text dimColor>
-          ↑/↓ field · Tab/⇧Tab section · Enter next · Esc menu
+          ↑/↓ field · Tab/⇧Tab section · Enter next · ^S save · ^E export · ^I
+          import · Esc menu
         </Text>
       </Box>
     </Box>
