@@ -1,6 +1,7 @@
 # Ship Builder — design plan
 
-Status: **planning**. Target ruleset: **MgT2 High Guard (2022 Update)**. First
+Status: **planning**. Target ruleset: **MgT2 Core Rulebook** spacecraft design
+(the simpler, self-contained subset; High Guard can extend it later). First
 iteration scope: **Essentials**. Catalog numbers ship as **typed stubs** to be
 filled from the book.
 
@@ -149,7 +150,7 @@ export const HULLS: HullRow[] = [
   { size: 100, hullPoints: 0 /*TODO*/, costPerTonMCr: 0 /*TODO*/, configs: [...] },
   // …
 ];
-// drives.ts — M-drive thrust as % of hull (2022 style)
+// drives.ts — M/J drive sizing per the Core Rulebook tables
 export const M_DRIVE = { tonsPctPerThrust: 0 /*TODO*/, powerPctPerThrust: 0 /*TODO*/, costPerTonMCr: 0 /*TODO*/ };
 ```
 
@@ -202,6 +203,6 @@ and a menu option in `app.tsx`.
 
 ## To confirm before/while building
 
-- The 2022 drive/power sizing is percentage-of-hull; the exact percentages,
-  hull-point formula, bridge sizing, and costs come from you (stub fill).
-- Section ordering above follows the High Guard sequence; easy to reorder.
+- The Core Rulebook drive/power sizing, hull costs, hull-point formula, bridge
+  sizing, and component costs come from you (stub fill).
+- Section ordering above follows the Core Rulebook sequence; easy to reorder.
