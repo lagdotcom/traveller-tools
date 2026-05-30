@@ -111,6 +111,23 @@ describe('evaluateShip', () => {
     expect(lb.name).toBe('Low Berths ×20');
   });
 
+  it('shows drone and magazine counts in line names', () => {
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullTons: 400,
+      systems: [
+        { type: 'probeDrones', amount: 2 }, // 5/ton -> 10
+        { type: 'miningDrones', amount: 10 }, // 5 per 10t -> 5
+        { type: 'missileStorage', amount: 12 }, // 12/ton -> 144
+      ],
+    });
+    const name = (id: string) =>
+      summary.lineItems.find((l) => l.id === id)!.name;
+    expect(name('probeDrones')).toBe('Probe Drones ×10');
+    expect(name('miningDrones')).toBe('Mining Drones ×5');
+    expect(name('missileStorage')).toBe('Missile Storage (144 missiles)');
+  });
+
   it('always lists the fuel scoop (free on streamlined, MCr1 otherwise)', () => {
     const streamlined = evaluateShip({
       ...baseParams,

@@ -783,6 +783,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       const t = inst.rating ?? 0;
       return { tons: -t, cost: 0.5 * t };
     },
+    describe: (inst) => `Probe Drones ×${(inst.rating ?? 0) * 5}`,
   },
   repairDrones: {
     id: 'repairDrones',
@@ -803,6 +804,8 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       const t = inst.rating ?? 0;
       return { tons: -t, cost: 0.1 * t };
     },
+    describe: (inst) =>
+      `Mining Drones ×${Math.floor((inst.rating ?? 0) / 10) * 5}`,
   },
   missileStorage: {
     id: 'missileStorage',
@@ -810,6 +813,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     category: 'missileStorage',
     // rating = tons of magazine (12 tons holds 144 missiles); no extra cost.
     resources: (inst) => ({ tons: -(inst.rating ?? 0) }),
+    describe: (inst) => `Missile Storage (${(inst.rating ?? 0) * 12} missiles)`,
   },
   // rating = tons in every case. Most are Core "spacecraft equipment"; only the
   // Briefing Room and Detention Cells lack a source and are flagged.
