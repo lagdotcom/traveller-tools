@@ -48,6 +48,8 @@ export interface ComponentDef<S extends Stats = Stats> {
   resources: (inst: InstalledComponent, ctx: DesignContext) => ResourceDelta;
   /** Additive contributions to the design's derived stats. */
   stats?: (inst: InstalledComponent, ctx: DesignContext) => Partial<S>;
+  /** Optional descriptive label for a breakdown sheet (defaults to `name`). */
+  describe?: (inst: InstalledComponent, ctx: DesignContext) => string;
 }
 
 /** The chassis (hull) that establishes the resource capacities and base stats. */

@@ -21,8 +21,8 @@ function SheetRow({
 }): React.JSX.Element {
   return (
     <Box>
-      <Box width={26}>
-        <Text bold={bold} dimColor={dim}>
+      <Box width={32}>
+        <Text bold={bold} dimColor={dim} wrap="truncate-end">
           {row.name}
         </Text>
       </Box>

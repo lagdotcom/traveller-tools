@@ -80,6 +80,15 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('steps a numeric field with the right arrow', async () => {
+    const ui = await openBuilder();
+    // Hull tonnage is the first field, default 100; Right arrow increments it.
+    await ui.type(ARROW_RIGHT);
+    await ui.waitFor('Hull — 101 tons');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('does not crash when the hull field is cleared', async () => {
     const ui = await openBuilder();
     // Hull is the first field, pre-filled "100"; clear it entirely.

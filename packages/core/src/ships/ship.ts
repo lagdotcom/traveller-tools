@@ -306,6 +306,12 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
         cost: tons * plant.costPerTon,
       };
     },
+    describe: (inst) => {
+      const plant =
+        POWER_PLANTS[(inst.options?.type as PowerPlantId) ?? DEFAULT_PLANT] ??
+        POWER_PLANTS[DEFAULT_PLANT];
+      return `Power Plant — Fusion, Power ${(inst.rating ?? 0) * plant.powerPerTon}`;
+    },
   },
   mDrive: {
     id: 'mDrive',
@@ -324,6 +330,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       };
     },
     stats: (inst) => ({ thrust: inst.rating ?? 0 }),
+    describe: (inst) => `Manoeuvre Drive — Thrust ${inst.rating ?? 0}`,
   },
   jDrive: {
     id: 'jDrive',
@@ -345,6 +352,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       };
     },
     stats: (inst) => ({ jump: inst.rating ?? 0 }),
+    describe: (inst) => `Jump Drive — Jump-${inst.rating ?? 0}`,
   },
   bridge: {
     id: 'bridge',
@@ -362,6 +370,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     category: 'fuel',
     // rating = tons of fuel. No cost for fuel tankage.
     resources: (inst) => ({ tons: -(inst.rating ?? 0) }),
+    describe: (inst) => `Fuel — ${inst.rating ?? 0} tons`,
   },
   stateroom: {
     id: 'stateroom',
@@ -396,6 +405,12 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       };
     },
     stats: (inst) => ({ armour: inst.rating ?? 0 }),
+    describe: (inst) => {
+      const type =
+        ARMOUR_TYPES[inst.options?.type as ArmourTypeId] ??
+        ARMOUR_TYPES.crystaliron;
+      return `Armour — ${type.name} ${inst.rating ?? 0}`;
+    },
   },
   computer: {
     id: 'computer',
@@ -410,6 +425,8 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       ).cost;
       return { cost: inst.options?.bis ? base * 1.5 : base };
     },
+    describe: (inst) =>
+      `Computer${(inst.options?.model as string) ?? '/5'}${inst.options?.bis ? 'bis' : ''}`,
   },
   sensors: {
     id: 'sensors',
@@ -420,6 +437,8 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       const s = SENSORS[inst.options?.grade as SensorId] ?? SENSORS.basic;
       return { tons: -s.tons, power: -s.power, cost: s.cost };
     },
+    describe: (inst) =>
+      `Sensors — ${(SENSORS[inst.options?.grade as SensorId] ?? SENSORS.basic).name}`,
   },
   lowBerth: {
     id: 'lowBerth',
@@ -528,7 +547,7 @@ function shipHull(
   const config = HULL_CONFIGS[configId] ?? HULL_CONFIGS.standard;
   return {
     id: `hull-${hullTons}-${config.id}`,
-    name: `${hullTons}-ton ${config.name} hull`,
+    name: `Hull — ${hullTons} tons, ${config.name}`,
     size: hullTons,
     tl,
     provides: {

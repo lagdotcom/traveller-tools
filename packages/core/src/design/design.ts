@@ -86,7 +86,7 @@ export function summarize<S extends Stats>(
     push(scaled);
     lineItems.push({
       id: def.id,
-      name: def.name,
+      name: def.describe?.(inst, ctx) ?? def.name,
       quantity: n,
       resources: scaled,
     });
