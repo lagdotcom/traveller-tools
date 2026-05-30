@@ -1,7 +1,13 @@
 import {
+  ARMOUR_TYPES,
+  type ArmourTypeId,
+  type ComputerId,
+  COMPUTERS,
   evaluateShip,
   type HullConfigId,
   type PowerPlantId,
+  type SensorId,
+  SENSORS,
   SHIP_RESOURCES,
   type ShipParams,
 } from '@traveller-tools/core';
@@ -48,7 +54,13 @@ export function ShipBuilderScreen({
     plant: 'TL12',
     power: '4',
     fuel: '12',
+    armourType: 'crystaliron',
+    armour: '0',
+    computer: '/5',
+    sensors: 'basic',
     staterooms: '2',
+    lowBerths: '0',
+    common: '0',
     turrets: '0',
   });
   useInput((_input, key) => {
@@ -64,7 +76,13 @@ export function ShipBuilderScreen({
     powerPlantType: parsePlant(form.values.plant),
     powerPlantTons: num(form.values.power),
     fuelTons: num(form.values.fuel),
+    armourType: form.values.armourType as ArmourTypeId,
+    armourPoints: num(form.values.armour),
+    computer: form.values.computer as ComputerId,
+    sensors: form.values.sensors as SensorId,
     staterooms: num(form.values.staterooms),
+    lowBerths: num(form.values.lowBerths),
+    commonAreasTons: num(form.values.common),
     turrets: num(form.values.turrets),
   };
   const { summary, issues, cargoTons, powerRequirements } =
@@ -89,7 +107,17 @@ export function ShipBuilderScreen({
     { key: 'plant', label: 'Power plant', options: ['TL8', 'TL12', 'TL15'] },
     { key: 'power', label: 'Power plant (tons)' },
     { key: 'fuel', label: 'Fuel (tons)' },
+    {
+      key: 'armourType',
+      label: 'Armour type',
+      options: Object.keys(ARMOUR_TYPES),
+    },
+    { key: 'armour', label: 'Armour points' },
+    { key: 'computer', label: 'Computer', options: Object.keys(COMPUTERS) },
+    { key: 'sensors', label: 'Sensors', options: Object.keys(SENSORS) },
     { key: 'staterooms', label: 'Staterooms' },
+    { key: 'lowBerths', label: 'Low berths' },
+    { key: 'common', label: 'Common areas (t)' },
     { key: 'turrets', label: 'Turrets' },
   ];
 
@@ -98,7 +126,7 @@ export function ShipBuilderScreen({
       <Text bold color="yellow">
         Ship Builder
       </Text>
-      <Text dimColor>Core Rulebook (2022) · standard hull configuration.</Text>
+      <Text dimColor>Core Rulebook (2022) spacecraft design.</Text>
 
       <Box marginTop={1}>
         <BudgetBar resources={usage} />

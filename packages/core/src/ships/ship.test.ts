@@ -11,7 +11,13 @@ const baseParams: ShipParams = {
   powerPlantType: 'fusionTL12',
   powerPlantTons: 4,
   fuelTons: 12,
+  armourType: 'crystaliron',
+  armourPoints: 0,
+  computer: '/5',
+  sensors: 'basic',
   staterooms: 2,
+  lowBerths: 0,
+  commonAreasTons: 0,
   turrets: 0,
 };
 
@@ -146,6 +152,24 @@ describe('evaluateShip', () => {
     expect(summary.resources.power.provided).toBe(60);
     // Consumed: basic 20% (20) + Thrust-1 (10) + Jump-1 (10) = 40.
     expect(summary.resources.power.used).toBe(40);
+  });
+
+  it('recreates the Scout armour and sensor line items', () => {
+    // Streamlined 100t scout: Crystaliron Armour 4, Military Grade sensors.
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullConfig: 'streamlined',
+      armourType: 'crystaliron',
+      armourPoints: 4,
+      sensors: 'military',
+    });
+    const line = (id: string) => summary.lineItems.find((l) => l.id === id)!;
+    // Armour: 100 × 1.25% × 4 = 5 tons; cost 5% of hull cost (6) × 4 = 1.2.
+    expect(line('armour').resources.tons).toBeCloseTo(-5, 6);
+    expect(line('armour').resources.cost).toBeCloseTo(1.2, 6);
+    // Military Grade sensors: 2 tons, 2 Power, MCr4.1.
+    expect(line('sensors').resources.tons).toBe(-2);
+    expect(line('sensors').resources.cost).toBe(4.1);
   });
 
   it('reports remaining tonnage as cargo for a valid ship', () => {

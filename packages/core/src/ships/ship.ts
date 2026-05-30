@@ -149,6 +149,97 @@ export const POWER_PLANTS: Record<PowerPlantId, PowerPlantType> = {
 };
 const DEFAULT_PLANT: PowerPlantId = 'fusionTL12';
 
+/** Armour types (Hull Armour table). Cost is a % of the hull's cost per point. */
+export type ArmourTypeId = 'crystaliron' | 'bondedSuperdense';
+export interface ArmourType {
+  id: ArmourTypeId;
+  name: string;
+  minTL: number;
+  tonsPctPerPoint: number;
+  costPctOfHullPerPoint: number;
+}
+export const ARMOUR_TYPES: Record<ArmourTypeId, ArmourType> = {
+  crystaliron: {
+    id: 'crystaliron',
+    name: 'Crystaliron',
+    minTL: 10,
+    tonsPctPerPoint: 0.0125,
+    costPctOfHullPerPoint: 0.05,
+  },
+  bondedSuperdense: {
+    id: 'bondedSuperdense',
+    name: 'Bonded Superdense',
+    minTL: 14,
+    tonsPctPerPoint: 0.008,
+    costPctOfHullPerPoint: 0.08,
+  },
+};
+/** Maximum armour Protection: TL, or 13, whichever is less. */
+const armourMax = (tl: number) => Math.min(tl, 13);
+
+/** Computer models (Computers table). Computers consume no tonnage. */
+export type ComputerId = '/5' | '/10' | '/15' | '/20' | '/25' | '/30' | '/35';
+export const COMPUTERS: Record<ComputerId, { tl: number; cost: number }> = {
+  '/5': { tl: 7, cost: 0.03 },
+  '/10': { tl: 9, cost: 0.16 },
+  '/15': { tl: 11, cost: 2 },
+  '/20': { tl: 12, cost: 5 },
+  '/25': { tl: 13, cost: 10 },
+  '/30': { tl: 14, cost: 20 },
+  '/35': { tl: 15, cost: 30 },
+};
+
+/** Sensor suites (Sensors table). */
+export type SensorId =
+  | 'basic'
+  | 'civilian'
+  | 'military'
+  | 'improved'
+  | 'advanced';
+export interface SensorSuite {
+  id: SensorId;
+  name: string;
+  tl: number;
+  power: number;
+  tons: number;
+  cost: number;
+}
+export const SENSORS: Record<SensorId, SensorSuite> = {
+  basic: { id: 'basic', name: 'Basic', tl: 0, power: 0, tons: 0, cost: 0 },
+  civilian: {
+    id: 'civilian',
+    name: 'Civilian Grade',
+    tl: 9,
+    power: 0,
+    tons: 1,
+    cost: 3,
+  },
+  military: {
+    id: 'military',
+    name: 'Military Grade',
+    tl: 10,
+    power: 2,
+    tons: 2,
+    cost: 4.1,
+  },
+  improved: {
+    id: 'improved',
+    name: 'Improved',
+    tl: 12,
+    power: 4,
+    tons: 3,
+    cost: 4.3,
+  },
+  advanced: {
+    id: 'advanced',
+    name: 'Advanced',
+    tl: 15,
+    power: 6,
+    tons: 5,
+    cost: 5.3,
+  },
+};
+
 /** Bridge tonnage by ship size (Bridges table). */
 function bridgeTons(hull: number): number {
   if (hull <= 50) return 3;
@@ -265,6 +356,65 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     resources: () => ({ tons: -1, hardpoints: -1, power: -1, cost: 0.2 }),
     stats: () => ({ turrets: 1 }),
   },
+  armour: {
+    id: 'armour',
+    name: 'Armour',
+    category: 'armour',
+    // rating = Protection points; options.type, options.hullCost (config-adjusted).
+    resources: (inst, ctx) => {
+      const type =
+        ARMOUR_TYPES[inst.options?.type as ArmourTypeId] ??
+        ARMOUR_TYPES.crystaliron;
+      const points = inst.rating ?? 0;
+      const hullCost = Number(inst.options?.hullCost ?? 0);
+      return {
+        tons: -(ctx.chassisSize * type.tonsPctPerPoint * points),
+        cost: hullCost * type.costPctOfHullPerPoint * points,
+      };
+    },
+    stats: (inst) => ({ armour: inst.rating ?? 0 }),
+  },
+  computer: {
+    id: 'computer',
+    name: 'Computer',
+    category: 'computer',
+    unique: true,
+    // No tonnage; options.model picks the model.
+    resources: (inst) => ({
+      cost: (COMPUTERS[inst.options?.model as ComputerId] ?? COMPUTERS['/5'])
+        .cost,
+    }),
+  },
+  sensors: {
+    id: 'sensors',
+    name: 'Sensors',
+    category: 'sensors',
+    unique: true,
+    resources: (inst) => {
+      const s = SENSORS[inst.options?.grade as SensorId] ?? SENSORS.basic;
+      return { tons: -s.tons, power: -s.power, cost: s.cost };
+    },
+  },
+  lowBerth: {
+    id: 'lowBerth',
+    name: 'Low Berths',
+    category: 'lowBerth',
+    // rating = number of berths: 0.5t & Cr50,000 each, 1 Power per 10 (or part).
+    resources: (inst) => {
+      const n = inst.rating ?? 0;
+      return { tons: -(0.5 * n), cost: 0.05 * n, power: -Math.ceil(n / 10) };
+    },
+  },
+  commonArea: {
+    id: 'commonArea',
+    name: 'Common Areas',
+    category: 'commonArea',
+    // rating = tons of common/living space at MCr0.1 per ton.
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: 0.1 * t };
+    },
+  },
 };
 
 // --- Assembly + rules -------------------------------------------------------
@@ -278,7 +428,13 @@ export interface ShipParams {
   powerPlantType: PowerPlantId;
   powerPlantTons: number;
   fuelTons: number;
+  armourType: ArmourTypeId;
+  armourPoints: number;
+  computer: ComputerId;
+  sensors: SensorId;
   staterooms: number;
+  lowBerths: number;
+  commonAreasTons: number;
   turrets: number;
 }
 
@@ -313,7 +469,14 @@ function shipHull(
 }
 
 export function makeShipDesign(params: ShipParams): Design<ShipStats> {
-  const installed: Design<ShipStats>['installed'] = [{ defId: 'bridge' }];
+  const config = HULL_CONFIGS[params.hullConfig] ?? HULL_CONFIGS.standard;
+  const hullCost = params.hullTons * HULL_COST_PER_TON * config.costMult;
+
+  const installed: Design<ShipStats>['installed'] = [
+    { defId: 'bridge' },
+    { defId: 'computer', options: { model: params.computer } },
+    { defId: 'sensors', options: { grade: params.sensors } },
+  ];
   if (params.powerPlantTons > 0)
     installed.push({
       defId: 'powerPlant',
@@ -325,8 +488,18 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   if (params.jump > 0) installed.push({ defId: 'jDrive', rating: params.jump });
   if (params.fuelTons > 0)
     installed.push({ defId: 'fuel', rating: params.fuelTons });
+  if (params.armourPoints > 0)
+    installed.push({
+      defId: 'armour',
+      rating: params.armourPoints,
+      options: { type: params.armourType, hullCost },
+    });
   if (params.staterooms > 0)
     installed.push({ defId: 'stateroom', quantity: params.staterooms });
+  if (params.lowBerths > 0)
+    installed.push({ defId: 'lowBerth', rating: params.lowBerths });
+  if (params.commonAreasTons > 0)
+    installed.push({ defId: 'commonArea', rating: params.commonAreasTons });
   if (params.turrets > 0)
     installed.push({ defId: 'turret', quantity: params.turrets });
 
@@ -388,6 +561,56 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
         ]
       : [];
   },
+  // Computer, sensors and armour are gated by tech level; armour is also capped
+  // and disallowed on dispersed-structure hulls.
+  ({ design, context }) => {
+    const issues: Issue[] = [];
+    const find = (defId: string) =>
+      design.installed.find((c) => c.defId === defId);
+
+    const computer = find('computer');
+    const model = COMPUTERS[computer?.options?.model as ComputerId];
+    if (model && context.tl < model.tl) {
+      issues.push({
+        severity: 'error',
+        message: `Computer${computer!.options!.model} requires TL ${model.tl}`,
+      });
+    }
+
+    const sensors = find('sensors');
+    const suite = SENSORS[sensors?.options?.grade as SensorId];
+    if (suite && context.tl < suite.tl) {
+      issues.push({
+        severity: 'error',
+        message: `${suite.name} sensors require TL ${suite.tl}`,
+      });
+    }
+
+    const armour = find('armour');
+    if (armour?.rating) {
+      const type = ARMOUR_TYPES[armour.options?.type as ArmourTypeId];
+      const dispersed = design.chassis.id.includes('dispersed');
+      if (dispersed) {
+        issues.push({
+          severity: 'error',
+          message: 'Dispersed-structure hulls cannot mount armour',
+        });
+      }
+      if (type && context.tl < type.minTL) {
+        issues.push({
+          severity: 'error',
+          message: `${type.name} armour requires TL ${type.minTL}`,
+        });
+      }
+      if (armour.rating > armourMax(context.tl)) {
+        issues.push({
+          severity: 'error',
+          message: `Armour Protection ${armour.rating} exceeds the maximum of ${armourMax(context.tl)}`,
+        });
+      }
+    }
+    return issues;
+  },
   // Hard power requirement: the plant must run basic systems + the manoeuvre
   // drive simultaneously. (Jump-at-the-same-time is only a bonus, so a total
   // overdraw is just a warning — see SHIP_RESOURCES.)
@@ -423,7 +646,10 @@ const NUMERIC_FIELDS: Array<keyof ShipParams> = [
   'jump',
   'powerPlantTons',
   'fuelTons',
+  'armourPoints',
   'staterooms',
+  'lowBerths',
+  'commonAreasTons',
   'turrets',
 ];
 const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
@@ -432,14 +658,19 @@ const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
   jump: 'Jump',
   powerPlantTons: 'Power plant tonnage',
   fuelTons: 'Fuel',
+  armourPoints: 'Armour',
   staterooms: 'Staterooms',
+  lowBerths: 'Low berths',
+  commonAreasTons: 'Common areas',
   turrets: 'Turrets',
 };
 const INTEGER_FIELDS: Array<keyof ShipParams> = [
   'tl',
   'thrust',
   'jump',
+  'armourPoints',
   'staterooms',
+  'lowBerths',
   'turrets',
 ];
 
