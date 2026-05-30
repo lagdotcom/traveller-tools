@@ -21,9 +21,6 @@ function ship(
  *
  * TODO: components not yet modelled, so the ships below approximate them (see
  * the per-ship notes):
- *   - Small-craft firmpoints (craft under 100t can't yet mount weapons, since
- *     hardpoints are floor(hull/100) — so the Fighter and armed boats are
- *     omitted for now).
  *   - Nested/carried small craft: a Hangar only models the bay tonnage, not the
  *     docked craft's own design (so carriers list a hangar, not their boats).
  *   - Luxuries / fittings, ship's lockers, vehicles, air/rafts, escape pods,
@@ -190,9 +187,104 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { mount: 'triple', weapon: 'pulseLaser' },
     ],
   }),
-  // Small craft (no jump drive; cockpit bridge). TODO: firmpoints aren't
-  // modelled, so these are unarmed — the book's armed boats/fighters await
-  // small-craft weapon mounts.
+  // TODO: the Close Escort carries no small craft; weapons are best-guess
+  // turret loadouts.
+  ship('Close Escort (Type E)', '400-ton escort.', {
+    hullTons: 400,
+    tl: 13,
+    thrust: 4,
+    jump: 3,
+    powerPlantTons: 24,
+    fuelTons: 130,
+    armourType: 'crystaliron',
+    armourPoints: 2,
+    sensors: 'military',
+    staterooms: 6,
+    crewType: 'military',
+    software: [{ type: 'jumpControl', level: 3 }],
+    weapons: [
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'triple', weapon: 'pulseLaser' },
+      { mount: 'single', weapon: 'particleBarbette' },
+    ],
+  }),
+  ship('Corsair (Type P)', '400-ton streamlined raider.', {
+    hullTons: 400,
+    tl: 12,
+    hullConfig: 'streamlined',
+    thrust: 3,
+    jump: 2,
+    powerPlantTons: 19,
+    fuelTons: 85,
+    sensors: 'military',
+    staterooms: 10,
+    fuelScoop: true,
+    software: [{ type: 'jumpControl', level: 2 }],
+    weapons: [
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'single', weapon: 'missileRack' },
+    ],
+  }),
+  // TODO: the SDB is a non-jump system defender; armour values and the particle
+  // barbette use derived/approximate loadouts.
+  ship('System Defence Boat', '400-ton non-jump system defence boat.', {
+    hullTons: 400,
+    tl: 14,
+    thrust: 6,
+    jump: 0,
+    powerPlantTons: 22,
+    fuelTons: 5,
+    armourType: 'crystaliron',
+    armourPoints: 6,
+    sensors: 'military',
+    staterooms: 8,
+    crewType: 'military',
+    weapons: [
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'triple', weapon: 'pulseLaser' },
+      { mount: 'single', weapon: 'particleBarbette' },
+    ],
+  }),
+  // TODO: the Mercenary Cruiser carries small craft in its hangar — only the bay
+  // tonnage is modelled, not the docked craft.
+  ship('Mercenary Cruiser (Type C)', '800-ton mercenary cruiser.', {
+    hullTons: 800,
+    tl: 13,
+    thrust: 2,
+    jump: 3,
+    powerPlantTons: 38,
+    fuelTons: 250,
+    armourType: 'crystaliron',
+    armourPoints: 4,
+    sensors: 'military',
+    staterooms: 20,
+    crewType: 'military',
+    systems: [{ type: 'hangar', amount: 30 }],
+    software: [{ type: 'jumpControl', level: 3 }],
+    weapons: [
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'triple', weapon: 'beamLaser' },
+      { mount: 'triple', weapon: 'pulseLaser' },
+      { mount: 'triple', weapon: 'missileRack' },
+    ],
+  }),
+  // Small craft (no jump drive; cockpit bridge). Weapons mount on firmpoints, so
+  // these use fixed mounts only (turrets need a 100-ton hull).
+  ship('Light Fighter', '10-ton fighter.', {
+    hullTons: 10,
+    tl: 12,
+    thrust: 6,
+    jump: 0,
+    powerPlantType: 'fusionTL12',
+    powerPlantTons: 1,
+    fuelTons: 1,
+    bridge: 'cockpit',
+    staterooms: 0,
+    weapons: [{ mount: 'fixed', weapon: 'beamLaser' }],
+  }),
   ship('Ship’s Boat', '30-ton general-purpose small craft.', {
     hullTons: 30,
     tl: 10,

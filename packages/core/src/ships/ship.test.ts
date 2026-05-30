@@ -356,6 +356,41 @@ describe('evaluateShip', () => {
     ).toBe(true);
   });
 
+  it('lets small craft mount fixed weapons but not turrets', () => {
+    // A 10-ton fighter has one firmpoint; a fixed weapon is fine.
+    const fighter = evaluateShip({
+      ...baseParams,
+      hullTons: 10,
+      tl: 12,
+      jump: 0,
+      thrust: 6,
+      powerPlantTons: 1,
+      fuelTons: 1,
+      bridge: 'cockpit',
+      staterooms: 0,
+      weapons: [{ mount: 'fixed', weapon: 'beamLaser' }],
+    });
+    expect(fighter.issues.filter((i) => i.severity === 'error')).toEqual([]);
+    // A turret on the same small craft is rejected.
+    const turreted = evaluateShip({
+      ...baseParams,
+      hullTons: 10,
+      tl: 12,
+      jump: 0,
+      thrust: 6,
+      powerPlantTons: 1,
+      fuelTons: 1,
+      bridge: 'cockpit',
+      staterooms: 0,
+      weapons: [{ mount: 'triple', weapon: 'beamLaser' }],
+    });
+    expect(
+      turreted.issues.some(
+        (i) => i.severity === 'error' && /Small craft/.test(i.message),
+      ),
+    ).toBe(true);
+  });
+
   it('reports remaining tonnage as cargo for a valid ship', () => {
     const { cargoTons, issues } = evaluateShip(baseParams);
     expect(issues).toEqual([]);

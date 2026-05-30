@@ -1109,7 +1109,26 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
     }
     return issues;
   },
-  // Hard power requirement: the plant must run basic systems + the manoeuvre
+  // Small craft (under 100 tons) mount fixed weapons on firmpoints; they cannot
+  // carry turrets or barbettes.
+  ({ design, context }) => {
+    if (context.chassisSize >= 100) return [];
+    const hasNonFixed = design.installed.some(
+      (c) =>
+        c.defId === 'weapon' &&
+        c.options?.mount !== 'fixed' &&
+        c.options?.weapon !== 'none',
+    );
+    return hasNonFixed
+      ? [
+          {
+            severity: 'error',
+            message:
+              'Small craft (under 100 tons) can only mount fixed weapons on firmpoints, not turrets',
+          },
+        ]
+      : [];
+  },
   // drive simultaneously. (Jump-at-the-same-time is only a bonus, so a total
   // overdraw is just a warning — see SHIP_RESOURCES.)
   ({ design, summary, context }) => {
