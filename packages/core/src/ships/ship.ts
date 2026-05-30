@@ -249,16 +249,43 @@ export type SystemTypeId =
   | 'probeDrones'
   | 'repairDrones'
   | 'miningDrones'
-  | 'missileStorage';
+  | 'missileStorage'
+  | 'hangar'
+  | 'cargoCrane'
+  | 'laboratory'
+  | 'workshop'
+  | 'medicalBay'
+  | 'briefingRoom'
+  | 'detentionCells';
 export const SYSTEM_TYPES: Record<
   SystemTypeId,
-  { id: SystemTypeId; label: string }
+  {
+    id: SystemTypeId;
+    label: string;
+    /** Derived from non-Core (High Guard) material; flagged in the builder. */
+    unverified?: boolean;
+  }
 > = {
   fuelProcessor: { id: 'fuelProcessor', label: 'Fuel Processor' },
   probeDrones: { id: 'probeDrones', label: 'Probe Drones' },
   repairDrones: { id: 'repairDrones', label: 'Repair Drones' },
   miningDrones: { id: 'miningDrones', label: 'Mining Drones' },
   missileStorage: { id: 'missileStorage', label: 'Missile Storage' },
+  hangar: { id: 'hangar', label: 'Hangar / Docking Space', unverified: true },
+  cargoCrane: { id: 'cargoCrane', label: 'Cargo Crane', unverified: true },
+  laboratory: { id: 'laboratory', label: 'Laboratory', unverified: true },
+  workshop: { id: 'workshop', label: 'Workshop', unverified: true },
+  medicalBay: { id: 'medicalBay', label: 'Medical Bay', unverified: true },
+  briefingRoom: {
+    id: 'briefingRoom',
+    label: 'Briefing Room',
+    unverified: true,
+  },
+  detentionCells: {
+    id: 'detentionCells',
+    label: 'Detention Cells',
+    unverified: true,
+  },
 };
 export interface SystemEntry {
   type: SystemTypeId;
@@ -736,6 +763,73 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     category: 'missileStorage',
     // rating = tons of magazine (12 tons holds 144 missiles); no extra cost.
     resources: (inst) => ({ tons: -(inst.rating ?? 0) }),
+  },
+  // The systems below are DERIVED (High Guard, not Core); evaluateShip flags a
+  // warning when any is in use. rating = tons in every case.
+  hangar: {
+    id: 'hangar',
+    name: 'Hangar / Docking Space',
+    category: 'hangar',
+    // Holds small craft; ~Cr25,000 per ton of hangar space.
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.025 * (inst.rating ?? 0),
+    }),
+    describe: (inst) => `Hangar / Docking Space — ${inst.rating ?? 0} tons`,
+  },
+  cargoCrane: {
+    id: 'cargoCrane',
+    name: 'Cargo Crane',
+    category: 'cargoCrane',
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.1 * (inst.rating ?? 0),
+    }),
+  },
+  laboratory: {
+    id: 'laboratory',
+    name: 'Laboratory',
+    category: 'laboratory',
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.25 * (inst.rating ?? 0),
+    }),
+  },
+  workshop: {
+    id: 'workshop',
+    name: 'Workshop',
+    category: 'workshop',
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.15 * (inst.rating ?? 0),
+    }),
+  },
+  medicalBay: {
+    id: 'medicalBay',
+    name: 'Medical Bay',
+    category: 'medicalBay',
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.5 * (inst.rating ?? 0),
+    }),
+  },
+  briefingRoom: {
+    id: 'briefingRoom',
+    name: 'Briefing Room',
+    category: 'briefingRoom',
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.1 * (inst.rating ?? 0),
+    }),
+  },
+  detentionCells: {
+    id: 'detentionCells',
+    name: 'Detention Cells',
+    category: 'detentionCells',
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.1 * (inst.rating ?? 0),
+    }),
   },
   software: {
     id: 'software',
@@ -1233,14 +1327,18 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
 
   // Some options are derived from non-Core (High Guard) material we couldn't
   // verify; warn whenever one is in use so the numbers aren't trusted blindly.
-  const unverified: string[] = [];
-  if (params.reinforcementTons > 0) unverified.push('Reinforced Structure');
-  if (params.software.some((s) => SOFTWARE_TYPES[s.type]?.unverified))
-    unverified.push('Countermeasures');
-  if (unverified.length > 0) {
+  const unverified = new Set<string>();
+  if (params.reinforcementTons > 0) unverified.add('Reinforced Structure');
+  for (const s of params.software)
+    if (SOFTWARE_TYPES[s.type]?.unverified)
+      unverified.add(SOFTWARE_TYPES[s.type].label);
+  for (const s of params.systems)
+    if (s.amount > 0 && SYSTEM_TYPES[s.type]?.unverified)
+      unverified.add(SYSTEM_TYPES[s.type].label);
+  if (unverified.size > 0) {
     extra.push({
       severity: 'warning',
-      message: `${unverified.join(' and ')} use derived rules (not from the Core Rulebook) and may be inaccurate.`,
+      message: `${[...unverified].join(', ')} use derived rules (not from the Core Rulebook) and may be inaccurate.`,
     });
   }
 

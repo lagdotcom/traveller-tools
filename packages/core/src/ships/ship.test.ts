@@ -320,6 +320,30 @@ describe('evaluateShip', () => {
     ).toBe(true);
   });
 
+  it('costs derived systems by tonnage and warns they are unverified', () => {
+    const { summary, issues } = evaluateShip({
+      ...baseParams,
+      hullTons: 400,
+      systems: [
+        { type: 'hangar', amount: 20 },
+        { type: 'laboratory', amount: 4 },
+      ],
+    });
+    const line = (id: string) => summary.lineItems.find((l) => l.id === id)!;
+    expect(line('hangar').resources.tons).toBe(-20);
+    expect(line('hangar').resources.cost).toBeCloseTo(0.5, 6); // 0.025 × 20
+    expect(line('laboratory').resources.tons).toBe(-4);
+    expect(line('laboratory').resources.cost).toBeCloseTo(1, 6); // 0.25 × 4
+    expect(
+      issues.some(
+        (i) =>
+          i.severity === 'warning' &&
+          i.message.includes('Hangar') &&
+          i.message.includes('Laboratory'),
+      ),
+    ).toBe(true);
+  });
+
   it('warns when unverified countermeasures software is installed', () => {
     const { issues } = evaluateShip({
       ...baseParams,
