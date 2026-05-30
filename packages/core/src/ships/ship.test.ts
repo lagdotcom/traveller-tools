@@ -5,8 +5,10 @@ import { evaluateShip, type ShipParams } from './ship.js';
 const baseParams: ShipParams = {
   hullTons: 100,
   tl: 12,
+  hullConfig: 'standard',
   thrust: 1,
   jump: 1,
+  powerPlantType: 'fusionTL12',
   powerPlantTons: 4,
   fuelTons: 12,
   staterooms: 2,
@@ -102,14 +104,13 @@ describe('evaluateShip', () => {
     // is basic 40 + manoeuvre 20 + jump 20 = 80 > 75, which the rules allow
     // (jump-while-manoeuvring is only a bonus). So: no errors, one power warning.
     const { issues } = evaluateShip({
+      ...baseParams,
       hullTons: 200,
-      tl: 12,
       thrust: 1,
       jump: 1,
       powerPlantTons: 5,
       fuelTons: 21,
       staterooms: 10,
-      turrets: 0,
     });
     expect(issues.filter((i) => i.severity === 'error')).toEqual([]);
     expect(
@@ -122,14 +123,13 @@ describe('evaluateShip', () => {
   it('errors when the plant cannot even run basic systems + manoeuvre', () => {
     // 200t Thrust-2 needs basic 40 + manoeuvre 40 = 80; a 2-ton plant gives 30.
     const { issues } = evaluateShip({
+      ...baseParams,
       hullTons: 200,
-      tl: 12,
       thrust: 2,
       jump: 0,
       powerPlantTons: 2,
       fuelTons: 1,
       staterooms: 0,
-      turrets: 0,
     });
     expect(
       issues.some(

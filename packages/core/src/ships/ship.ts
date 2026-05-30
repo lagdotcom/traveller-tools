@@ -15,11 +15,9 @@ import { jumpFuel } from '../jump.js';
  * Ship domain on top of the builder-agnostic `design` engine, using MgT2 Core
  * Rulebook (2022) spacecraft-construction values.
  *
- * Standard hull configuration is assumed (no streamlined/dispersed cost
- * modifiers yet) and computer/sensors/armour are not yet builder fields.
- *
  * Thrust ratings run 1-9 (drive = Thrust% of hull); Jump 1-6 (drive =
- * Jump × 2.5% of hull, +5t, minimum 10t).
+ * Jump × 2.5% of hull, +5t, minimum 10t). Computer/sensors/armour are not yet
+ * builder fields.
  */
 
 export interface ShipStats extends Record<string, number> {
@@ -84,16 +82,72 @@ const JUMP_TL: Record<number, number> = {
 const MAX_THRUST = 9;
 const MAX_JUMP = 6;
 
-/** Power plant generation/cost per ton, by best type the TL allows. */
-function powerPlantSpec(tl: number): {
+/** Hull configurations (Core Rulebook). Sphere/Reinforced are High Guard. */
+export type HullConfigId = 'standard' | 'streamlined' | 'dispersed';
+export interface HullConfig {
+  id: HullConfigId;
+  name: string;
+  costMult: number;
+  hullPointMult: number;
+  armourAllowed: boolean;
+}
+export const HULL_CONFIGS: Record<HullConfigId, HullConfig> = {
+  standard: {
+    id: 'standard',
+    name: 'Standard',
+    costMult: 1,
+    hullPointMult: 1,
+    armourAllowed: true,
+  },
+  streamlined: {
+    id: 'streamlined',
+    name: 'Streamlined',
+    costMult: 1.2,
+    hullPointMult: 1,
+    armourAllowed: true,
+  },
+  dispersed: {
+    id: 'dispersed',
+    name: 'Dispersed Structure',
+    costMult: 0.5,
+    hullPointMult: 0.9,
+    armourAllowed: false,
+  },
+};
+
+/** Power plant types (Power Plant table). The plant type is a design choice. */
+export type PowerPlantId = 'fusionTL8' | 'fusionTL12' | 'fusionTL15';
+export interface PowerPlantType {
+  id: PowerPlantId;
+  name: string;
   powerPerTon: number;
   costPerTon: number;
   minTL: number;
-} {
-  if (tl >= 15) return { powerPerTon: 20, costPerTon: 2, minTL: 15 };
-  if (tl >= 12) return { powerPerTon: 15, costPerTon: 1, minTL: 12 };
-  return { powerPerTon: 10, costPerTon: 0.5, minTL: 8 }; // Fusion (TL8)
 }
+export const POWER_PLANTS: Record<PowerPlantId, PowerPlantType> = {
+  fusionTL8: {
+    id: 'fusionTL8',
+    name: 'Fusion (TL8)',
+    powerPerTon: 10,
+    costPerTon: 0.5,
+    minTL: 8,
+  },
+  fusionTL12: {
+    id: 'fusionTL12',
+    name: 'Fusion (TL12)',
+    powerPerTon: 15,
+    costPerTon: 1,
+    minTL: 12,
+  },
+  fusionTL15: {
+    id: 'fusionTL15',
+    name: 'Fusion (TL15)',
+    powerPerTon: 20,
+    costPerTon: 2,
+    minTL: 15,
+  },
+};
+const DEFAULT_PLANT: PowerPlantId = 'fusionTL12';
 
 /** Bridge tonnage by ship size (Bridges table). */
 function bridgeTons(hull: number): number {
@@ -126,14 +180,16 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     name: 'Power Plant',
     category: 'power',
     unique: true,
-    // rating = tons allocated to the plant.
-    resources: (inst, ctx) => {
-      const spec = powerPlantSpec(ctx.tl);
+    // rating = tons allocated; options.type = which fusion plant.
+    resources: (inst) => {
+      const plant =
+        POWER_PLANTS[(inst.options?.type as PowerPlantId) ?? DEFAULT_PLANT] ??
+        POWER_PLANTS[DEFAULT_PLANT];
       const tons = inst.rating ?? 0;
       return {
         tons: -tons,
-        power: tons * spec.powerPerTon,
-        cost: tons * spec.costPerTon,
+        power: tons * plant.powerPerTon,
+        cost: tons * plant.costPerTon,
       };
     },
   },
@@ -216,28 +272,37 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
 export interface ShipParams {
   hullTons: number;
   tl: number;
+  hullConfig: HullConfigId;
   thrust: number;
   jump: number;
+  powerPlantType: PowerPlantId;
   powerPlantTons: number;
   fuelTons: number;
   staterooms: number;
   turrets: number;
 }
 
-function shipHull(hullTons: number, tl: number): Chassis<ShipStats> {
+function shipHull(
+  hullTons: number,
+  tl: number,
+  configId: HullConfigId,
+): Chassis<ShipStats> {
+  const config = HULL_CONFIGS[configId] ?? HULL_CONFIGS.standard;
   return {
-    id: `hull-${hullTons}`,
-    name: `${hullTons}-ton hull`,
+    id: `hull-${hullTons}-${config.id}`,
+    name: `${hullTons}-ton ${config.name} hull`,
     size: hullTons,
     tl,
     provides: {
       tons: hullTons,
       hardpoints: weaponMounts(hullTons),
-      cost: hullTons * HULL_COST_PER_TON,
+      cost: hullTons * HULL_COST_PER_TON * config.costMult,
       power: -(hullTons * BASIC_SYSTEMS_POWER), // basic ship systems draw
     },
     baseStats: {
-      hullPoints: Math.floor(hullTons * HULL_POINTS_PER_TON),
+      hullPoints: Math.floor(
+        hullTons * HULL_POINTS_PER_TON * config.hullPointMult,
+      ),
       thrust: 0,
       jump: 0,
       armour: 0,
@@ -250,7 +315,11 @@ function shipHull(hullTons: number, tl: number): Chassis<ShipStats> {
 export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   const installed: Design<ShipStats>['installed'] = [{ defId: 'bridge' }];
   if (params.powerPlantTons > 0)
-    installed.push({ defId: 'powerPlant', rating: params.powerPlantTons });
+    installed.push({
+      defId: 'powerPlant',
+      rating: params.powerPlantTons,
+      options: { type: params.powerPlantType },
+    });
   if (params.thrust > 0)
     installed.push({ defId: 'mDrive', rating: params.thrust });
   if (params.jump > 0) installed.push({ defId: 'jDrive', rating: params.jump });
@@ -261,7 +330,10 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   if (params.turrets > 0)
     installed.push({ defId: 'turret', quantity: params.turrets });
 
-  return { chassis: shipHull(params.hullTons, params.tl), installed };
+  return {
+    chassis: shipHull(params.hullTons, params.tl, params.hullConfig),
+    installed,
+  };
 }
 
 export const SHIP_RULES: Rule<ShipStats>[] = [
@@ -302,6 +374,20 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
     check('jDrive', 'Jump', JUMP_TL, MAX_JUMP);
     return issues;
   },
+  // The power plant type is gated by tech level.
+  ({ design, context }) => {
+    const inst = design.installed.find((c) => c.defId === 'powerPlant');
+    if (!inst) return [];
+    const plant = POWER_PLANTS[inst.options?.type as PowerPlantId];
+    return plant && context.tl < plant.minTL
+      ? [
+          {
+            severity: 'error',
+            message: `${plant.name} power plant requires TL ${plant.minTL}`,
+          },
+        ]
+      : [];
+  },
   // Hard power requirement: the plant must run basic systems + the manoeuvre
   // drive simultaneously. (Jump-at-the-same-time is only a bonus, so a total
   // overdraw is just a warning — see SHIP_RESOURCES.)
@@ -329,8 +415,16 @@ export interface ShipEvaluation {
   cargoTons: number;
 }
 
-const FIELD_LABELS: Record<keyof ShipParams, string> = {
-  hullTons: 'Hull tonnage',
+const NUMERIC_FIELDS: Array<keyof ShipParams> = [
+  'tl',
+  'thrust',
+  'jump',
+  'powerPlantTons',
+  'fuelTons',
+  'staterooms',
+  'turrets',
+];
+const FIELD_LABELS: Partial<Record<keyof ShipParams, string>> = {
   tl: 'Tech level',
   thrust: 'Thrust',
   jump: 'Jump',
@@ -339,7 +433,6 @@ const FIELD_LABELS: Record<keyof ShipParams, string> = {
   staterooms: 'Staterooms',
   turrets: 'Turrets',
 };
-
 const INTEGER_FIELDS: Array<keyof ShipParams> = [
   'tl',
   'thrust',
@@ -349,16 +442,15 @@ const INTEGER_FIELDS: Array<keyof ShipParams> = [
 ];
 
 /**
- * Clamp out-of-range builder input to safe values and record an issue for each
+ * Clamp out-of-range numeric input to safe values and record an issue for each
  * adjustment. Non-numeric fields arrive as NaN (the screen falls back to 0);
  * negatives clamp to 0; integer fields are floored. Hull tonnage is handled
  * separately by `evaluateShip` so it gets a single clear message.
  */
 function sanitizeParams(raw: ShipParams, issues: Issue[]): ShipParams {
   const out = { ...raw };
-  for (const key of Object.keys(out) as Array<keyof ShipParams>) {
-    if (key === 'hullTons') continue;
-    let value = out[key];
+  for (const key of NUMERIC_FIELDS) {
+    let value = out[key] as number;
     if (!Number.isFinite(value)) value = 0;
     if (value < 0) {
       issues.push({
@@ -368,7 +460,7 @@ function sanitizeParams(raw: ShipParams, issues: Issue[]): ShipParams {
       value = 0;
     }
     if (INTEGER_FIELDS.includes(key)) value = Math.floor(value);
-    out[key] = value;
+    (out[key] as number) = value;
   }
   return out;
 }
@@ -381,7 +473,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
   // An empty / zero / negative / non-numeric hull can't be costed or budgeted.
   if (!(params.hullTons > 0)) {
     const design: Design<ShipStats> = {
-      chassis: shipHull(0, params.tl),
+      chassis: shipHull(0, params.tl, params.hullConfig),
       installed: [],
     };
     return {

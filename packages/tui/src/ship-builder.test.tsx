@@ -44,9 +44,9 @@ describe('Ship builder (real Ink)', () => {
 
   it('flags exceeding the hull hardpoints', async () => {
     const ui = await openBuilder();
-    // Advance to the Turrets field (8th field) and add more turrets than the
+    // Advance to the Turrets field (last field) and add more turrets than the
     // 100-ton hull's single hardpoint allows.
-    for (let i = 0; i < 7; i++) await ui.type(ENTER);
+    for (let i = 0; i < 9; i++) await ui.type(ENTER);
     await ui.type('9');
     await ui.waitFor('Hardpoints exceeds capacity');
     ui.unmount();

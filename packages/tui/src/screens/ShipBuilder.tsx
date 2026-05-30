@@ -1,5 +1,7 @@
 import {
   evaluateShip,
+  type HullConfigId,
+  type PowerPlantId,
   SHIP_RESOURCES,
   type ShipParams,
 } from '@traveller-tools/core';
@@ -16,6 +18,20 @@ const num = (value: string, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
+function parseConfig(value: string): HullConfigId {
+  const v = value.trim().toLowerCase();
+  if (v.startsWith('stream')) return 'streamlined';
+  if (v.startsWith('disp')) return 'dispersed';
+  return 'standard';
+}
+
+function parsePlant(value: string): PowerPlantId {
+  const v = value.trim().toLowerCase();
+  if (v.includes('8')) return 'fusionTL8';
+  if (v.includes('15')) return 'fusionTL15';
+  return 'fusionTL12';
+}
+
 export function ShipBuilderScreen({
   onBack,
 }: {
@@ -24,8 +40,10 @@ export function ShipBuilderScreen({
   const form = useForm({
     hull: '100',
     tl: '12',
+    config: 'standard',
     thrust: '1',
     jump: '1',
+    plant: 'TL12',
     power: '4',
     fuel: '12',
     staterooms: '2',
@@ -38,8 +56,10 @@ export function ShipBuilderScreen({
   const params: ShipParams = {
     hullTons: num(form.values.hull),
     tl: num(form.values.tl),
+    hullConfig: parseConfig(form.values.config),
     thrust: num(form.values.thrust),
     jump: num(form.values.jump),
+    powerPlantType: parsePlant(form.values.plant),
     powerPlantTons: num(form.values.power),
     fuelTons: num(form.values.fuel),
     staterooms: num(form.values.staterooms),
@@ -52,8 +72,10 @@ export function ShipBuilderScreen({
   const fields: Array<{ key: keyof typeof form.values; label: string }> = [
     { key: 'hull', label: 'Hull tonnage' },
     { key: 'tl', label: 'Tech level' },
+    { key: 'config', label: 'Hull config' },
     { key: 'thrust', label: 'Thrust (M-drive)' },
     { key: 'jump', label: 'Jump (J-drive)' },
+    { key: 'plant', label: 'Plant (TL8/12/15)' },
     { key: 'power', label: 'Power plant (tons)' },
     { key: 'fuel', label: 'Fuel (tons)' },
     { key: 'staterooms', label: 'Staterooms' },
