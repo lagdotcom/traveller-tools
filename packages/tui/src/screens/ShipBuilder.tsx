@@ -27,7 +27,7 @@ export function ShipBuilderScreen({
     thrust: '1',
     jump: '1',
     power: '4',
-    fuel: '10',
+    fuel: '12',
     staterooms: '2',
     turrets: '0',
   });
@@ -65,9 +65,7 @@ export function ShipBuilderScreen({
       <Text bold color="yellow">
         Ship Builder
       </Text>
-      <Text dimColor>
-        Core Rulebook design · catalog values are PLACEHOLDERS for now.
-      </Text>
+      <Text dimColor>Core Rulebook (2022) · standard hull configuration.</Text>
 
       <Box marginTop={1}>
         <BudgetBar resources={usage} />

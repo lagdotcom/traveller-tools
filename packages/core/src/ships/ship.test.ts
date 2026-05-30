@@ -8,7 +8,7 @@ const baseParams: ShipParams = {
   thrust: 1,
   jump: 1,
   powerPlantTons: 4,
-  fuelTons: 10,
+  fuelTons: 12,
   staterooms: 2,
   turrets: 0,
 };
@@ -60,7 +60,26 @@ describe('evaluateShip', () => {
 
   it('flags insufficient jump fuel', () => {
     const { issues } = evaluateShip({ ...baseParams, jump: 2, fuelTons: 5 });
-    expect(issues.some((i) => i.message.includes('needs'))).toBe(true);
+    expect(issues.some((i) => i.message.startsWith('Fuel: need'))).toBe(true);
+  });
+
+  it('flags a drive rating above the hull tech level', () => {
+    const { issues } = evaluateShip({ ...baseParams, tl: 9, thrust: 3 });
+    // Thrust-3 needs TL12.
+    expect(issues).toContainEqual({
+      severity: 'error',
+      message: 'Thrust-3 requires TL 12',
+    });
+  });
+
+  it('matches Core Rulebook numbers for a 100-ton ship', () => {
+    const { summary } = evaluateShip(baseParams);
+    // 1 Hull Point per 2.5 tons -> 40.
+    expect(summary.stats.hullPoints).toBe(40);
+    // Power: plant 4t × 15 (TL12) = 60 provided.
+    expect(summary.resources.power.provided).toBe(60);
+    // Consumed: basic 20% (20) + Thrust-1 (10) + Jump-1 (10) = 40.
+    expect(summary.resources.power.used).toBe(40);
   });
 
   it('reports remaining tonnage as cargo for a valid ship', () => {

@@ -12,11 +12,14 @@ import {
 import { jumpFuel } from '../jump.js';
 
 /**
- * Ship domain on top of the builder-agnostic `design` engine.
+ * Ship domain on top of the builder-agnostic `design` engine, using MgT2 Core
+ * Rulebook (2022) spacecraft-construction values.
  *
- * ⚠️ ALL NUMBERS BELOW ARE PLACEHOLDERS so the builder is usable end-to-end.
- * Replace them with MgT2 Core Rulebook values (search "PLACEHOLDER"). The shapes
- * and rules are what matter; only the table values are stubbed.
+ * Standard hull configuration is assumed (no streamlined/dispersed cost
+ * modifiers yet) and computer/sensors/armour are not yet builder fields.
+ *
+ * NOTE: the jump-drive minimum-TL-per-rating values are marked ASSUMED — the
+ * source table's TL column was ambiguous; see JUMP_TL.
  */
 
 export interface ShipStats extends Record<string, number> {
@@ -35,6 +38,76 @@ export const SHIP_RESOURCES: ResourceDef[] = [
   { key: 'cost', label: 'Cost (MCr)', mode: 'accumulate' },
 ];
 
+// --- Core Rulebook tables ---------------------------------------------------
+
+const HULL_COST_PER_TON = 0.05; // MCr (Cr50,000)
+const HULL_POINTS_PER_TON = 1 / 2.5; // 1 Hull Point per full 2.5 tons
+const BASIC_SYSTEMS_POWER = 0.2; // 20% of hull tonnage
+const DRIVE_POWER_PER_RATING = 0.1; // 10% of hull tonnage × rating
+
+const M_DRIVE_HULL_PCT_PER_THRUST = 0.025; // 2.5% of hull per Thrust
+const M_DRIVE_COST_PER_TON = 2; // MCr
+const J_DRIVE_HULL_PCT_PER_JUMP = 0.01; // 1% of hull per Jump (+5t, min 10t)
+const J_DRIVE_TON_BONUS = 5;
+const J_DRIVE_MIN_TONS = 10;
+const J_DRIVE_COST_PER_TON = 1.5; // MCr
+
+/** Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table). */
+const THRUST_TL: Record<number, number> = {
+  1: 9,
+  2: 11,
+  3: 12,
+  4: 13,
+  5: 14,
+  6: 15,
+};
+/** Minimum TL by Jump rating — ASSUMED (see note above), pending confirmation. */
+const JUMP_TL: Record<number, number> = {
+  1: 9,
+  2: 11,
+  3: 12,
+  4: 13,
+  5: 14,
+  6: 15,
+};
+const MAX_DRIVE_RATING = 6;
+
+/** Power plant generation/cost per ton, by best type the TL allows. */
+function powerPlantSpec(tl: number): {
+  powerPerTon: number;
+  costPerTon: number;
+  minTL: number;
+} {
+  if (tl >= 15) return { powerPerTon: 20, costPerTon: 2, minTL: 15 };
+  if (tl >= 12) return { powerPerTon: 15, costPerTon: 1, minTL: 12 };
+  return { powerPerTon: 10, costPerTon: 0.5, minTL: 8 }; // Fusion (TL8)
+}
+
+/** Bridge tonnage by ship size (Bridges table). */
+function bridgeTons(hull: number): number {
+  if (hull <= 50) return 3;
+  if (hull <= 99) return 6;
+  if (hull <= 200) return 10;
+  if (hull <= 1000) return 20;
+  if (hull <= 2000) return 40;
+  return 60;
+}
+
+/** Hardpoints (≥100t) or firmpoints (<100t) available on a hull. */
+function weaponMounts(hull: number): number {
+  if (hull >= 100) return Math.floor(hull / 100);
+  if (hull >= 71) return 3;
+  if (hull >= 35) return 2;
+  return 1;
+}
+
+/** Fuel for four weeks of power-plant operation: 10% of plant size, min 1t. */
+function powerPlantFuel(plantTons: number): number {
+  return plantTons > 0 ? Math.max(1, Math.ceil(plantTons * 0.1)) : 0;
+}
+
+// --- Catalog ----------------------------------------------------------------
+
 export const SHIP_CATALOG: Catalog<ShipStats> = {
   powerPlant: {
     id: 'powerPlant',
@@ -42,11 +115,15 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     category: 'power',
     unique: true,
     // rating = tons allocated to the plant.
-    resources: (inst) => ({
-      tons: -(inst.rating ?? 0),
-      power: (inst.rating ?? 0) * 10, // PLACEHOLDER: power per ton
-      cost: (inst.rating ?? 0) * 1, // PLACEHOLDER
-    }),
+    resources: (inst, ctx) => {
+      const spec = powerPlantSpec(ctx.tl);
+      const tons = inst.rating ?? 0;
+      return {
+        tons: -tons,
+        power: tons * spec.powerPerTon,
+        cost: tons * spec.costPerTon,
+      };
+    },
   },
   mDrive: {
     id: 'mDrive',
@@ -55,11 +132,15 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     unique: true,
     requires: ['power'],
     // rating = Thrust.
-    resources: (inst, ctx) => ({
-      tons: -(ctx.chassisSize * 0.01 * (inst.rating ?? 0)), // PLACEHOLDER: 1% hull / Thrust
-      power: -((inst.rating ?? 0) * 10), // PLACEHOLDER
-      cost: ctx.chassisSize * 0.01 * (inst.rating ?? 0) * 2, // PLACEHOLDER
-    }),
+    resources: (inst, ctx) => {
+      const thrust = inst.rating ?? 0;
+      const tons = ctx.chassisSize * M_DRIVE_HULL_PCT_PER_THRUST * thrust;
+      return {
+        tons: -tons,
+        power: -(ctx.chassisSize * DRIVE_POWER_PER_RATING * thrust),
+        cost: tons * M_DRIVE_COST_PER_TON,
+      };
+    },
     stats: (inst) => ({ thrust: inst.rating ?? 0 }),
   },
   jDrive: {
@@ -68,13 +149,19 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     category: 'jdrive',
     unique: true,
     requires: ['power'],
-    minTL: 9, // PLACEHOLDER
-    // rating = Jump number.
-    resources: (inst, ctx) => ({
-      tons: -(ctx.chassisSize * 0.025 * (inst.rating ?? 0)), // PLACEHOLDER: 2.5% hull / Jump
-      power: -((inst.rating ?? 0) * 10), // PLACEHOLDER
-      cost: ctx.chassisSize * 0.025 * (inst.rating ?? 0) * 2, // PLACEHOLDER
-    }),
+    // rating = Jump number. Tonnage = hull% + 5t, minimum 10t.
+    resources: (inst, ctx) => {
+      const jump = inst.rating ?? 0;
+      const tons = Math.max(
+        J_DRIVE_MIN_TONS,
+        ctx.chassisSize * J_DRIVE_HULL_PCT_PER_JUMP * jump + J_DRIVE_TON_BONUS,
+      );
+      return {
+        tons: -tons,
+        power: -(ctx.chassisSize * DRIVE_POWER_PER_RATING * jump),
+        cost: tons * J_DRIVE_COST_PER_TON,
+      };
+    },
     stats: (inst) => ({ jump: inst.rating ?? 0 }),
   },
   bridge: {
@@ -82,30 +169,37 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     name: 'Bridge',
     category: 'bridge',
     unique: true,
-    resources: () => ({ tons: -10, cost: 0.5 }), // PLACEHOLDER: bridge sizes by hull
+    resources: (_inst, ctx) => ({
+      tons: -bridgeTons(ctx.chassisSize),
+      cost: Math.ceil(ctx.chassisSize / 100) * 0.5, // MCr0.5 per 100t (or part)
+    }),
   },
   fuel: {
     id: 'fuel',
     name: 'Fuel',
     category: 'fuel',
-    // rating = tons of fuel.
+    // rating = tons of fuel. No cost for fuel tankage.
     resources: (inst) => ({ tons: -(inst.rating ?? 0) }),
   },
   stateroom: {
     id: 'stateroom',
     name: 'Stateroom',
     category: 'stateroom',
-    resources: () => ({ tons: -4, cost: 0.5 }), // PLACEHOLDER
+    resources: () => ({ tons: -4, cost: 0.5 }),
     stats: () => ({ staterooms: 1 }),
   },
   turret: {
     id: 'turret',
-    name: 'Turret',
+    name: 'Single Turret',
     category: 'weapon',
-    resources: () => ({ tons: -1, hardpoints: -1, cost: 0.2 }), // PLACEHOLDER
+    minTL: 7,
+    // A single turret mount; mounted weapons add their own power/cost.
+    resources: () => ({ tons: -1, hardpoints: -1, power: -1, cost: 0.2 }),
     stats: () => ({ turrets: 1 }),
   },
 };
+
+// --- Assembly + rules -------------------------------------------------------
 
 export interface ShipParams {
   hullTons: number;
@@ -118,7 +212,6 @@ export interface ShipParams {
   turrets: number;
 }
 
-/** Build a hull chassis. PLACEHOLDER cost/hull-point formulas. */
 function shipHull(hullTons: number, tl: number): Chassis<ShipStats> {
   return {
     id: `hull-${hullTons}`,
@@ -127,11 +220,12 @@ function shipHull(hullTons: number, tl: number): Chassis<ShipStats> {
     tl,
     provides: {
       tons: hullTons,
-      hardpoints: Math.floor(hullTons / 100),
-      cost: hullTons * 0.05, // PLACEHOLDER: MCr per ton
+      hardpoints: weaponMounts(hullTons),
+      cost: hullTons * HULL_COST_PER_TON,
+      power: -(hullTons * BASIC_SYSTEMS_POWER), // basic ship systems draw
     },
     baseStats: {
-      hullPoints: Math.round(hullTons * 0.4), // PLACEHOLDER
+      hullPoints: Math.floor(hullTons * HULL_POINTS_PER_TON),
       thrust: 0,
       jump: 0,
       armour: 0,
@@ -141,7 +235,6 @@ function shipHull(hullTons: number, tl: number): Chassis<ShipStats> {
   };
 }
 
-/** Map the builder's parameters to an engine `Design`. */
 export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   const installed: Design<ShipStats>['installed'] = [{ defId: 'bridge' }];
   if (params.powerPlantTons > 0)
@@ -159,10 +252,8 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   return { chassis: shipHull(params.hullTons, params.tl), installed };
 }
 
-/** Ship-specific rules layered onto the generic validator. */
 export const SHIP_RULES: Rule<ShipStats>[] = [
-  // A ship that can move/jump needs a power plant (also covered by `requires`,
-  // but this gives a friendlier message when nothing is installed).
+  // Friendlier message than the generic `requires` when nothing is installed.
   ({ design }) => {
     const hasPower = design.installed.some((c) => c.defId === 'powerPlant');
     const hasDrive = design.installed.some(
@@ -171,6 +262,32 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
     return hasDrive && !hasPower
       ? [{ severity: 'error', message: 'Drives require a power plant' }]
       : [];
+  },
+  // Drive ratings are capped at 6 and gated by tech level.
+  ({ design, context }) => {
+    const issues: Issue[] = [];
+    const check = (
+      defId: string,
+      label: string,
+      table: Record<number, number>,
+    ) => {
+      const rating = design.installed.find((c) => c.defId === defId)?.rating;
+      if (!rating) return;
+      if (rating > MAX_DRIVE_RATING) {
+        issues.push({
+          severity: 'error',
+          message: `${label}-${rating} exceeds the maximum of ${MAX_DRIVE_RATING}`,
+        });
+      } else if (table[rating] !== undefined && context.tl < table[rating]!) {
+        issues.push({
+          severity: 'error',
+          message: `${label}-${rating} requires TL ${table[rating]}`,
+        });
+      }
+    };
+    check('mDrive', 'Thrust', THRUST_TL);
+    check('jDrive', 'Jump', JUMP_TL);
+    return issues;
   },
 ];
 
@@ -191,11 +308,19 @@ const FIELD_LABELS: Record<keyof ShipParams, string> = {
   turrets: 'Turrets',
 };
 
+const INTEGER_FIELDS: Array<keyof ShipParams> = [
+  'tl',
+  'thrust',
+  'jump',
+  'staterooms',
+  'turrets',
+];
+
 /**
  * Clamp out-of-range builder input to safe values and record an issue for each
- * adjustment. Non-numeric fields arrive here as NaN (the screen's parser falls
- * back to 0) and negatives are clamped to 0. Hull tonnage is handled separately
- * by `evaluateShip` so it gets a single clear message.
+ * adjustment. Non-numeric fields arrive as NaN (the screen falls back to 0);
+ * negatives clamp to 0; integer fields are floored. Hull tonnage is handled
+ * separately by `evaluateShip` so it gets a single clear message.
  */
 function sanitizeParams(raw: ShipParams, issues: Issue[]): ShipParams {
   const out = { ...raw };
@@ -210,6 +335,7 @@ function sanitizeParams(raw: ShipParams, issues: Issue[]): ShipParams {
       });
       value = 0;
     }
+    if (INTEGER_FIELDS.includes(key)) value = Math.floor(value);
     out[key] = value;
   }
   return out;
@@ -220,8 +346,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
   const inputIssues: Issue[] = [];
   const params = sanitizeParams(raw, inputIssues);
 
-  // An empty / zero / negative / non-numeric hull can't be costed or budgeted;
-  // short-circuit with a single clear message and an empty budget.
+  // An empty / zero / negative / non-numeric hull can't be costed or budgeted.
   if (!(params.hullTons > 0)) {
     const design: Design<ShipStats> = {
       chassis: shipHull(0, params.tl),
@@ -245,15 +370,16 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
     SHIP_RULES,
   );
 
+  // Fuel must cover the jump plus four weeks of power-plant operation.
   const extra: Issue[] = [];
-  if (params.jump > 0) {
-    const needed = jumpFuel(params.hullTons, params.jump).fuelTons;
-    if (params.fuelTons < needed) {
-      extra.push({
-        severity: 'error',
-        message: `Jump-${params.jump} needs ${needed} tons of fuel (have ${params.fuelTons})`,
-      });
-    }
+  const neededFuel =
+    (params.jump > 0 ? jumpFuel(params.hullTons, params.jump).fuelTons : 0) +
+    powerPlantFuel(params.powerPlantTons);
+  if (neededFuel > 0 && params.fuelTons < neededFuel) {
+    extra.push({
+      severity: 'error',
+      message: `Fuel: need ${neededFuel} tons (jump + power plant), have ${params.fuelTons}`,
+    });
   }
 
   return {

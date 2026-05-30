@@ -1,9 +1,14 @@
 # Ship Builder — design plan
 
-Status: **planning**. Target ruleset: **MgT2 Core Rulebook** spacecraft design
-(the simpler, self-contained subset; High Guard can extend it later). First
-iteration scope: **Essentials**. Catalog numbers ship as **typed stubs** to be
-filled from the book.
+Status: **engine + ship domain + TUI built; catalog populated from the Core
+Rulebook (2022)**. Target ruleset: **MgT2 Core Rulebook** spacecraft design (the
+simpler, self-contained subset; High Guard can extend it later). Scope:
+**Essentials**.
+
+Remaining/assumed: standard hull configuration only (no streamlined/dispersed
+modifiers yet); computer/sensors/armour/common-areas not yet builder fields; and
+the **jump-drive minimum-TL-per-rating** values are assumed pending confirmation
+(the source table's TL column was ambiguous — see `JUMP_TL` in `ships/ship.ts`).
 
 ## Context & goal
 
