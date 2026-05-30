@@ -742,6 +742,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       const n = inst.rating ?? 0;
       return { tons: -(0.5 * n), cost: 0.05 * n, power: -Math.ceil(n / 10) };
     },
+    describe: (inst) => `Low Berths ×${inst.rating ?? 0}`,
   },
   commonArea: {
     id: 'commonArea',
@@ -1303,6 +1304,7 @@ export interface ShipEvaluation {
     manoeuvre: number;
     jump: number;
     sensors: number;
+    weapons: number;
     fuelProcessor: number;
   };
   /** Operating crew (commercial or military). */
@@ -1462,6 +1464,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
         manoeuvre: 0,
         jump: 0,
         sensors: 0,
+        weapons: 0,
         fuelProcessor: 0,
       },
       crew: [],
@@ -1531,6 +1534,12 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       manoeuvre: params.hullTons * DRIVE_POWER_PER_RATING * params.thrust,
       jump: params.hullTons * DRIVE_POWER_PER_RATING * params.jump,
       sensors: SENSORS[params.sensors]?.power ?? 0,
+      // Total weapon power draw across all mounts.
+      weapons: params.weapons.reduce(
+        (sum, e) =>
+          sum + e.weapons.reduce((s, w) => s + (WEAPONS[w]?.power ?? 0), 0),
+        0,
+      ),
       // Fuel processors draw 1 Power per ton installed.
       fuelProcessor: params.systems
         .filter((s) => s.type === 'fuelProcessor')

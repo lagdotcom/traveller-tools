@@ -97,6 +97,20 @@ describe('evaluateShip', () => {
     );
   });
 
+  it('reports weapon power draw and labels low berths with a quantity', () => {
+    const { summary, powerRequirements } = evaluateShip({
+      ...baseParams,
+      hullTons: 200,
+      lowBerths: 20,
+      weapons: [{ mount: 'triple', weapons: ['beamLaser', 'beamLaser'] }],
+    });
+    // Two beam lasers (power 4 each) -> 8 in the Power panel.
+    expect(powerRequirements.weapons).toBe(8);
+    // Low berths show their count in the line name.
+    const lb = summary.lineItems.find((l) => l.id === 'lowBerth')!;
+    expect(lb.name).toBe('Low Berths ×20');
+  });
+
   it('mounts mixed weapons in one turret', () => {
     // A double turret with a beam laser + a sandcaster: 1 ton, MCr0.5 (mount) +
     // 0.5 (beam) + 0.25 (sandcaster) = 1.25, power 4 (beam only).

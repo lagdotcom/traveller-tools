@@ -54,6 +54,7 @@ export interface ShipSheetProps {
     manoeuvre: number;
     jump: number;
     sensors: number;
+    weapons: number;
     fuelProcessor: number;
   };
   crew: CrewMember[];
@@ -73,6 +74,7 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
       ['Manoeuvre', props.powerRequirements.manoeuvre],
       ['Jump', props.powerRequirements.jump],
       ['Sensors', props.powerRequirements.sensors],
+      ['Weapons', props.powerRequirements.weapons],
       ['Fuel Processor', props.powerRequirements.fuelProcessor],
     ] as [string, number][]
   ).filter(([, value]) => value > 0);
