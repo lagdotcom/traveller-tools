@@ -26,6 +26,7 @@ import {
   SYSTEM_TYPES,
   type SystemEntry,
   type SystemTypeId,
+  VEHICLE_CATALOG,
   type WeaponEntry,
   type WeaponId,
   WEAPONS,
@@ -183,16 +184,41 @@ export function ShipBuilderScreen({
   const effective = (value: string, available: string[]) =>
     available.includes(value) ? value : (available[0] ?? '');
 
-  // Craft that can be carried: every built-in plus the player's saved ships,
-  // de-duplicated by name (saved ships win).
-  const craftDefs: ShipDefinition[] = [
+  // Craft that can be carried: library ships (saved + built-in, saved winning)
+  // and catalogue vehicles. Each knows how to snapshot itself into a carried
+  // entry (resolving displacement + cost).
+  const shipDefs: ShipDefinition[] = [
     ...store.list(),
     ...BUILTIN_SHIPS.filter(
       (b) => !store.list().some((s) => s.name === b.name),
     ),
   ];
-  const craftAvailable = craftDefs
-    .map((d) => d.name)
+  const craftCandidates: { name: string; make: () => CarriedCraft }[] = [
+    ...shipDefs.map((def) => ({
+      name: def.name,
+      make: (): CarriedCraft => ({
+        kind: 'ship',
+        name: def.name,
+        tons: def.params.hullTons,
+        cost: evaluateShip(def.params).summary.resources.cost.used,
+        count: 1,
+        ship: def.params,
+      }),
+    })),
+    ...VEHICLE_CATALOG.map((v) => ({
+      name: v.name,
+      make: (): CarriedCraft => ({
+        kind: 'vehicle',
+        name: v.name,
+        tons: v.shippingTons,
+        cost: v.costMCr,
+        count: 1,
+        vehicle: v,
+      }),
+    })),
+  ];
+  const craftAvailable = craftCandidates
+    .map((c) => c.name)
     .filter((n) => !carried.some((c) => c.name === n));
 
   const lists: Record<ListId, ListConfig> = {
@@ -266,26 +292,15 @@ export function ShipBuilderScreen({
       addValue: effective(addCraft, craftAvailable),
       onAddChange: setAddCraft,
       onAdd: () => {
-        const def = craftDefs.find(
-          (d) => d.name === effective(addCraft, craftAvailable),
+        const cand = craftCandidates.find(
+          (c) => c.name === effective(addCraft, craftAvailable),
         );
-        if (def) {
-          const { summary } = evaluateShip(def.params);
-          setCarried((prev) => [
-            ...prev,
-            {
-              kind: 'ship',
-              name: def.name,
-              tons: def.params.hullTons,
-              cost: summary.resources.cost.used,
-              count: 1,
-              ship: def.params,
-            },
-          ]);
+        if (cand) {
+          setCarried((prev) => [...prev, cand.make()]);
           setAddCraft('');
         }
       },
-      hint: 'Carried craft use derived hangar rules. Enter on qty 0 removes it.',
+      hint: 'Carry library ships or catalogue vehicles. Enter on qty 0 removes it.',
     },
   };
 

@@ -7,8 +7,9 @@ import { JumpFuelScreen } from './screens/JumpFuel.js';
 import { ShipBuilderScreen } from './screens/ShipBuilder.js';
 import { ShipLibraryScreen } from './screens/ShipLibrary.js';
 import { TravelScreen } from './screens/Travel.js';
+import { VehicleCatalogScreen } from './screens/VehicleCatalog.js';
 
-type Screen = 'menu' | 'jump' | 'travel' | 'ship' | 'library';
+type Screen = 'menu' | 'jump' | 'travel' | 'ship' | 'library' | 'vehicles';
 
 export function App(): React.JSX.Element {
   const [screen, setScreen] = useState<Screen>('menu');
@@ -37,6 +38,9 @@ export function App(): React.JSX.Element {
   if (screen === 'library') {
     return <ShipLibraryScreen onBack={() => setScreen('menu')} onLoad={load} />;
   }
+  if (screen === 'vehicles') {
+    return <VehicleCatalogScreen onBack={() => setScreen('menu')} />;
+  }
   if (screen === 'ship') {
     return (
       <ShipBuilderScreen
@@ -62,6 +66,7 @@ export function App(): React.JSX.Element {
           { label: 'Travel time (velocity) calculator', value: 'travel' },
           { label: 'Ship builder', value: 'ship-new' },
           { label: 'Ship library', value: 'library' },
+          { label: 'Vehicle catalogue', value: 'vehicles' },
           { label: 'Quit', value: 'quit' },
         ]}
         onChange={(value) => {

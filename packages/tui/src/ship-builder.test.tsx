@@ -120,13 +120,28 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
-  it('carries a craft from the Craft list', async () => {
+  it('carries a vehicle from the Craft list', async () => {
     const ui = await openBuilder();
     // Tab to the Craft section (Hull→Drives→Defences→Accom→Weapons→Systems→
     // Software→Craft = 7).
     for (let i = 0; i < 7; i++) await ui.type(TAB);
-    await ui.type(ENTER); // add the first available craft as a carried craft
-    await ui.waitFor('hangar'); // a "… (hangar Nt)" line appears in the sheet
+    await ui.type('ATV'); // type-to-pick the ATV from the catalogue
+    await ui.type(ENTER); // carry it
+    await ui.waitFor('ATV (hangar'); // "ATV (hangar 11t)" line in the sheet
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
+  it('browses the vehicle catalogue', async () => {
+    const ui = renderInk();
+    await ui.waitFor('Traveller Tools');
+    await ui.type(ARROW_DOWN); // Travel
+    await ui.type(ARROW_DOWN); // Ship builder
+    await ui.type(ARROW_DOWN); // Ship library
+    await ui.type(ARROW_DOWN); // Vehicle catalogue
+    await ui.type(ENTER);
+    await ui.waitFor('Vehicle Catalogue');
+    await ui.waitFor('Air/Raft');
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });

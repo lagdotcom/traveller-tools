@@ -9,6 +9,7 @@ import {
   SHIP_FORMAT,
 } from './library.js';
 import { evaluateShip } from './ship.js';
+import { VEHICLE_CATALOG } from './vehicles.js';
 
 describe('ship library', () => {
   it('round-trips a ship through serialize/parse', () => {
@@ -58,6 +59,44 @@ describe('ship library', () => {
     expect(def.params.weapons).toEqual([
       { mount: 'single', weapons: ['beamLaser'] },
     ]);
+  });
+
+  it('carries a catalogue vehicle as docking space', () => {
+    const gcarrier = VEHICLE_CATALOG.find((v) => v.name === 'G/Carrier')!;
+    const { summary } = evaluateShip({
+      ...DEFAULT_SHIP_PARAMS,
+      hullTons: 400,
+      carried: [
+        {
+          kind: 'vehicle',
+          name: gcarrier.name,
+          tons: gcarrier.shippingTons, // 15
+          cost: gcarrier.costMCr, // 11.58
+          count: 1,
+          vehicle: gcarrier,
+        },
+      ],
+    });
+    const line = summary.lineItems.find((l) => l.id === 'carriedCraft')!;
+    // Docking space ceil(15×1.1)=17t, MCr0.25/ton (4.25) + craft cost 11.58.
+    expect(line.resources.tons).toBe(-17);
+    expect(line.resources.cost).toBeCloseTo(17 * 0.25 + 11.58, 6);
+  });
+
+  it('keeps the vehicle kind through serialize/parse', () => {
+    const text = serializeShip({
+      name: 'Carrier',
+      params: {
+        ...DEFAULT_SHIP_PARAMS,
+        hullTons: 400,
+        carried: [
+          { kind: 'vehicle', name: 'Air/Raft', tons: 4, cost: 0.25, count: 2 },
+        ],
+      },
+    });
+    const back = parseShip(text);
+    expect(back.params.carried[0]!.kind).toBe('vehicle');
+    expect(back.params.carried[0]!.count).toBe(2);
   });
 
   it('builds every built-in ship without error-severity issues', () => {

@@ -10,6 +10,7 @@ import {
   summarize,
 } from '../design/index.js';
 import { jumpFuel } from '../jump.js';
+import type { VehicleDefinition } from './vehicles.js';
 
 /**
  * Ship domain on top of the builder-agnostic `design` engine, using MgT2 Core
@@ -904,8 +905,8 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return sw.leveled ? `${sw.label}/${inst.rating ?? 0}` : sw.label;
     },
   },
-  // Carried craft: consumes hangar tonnage (craft size + overhead) and adds both
-  // the bay's cost and the craft's own purchase price. DERIVED rules — flagged.
+  // Carried craft (ship or vehicle): consumes Core docking space (craft tons +
+  // 10%) and adds both the bay's cost and the craft's own purchase price.
   carriedCraft: {
     id: 'carriedCraft',
     name: 'Carried Craft',
@@ -939,7 +940,7 @@ export type CrewType = 'commercial' | 'military';
  * vehicle can supply just as well as a ship. The typed payload (`ship` now;
  * `vehicle` later) is optional and only lets the UI re-open the nested design.
  */
-export type CarriedCraftKind = 'ship'; // TODO: | 'vehicle'
+export type CarriedCraftKind = 'ship' | 'vehicle';
 export interface CarriedCraft {
   kind: CarriedCraftKind;
   name: string;
@@ -950,9 +951,11 @@ export interface CarriedCraft {
   count: number;
   /** Full nested ship design (kind === 'ship'); lets the builder re-open it. */
   ship?: ShipParams;
+  /** The catalogue vehicle (kind === 'vehicle'). */
+  vehicle?: VehicleDefinition;
 }
 
-/** Hangar space a single craft of this size requires (bay + 30% overhead). */
+/** Hangar space a single craft of this size requires (Core: bay + 10%). */
 export function hangarTonsFor(craftTons: number): number {
   return Math.ceil(craftTons * HANGAR_TONS_MULT);
 }

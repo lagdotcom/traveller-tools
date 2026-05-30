@@ -134,7 +134,7 @@ function normalizeWeapons(v: unknown): WeaponEntry[] {
 function normalizeCarried(v: unknown): CarriedCraft[] {
   if (!Array.isArray(v)) return [];
   return v.filter(isObject).map((e) => ({
-    kind: 'ship' as const,
+    kind: e.kind === 'vehicle' ? ('vehicle' as const) : ('ship' as const),
     name: typeof e.name === 'string' ? e.name : 'Craft',
     tons: num(e.tons, 0),
     cost: num(e.cost, 0),
