@@ -414,6 +414,45 @@ describe('evaluateShip', () => {
     ).toBe(true);
   });
 
+  it('adds embarked small-craft crew to the carrier roster', () => {
+    const count = (crew: { role: string; count: number }[], role: string) =>
+      crew.find((c) => c.role === role)?.count ?? 0;
+    // A carrier with two fighters that each need a pilot + gunner of their own.
+    const fighter: ShipParams = {
+      ...baseParams,
+      hullTons: 10,
+      jump: 0,
+      thrust: 6,
+      powerPlantTons: 1,
+      fuelTons: 1,
+      bridge: 'cockpit',
+      staterooms: 0,
+      weapons: [{ mount: 'fixed', weapon: 'beamLaser' }],
+    };
+    const bare = evaluateShip({ ...baseParams, hullTons: 400 });
+    const carrier = evaluateShip({
+      ...baseParams,
+      hullTons: 400,
+      carried: [
+        {
+          kind: 'ship',
+          name: 'Light Fighter',
+          tons: 10,
+          cost: 3,
+          count: 2,
+          ship: fighter,
+        },
+      ],
+    });
+    // Two fighters add 2 pilots and 2 gunners on top of the carrier's own crew.
+    expect(count(carrier.crew, 'Pilot')).toBe(count(bare.crew, 'Pilot') + 2);
+    expect(count(carrier.crew, 'Gunner')).toBe(2);
+    // Those extra crew are paid, too.
+    expect(carrier.runningCosts.monthlySalaryCr).toBeGreaterThan(
+      bare.runningCosts.monthlySalaryCr,
+    );
+  });
+
   it('reports remaining tonnage as cargo for a valid ship', () => {
     const { cargoTons, issues } = evaluateShip(baseParams);
     expect(issues).toEqual([]);

@@ -1271,8 +1271,11 @@ function driveAndPlantTons(params: ShipParams): number {
  * operating crew are treated as (Middle) passengers for the medic/steward
  * counts; those formula minimums only add crew on large/passenger ships, so
  * book example sheets sometimes list a recommended medic/steward beyond this.
+ *
+ * Carried craft add their own crew (a fighter's pilot/gunner, etc.) on top,
+ * merged by role; `depth` guards against pathological self-nesting.
  */
-function crewRoster(params: ShipParams): CrewMember[] {
+function crewRoster(params: ShipParams, depth = 0): CrewMember[] {
   const military = params.crewType === 'military';
   const roster: CrewMember[] = [{ role: 'Pilot', count: military ? 3 : 1 }];
   if (params.jump > 0) roster.push({ role: 'Astrogator', count: 1 });
@@ -1289,6 +1292,25 @@ function crewRoster(params: ShipParams): CrewMember[] {
   if (medics > 0) roster.push({ role: 'Medic', count: medics });
   const stewards = Math.floor(passengers / 100); // Middle passengers
   if (stewards > 0) roster.push({ role: 'Steward', count: stewards });
+
+  // Crew for embarked small craft (merged by role onto the carrier's totals).
+  const addCrew = (role: string, count: number) => {
+    const existing = roster.find((c) => c.role === role);
+    if (existing) existing.count += count;
+    else roster.push({ role, count });
+  };
+  if (depth < 4) {
+    for (const craft of params.carried) {
+      if (craft.count <= 0) continue;
+      // Use the nested design's own roster when we have it; otherwise assume a
+      // single pilot per craft.
+      const sub = craft.ship
+        ? crewRoster(craft.ship, depth + 1)
+        : [{ role: 'Pilot', count: 1 }];
+      for (const member of sub)
+        addCrew(member.role, member.count * craft.count);
+    }
+  }
   return roster;
 }
 
