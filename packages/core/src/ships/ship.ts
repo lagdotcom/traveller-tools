@@ -33,7 +33,15 @@ export interface ShipStats extends Record<string, number> {
 
 export const SHIP_RESOURCES: ResourceDef[] = [
   { key: 'tons', label: 'Tons', mode: 'capacity' },
-  { key: 'power', label: 'Power', mode: 'capacity' },
+  // Power need not run every system at once (jump while manoeuvring is a bonus,
+  // sensors/weapons can be off-lined), so an overdraw is a warning; the hard
+  // "basic + manoeuvre" requirement is enforced by a ship rule below.
+  {
+    key: 'power',
+    label: 'Power',
+    mode: 'capacity',
+    overflowSeverity: 'warning',
+  },
   { key: 'hardpoints', label: 'Hardpoints', mode: 'capacity' },
   { key: 'cost', label: 'Cost (MCr)', mode: 'accumulate' },
 ];
@@ -293,6 +301,25 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
     check('mDrive', 'Thrust', THRUST_TL, MAX_THRUST);
     check('jDrive', 'Jump', JUMP_TL, MAX_JUMP);
     return issues;
+  },
+  // Hard power requirement: the plant must run basic systems + the manoeuvre
+  // drive simultaneously. (Jump-at-the-same-time is only a bonus, so a total
+  // overdraw is just a warning — see SHIP_RESOURCES.)
+  ({ design, summary, context }) => {
+    const thrust = design.installed.find((c) => c.defId === 'mDrive')?.rating;
+    if (!thrust) return [];
+    const required =
+      context.chassisSize * BASIC_SYSTEMS_POWER +
+      context.chassisSize * DRIVE_POWER_PER_RATING * thrust;
+    const provided = summary.resources.power?.provided ?? 0;
+    return provided < required
+      ? [
+          {
+            severity: 'error',
+            message: `Power plant must supply basic systems + manoeuvre (${required}); only ${provided} available`,
+          },
+        ]
+      : [];
   },
 ];
 

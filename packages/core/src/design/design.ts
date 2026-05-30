@@ -96,7 +96,7 @@ export const overCapacityRule: Rule = ({ summary }) =>
   Object.values(summary.resources)
     .filter((r) => r.overCapacity)
     .map((r) => ({
-      severity: 'error' as const,
+      severity: r.overflowSeverity,
       message: `${r.label} exceeds capacity by ${r.used - r.provided} (${r.used}/${r.provided})`,
     }));
 

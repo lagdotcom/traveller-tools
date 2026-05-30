@@ -19,6 +19,12 @@ export interface ResourceDef {
   key: string;
   label: string;
   mode: ResourceMode;
+  /**
+   * Severity when a `capacity` resource is over-consumed (default 'error').
+   * Some resources (e.g. ship power, which need not run every system at once)
+   * are better surfaced as warnings.
+   */
+  overflowSeverity?: 'error' | 'warning';
 }
 
 /** A bag of resource contributions keyed by resource key. */
@@ -46,6 +52,8 @@ export interface ResourceUsage {
   remaining: number;
   /** True only for `capacity` resources where `used > provided`. */
   overCapacity: boolean;
+  /** Severity to report when `overCapacity` (from the resource definition). */
+  overflowSeverity: 'error' | 'warning';
 }
 
 /**
@@ -55,6 +63,7 @@ export function summariseResource(
   def: ResourceDef,
   contributions: number[],
 ): ResourceUsage {
+  const overflowSeverity = def.overflowSeverity ?? 'error';
   if (def.mode === 'accumulate') {
     const used = contributions.reduce((sum, value) => sum + value, 0);
     return {
@@ -65,6 +74,7 @@ export function summariseResource(
       used,
       remaining: 0,
       overCapacity: false,
+      overflowSeverity,
     };
   }
 
@@ -82,5 +92,6 @@ export function summariseResource(
     used: consumed,
     remaining: provided - consumed,
     overCapacity: consumed > provided,
+    overflowSeverity,
   };
 }

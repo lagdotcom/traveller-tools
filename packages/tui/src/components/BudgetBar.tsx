@@ -6,8 +6,8 @@ const round = (n: number) => Math.round(n * 100) / 100;
 
 /**
  * A compact, builder-agnostic budget header: `capacity` resources show
- * used/provided (red when over), `accumulate` resources show the running total.
- * Reused by every builder.
+ * used/provided (red/yellow when over, by the resource's overflow severity),
+ * `accumulate` resources show the running total. Reused by every builder.
  */
 export function BudgetBar({
   resources,
@@ -19,7 +19,15 @@ export function BudgetBar({
       {resources.map((r) => (
         <Box key={r.key} marginRight={3}>
           {r.mode === 'capacity' ? (
-            <Text color={r.overCapacity ? 'red' : 'green'}>
+            <Text
+              color={
+                r.overCapacity
+                  ? r.overflowSeverity === 'warning'
+                    ? 'yellow'
+                    : 'red'
+                  : 'green'
+              }
+            >
               {r.label} {round(r.used)}/{round(r.provided)}
             </Text>
           ) : (
