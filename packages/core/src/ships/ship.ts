@@ -7,6 +7,7 @@ import {
   type Issue,
   type ResourceDef,
   type Rule,
+  summarize,
 } from '../design/index.js';
 import { jumpFuel } from '../jump.js';
 
@@ -179,8 +180,63 @@ export interface ShipEvaluation {
   cargoTons: number;
 }
 
+const FIELD_LABELS: Record<keyof ShipParams, string> = {
+  hullTons: 'Hull tonnage',
+  tl: 'Tech level',
+  thrust: 'Thrust',
+  jump: 'Jump',
+  powerPlantTons: 'Power plant tonnage',
+  fuelTons: 'Fuel',
+  staterooms: 'Staterooms',
+  turrets: 'Turrets',
+};
+
+/**
+ * Clamp out-of-range builder input to safe values and record an issue for each
+ * adjustment. Non-numeric fields arrive here as NaN (the screen's parser falls
+ * back to 0) and negatives are clamped to 0. Hull tonnage is handled separately
+ * by `evaluateShip` so it gets a single clear message.
+ */
+function sanitizeParams(raw: ShipParams, issues: Issue[]): ShipParams {
+  const out = { ...raw };
+  for (const key of Object.keys(out) as Array<keyof ShipParams>) {
+    if (key === 'hullTons') continue;
+    let value = out[key];
+    if (!Number.isFinite(value)) value = 0;
+    if (value < 0) {
+      issues.push({
+        severity: 'error',
+        message: `${FIELD_LABELS[key]} cannot be negative`,
+      });
+      value = 0;
+    }
+    out[key] = value;
+  }
+  return out;
+}
+
 /** Evaluate a ship from builder parameters: budgets, issues, and cargo space. */
-export function evaluateShip(params: ShipParams): ShipEvaluation {
+export function evaluateShip(raw: ShipParams): ShipEvaluation {
+  const inputIssues: Issue[] = [];
+  const params = sanitizeParams(raw, inputIssues);
+
+  // An empty / zero / negative / non-numeric hull can't be costed or budgeted;
+  // short-circuit with a single clear message and an empty budget.
+  if (!(params.hullTons > 0)) {
+    const design: Design<ShipStats> = {
+      chassis: shipHull(0, params.tl),
+      installed: [],
+    };
+    return {
+      summary: summarize(design, SHIP_CATALOG, SHIP_RESOURCES),
+      issues: [
+        ...inputIssues,
+        { severity: 'error', message: 'Hull tonnage must be greater than 0' },
+      ],
+      cargoTons: 0,
+    };
+  }
+
   const design = makeShipDesign(params);
   const { summary, issues } = evaluate(
     design,
@@ -190,14 +246,7 @@ export function evaluateShip(params: ShipParams): ShipEvaluation {
   );
 
   const extra: Issue[] = [];
-  if (params.hullTons <= 0) {
-    // Guard before jumpFuel (which rejects non-positive tonnage) so an empty
-    // or zero hull field reports an issue instead of throwing.
-    extra.push({
-      severity: 'error',
-      message: 'Hull tonnage must be greater than 0',
-    });
-  } else if (params.jump > 0) {
+  if (params.jump > 0) {
     const needed = jumpFuel(params.hullTons, params.jump).fuelTons;
     if (params.fuelTons < needed) {
       extra.push({
@@ -209,7 +258,7 @@ export function evaluateShip(params: ShipParams): ShipEvaluation {
 
   return {
     summary,
-    issues: [...issues, ...extra],
+    issues: [...inputIssues, ...issues, ...extra],
     cargoTons: summary.resources.tons?.remaining ?? 0,
   };
 }
