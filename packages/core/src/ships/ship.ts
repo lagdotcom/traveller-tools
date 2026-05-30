@@ -58,10 +58,10 @@ const J_DRIVE_TON_BONUS = 5;
 const J_DRIVE_MIN_TONS = 10;
 const J_DRIVE_COST_PER_TON = 1.5; // MCr
 
-// Carried craft / hangars: DERIVED (not Core) — a hangar bay takes the craft's
-// own tonnage plus 30% for launch clearance and handling, at Cr25,000 per ton.
-const HANGAR_TONS_MULT = 1.3;
-const HANGAR_COST_PER_TON = 0.025; // MCr per ton of hangar / docking space
+// Carried craft / docking space (Core Rulebook): a docking space takes the
+// docked craft's tonnage plus 10% (round up), at MCr0.25 per ton.
+const HANGAR_TONS_MULT = 1.1;
+const HANGAR_COST_PER_TON = 0.25; // MCr per ton of docking space
 
 /** Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table). */
 const THRUST_TL: Record<number, number> = {
@@ -260,6 +260,7 @@ export type SystemTypeId =
   | 'laboratory'
   | 'workshop'
   | 'medicalBay'
+  | 'cabinSpace'
   | 'briefingRoom'
   | 'detentionCells';
 export const SYSTEM_TYPES: Record<
@@ -276,11 +277,12 @@ export const SYSTEM_TYPES: Record<
   repairDrones: { id: 'repairDrones', label: 'Repair Drones' },
   miningDrones: { id: 'miningDrones', label: 'Mining Drones' },
   missileStorage: { id: 'missileStorage', label: 'Missile Storage' },
-  hangar: { id: 'hangar', label: 'Hangar / Docking Space', unverified: true },
-  cargoCrane: { id: 'cargoCrane', label: 'Cargo Crane', unverified: true },
-  laboratory: { id: 'laboratory', label: 'Laboratory', unverified: true },
-  workshop: { id: 'workshop', label: 'Workshop', unverified: true },
-  medicalBay: { id: 'medicalBay', label: 'Medical Bay', unverified: true },
+  hangar: { id: 'hangar', label: 'Hangar / Docking Space' },
+  cargoCrane: { id: 'cargoCrane', label: 'Cargo Crane' },
+  laboratory: { id: 'laboratory', label: 'Laboratory' },
+  workshop: { id: 'workshop', label: 'Workshop' },
+  medicalBay: { id: 'medicalBay', label: 'Medical Bay' },
+  cabinSpace: { id: 'cabinSpace', label: 'Cabin Space' },
   briefingRoom: {
     id: 'briefingRoom',
     label: 'Briefing Room',
@@ -309,6 +311,8 @@ export type SoftwareTypeId =
   | 'fireControl'
   | 'autoRepair'
   | 'countermeasures'
+  | 'manoeuvre'
+  | 'intellect'
   | 'library';
 export const SOFTWARE_TYPES: Record<
   SoftwareTypeId,
@@ -347,6 +351,20 @@ export const SOFTWARE_TYPES: Record<
     costPerLevel: 2,
     leveled: true,
     unverified: true,
+  },
+  // Manoeuvre/0 and Intellect ship in every loadout at no listed cost in the
+  // common-spacecraft examples.
+  manoeuvre: {
+    id: 'manoeuvre',
+    label: 'Manoeuvre',
+    costPerLevel: 0,
+    leveled: false,
+  },
+  intellect: {
+    id: 'intellect',
+    label: 'Intellect',
+    costPerLevel: 0,
+    leveled: false,
   },
   library: { id: 'library', label: 'Library', costPerLevel: 0, leveled: false },
 };
@@ -598,12 +616,20 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     name: 'Weapon',
     category: 'weapon',
     // options.mount (turret type) + options.weapon. A turret holds its
-    // capacity of the weapon; a particle barbette is its own 5-ton mount.
+    // capacity of the weapon; a particle barbette is its own 5-ton mount. An
+    // empty mount (weapon 'none') still costs its tonnage, price and hardpoint.
     resources: (inst) => {
-      const w = WEAPONS[inst.options?.weapon as WeaponId] ?? WEAPONS.beamLaser;
+      const mount = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
+      const w = WEAPONS[inst.options?.weapon as WeaponId];
+      if (!w)
+        return {
+          tons: -mount.tons,
+          power: 0,
+          cost: mount.cost,
+          hardpoints: -1,
+        };
       if (w.barbette)
         return { tons: -5, power: -15, cost: w.cost, hardpoints: -1 };
-      const mount = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
       return {
         tons: -mount.tons,
         power: -(w.power * mount.capacity),
@@ -612,16 +638,19 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       };
     },
     stats: (inst) => {
-      const w = WEAPONS[inst.options?.weapon as WeaponId] ?? WEAPONS.beamLaser;
-      const cap = w.barbette
-        ? 1
-        : (MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single).capacity;
+      const w = WEAPONS[inst.options?.weapon as WeaponId];
+      const cap = !w
+        ? 0
+        : w.barbette
+          ? 1
+          : (MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single).capacity;
       return { turrets: 1, weapons: cap };
     },
     describe: (inst) => {
-      const w = WEAPONS[inst.options?.weapon as WeaponId] ?? WEAPONS.beamLaser;
-      if (w.barbette) return 'Particle Barbette';
       const m = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
+      const w = WEAPONS[inst.options?.weapon as WeaponId];
+      if (!w) return `${m.label} (empty)`;
+      if (w.barbette) return 'Particle Barbette';
       return `${m.label} — ${w.label}${m.capacity > 1 ? ` ×${m.capacity}` : ''}`;
     },
   },
@@ -655,11 +684,12 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     category: 'reinforcement',
     unique: true,
     minTL: 9,
-    // DERIVED (not Core): structural reinforcement. Each ton adds 1 Hull Point
-    // and costs Cr50,000 — flagged as unverified by evaluateShip.
+    // From the common-spacecraft examples: reinforcement runs MCr0.5 per ton.
+    // Each ton adds ~1 Hull Point here (the book's exact Hull-Point rule isn't in
+    // the construction text, so this stays flagged as approximate).
     resources: (inst) => {
       const t = inst.rating ?? 0;
-      return { tons: -t, cost: 0.05 * t };
+      return { tons: -t, cost: 0.5 * t };
     },
     stats: (inst) => ({ hullPoints: inst.rating ?? 0 }),
     describe: (inst) => `Reinforced Structure — +${inst.rating ?? 0} HP`,
@@ -769,16 +799,17 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     // rating = tons of magazine (12 tons holds 144 missiles); no extra cost.
     resources: (inst) => ({ tons: -(inst.rating ?? 0) }),
   },
-  // The systems below are DERIVED (High Guard, not Core); evaluateShip flags a
-  // warning when any is in use. rating = tons in every case.
+  // rating = tons in every case. Most are Core "spacecraft equipment"; only the
+  // Briefing Room and Detention Cells lack a source and are flagged.
   hangar: {
     id: 'hangar',
     name: 'Hangar / Docking Space',
     category: 'hangar',
-    // Holds small craft; ~Cr25,000 per ton of hangar space.
+    // Generic bay; MCr0.25 per ton (Core docking space). For a specific docked
+    // craft, prefer the Craft list, which sizes the bay automatically.
     resources: (inst) => ({
       tons: -(inst.rating ?? 0),
-      cost: 0.025 * (inst.rating ?? 0),
+      cost: 0.25 * (inst.rating ?? 0),
     }),
     describe: (inst) => `Hangar / Docking Space — ${inst.rating ?? 0} tons`,
   },
@@ -786,9 +817,10 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     id: 'cargoCrane',
     name: 'Cargo Crane',
     category: 'cargoCrane',
+    // MCr1 per ton (Free Trader: 3 tons, MCr3).
     resources: (inst) => ({
       tons: -(inst.rating ?? 0),
-      cost: 0.1 * (inst.rating ?? 0),
+      cost: 1 * (inst.rating ?? 0),
     }),
   },
   laboratory: {
@@ -816,6 +848,16 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     resources: (inst) => ({
       tons: -(inst.rating ?? 0),
       cost: 0.5 * (inst.rating ?? 0),
+    }),
+  },
+  cabinSpace: {
+    id: 'cabinSpace',
+    name: 'Cabin Space',
+    category: 'cabinSpace',
+    // Small-craft accommodation: 1.5 tons & MCr0.075 per cabin (MCr0.05/ton).
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.05 * (inst.rating ?? 0),
     }),
   },
   briefingRoom: {
@@ -1005,11 +1047,12 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   });
   installed.push({ defId: 'sensors', options: { grade: params.sensors } });
   for (const wpn of params.weapons) {
-    if (wpn.weapon !== 'none')
-      installed.push({
-        defId: 'weapon',
-        options: { mount: wpn.mount, weapon: wpn.weapon },
-      });
+    // Always install the mount; an empty mount (weapon 'none') still costs its
+    // tonnage, price and hardpoint (e.g. an unarmed turret).
+    installed.push({
+      defId: 'weapon',
+      options: { mount: wpn.mount, weapon: wpn.weapon },
+    });
   }
   // Streamlined hulls have fuel scoops built in (free), so only add the
   // component (MCr1) on other configurations.
@@ -1175,26 +1218,7 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
     }
     return issues;
   },
-  // Small craft (under 100 tons) mount fixed weapons on firmpoints; they cannot
-  // carry turrets or barbettes.
-  ({ design, context }) => {
-    if (context.chassisSize >= 100) return [];
-    const hasNonFixed = design.installed.some(
-      (c) =>
-        c.defId === 'weapon' &&
-        c.options?.mount !== 'fixed' &&
-        c.options?.weapon !== 'none',
-    );
-    return hasNonFixed
-      ? [
-          {
-            severity: 'error',
-            message:
-              'Small craft (under 100 tons) can only mount fixed weapons on firmpoints, not turrets',
-          },
-        ]
-      : [];
-  },
+  // Hard power requirement: the plant must run basic systems + the manoeuvre
   // drive simultaneously. (Jump-at-the-same-time is only a bonus, so a total
   // overdraw is just a warning — see SHIP_RESOURCES.)
   ({ design, summary, context }) => {
@@ -1277,6 +1301,12 @@ function driveAndPlantTons(params: ShipParams): number {
  */
 function crewRoster(params: ShipParams, depth = 0): CrewMember[] {
   const military = params.crewType === 'military';
+  // Small craft (under 100 tons) are flown by a single pilot who covers
+  // engineering and gunnery too.
+  if (params.hullTons < 100) {
+    const roster: CrewMember[] = [{ role: 'Pilot', count: 1 }];
+    return roster;
+  }
   const roster: CrewMember[] = [{ role: 'Pilot', count: military ? 3 : 1 }];
   if (params.jump > 0) roster.push({ role: 'Astrogator', count: 1 });
   const engineers = Math.ceil(driveAndPlantTons(params) / 35);
@@ -1301,12 +1331,10 @@ function crewRoster(params: ShipParams, depth = 0): CrewMember[] {
   };
   if (depth < 4) {
     for (const craft of params.carried) {
-      if (craft.count <= 0) continue;
-      // Use the nested design's own roster when we have it; otherwise assume a
-      // single pilot per craft.
-      const sub = craft.ship
-        ? crewRoster(craft.ship, depth + 1)
-        : [{ role: 'Pilot', count: 1 }];
+      if (craft.count <= 0 || !craft.ship) continue;
+      // Only a full nested design adds dedicated crew; bare auxiliary entries
+      // (air/rafts, vehicles) are operated by the existing crew.
+      const sub = crewRoster(craft.ship, depth + 1);
       for (const member of sub)
         addCrew(member.role, member.count * craft.count);
     }
@@ -1442,8 +1470,6 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
   for (const s of params.systems)
     if (s.amount > 0 && SYSTEM_TYPES[s.type]?.unverified)
       unverified.add(SYSTEM_TYPES[s.type].label);
-  if (params.carried.some((c) => c.count > 0 && c.tons > 0))
-    unverified.add('Carried craft (hangars)');
   if (unverified.size > 0) {
     extra.push({
       severity: 'warning',

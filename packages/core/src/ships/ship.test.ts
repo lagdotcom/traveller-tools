@@ -312,7 +312,7 @@ describe('evaluateShip', () => {
       (l) => l.id === 'reinforcement',
     )!;
     expect(line.resources.tons).toBe(-10);
-    expect(line.resources.cost).toBeCloseTo(0.5, 6);
+    expect(line.resources.cost).toBeCloseTo(5, 6); // MCr0.5 per ton
     // Derived rules get a warning so the numbers aren't trusted blindly.
     expect(
       reinforced.issues.some(
@@ -321,26 +321,32 @@ describe('evaluateShip', () => {
     ).toBe(true);
   });
 
-  it('costs derived systems by tonnage and warns they are unverified', () => {
+  it('costs systems by tonnage; verified ones do not warn', () => {
     const { summary, issues } = evaluateShip({
       ...baseParams,
       hullTons: 400,
       systems: [
-        { type: 'hangar', amount: 20 },
-        { type: 'laboratory', amount: 4 },
+        { type: 'laboratory', amount: 4 }, // verified: MCr1 per 4 tons
+        { type: 'cargoCrane', amount: 3 }, // verified: MCr1 per ton
       ],
     });
     const line = (id: string) => summary.lineItems.find((l) => l.id === id)!;
-    expect(line('hangar').resources.tons).toBe(-20);
-    expect(line('hangar').resources.cost).toBeCloseTo(0.5, 6); // 0.025 × 20
-    expect(line('laboratory').resources.tons).toBe(-4);
-    expect(line('laboratory').resources.cost).toBeCloseTo(1, 6); // 0.25 × 4
+    expect(line('laboratory').resources.cost).toBeCloseTo(1, 6);
+    expect(line('cargoCrane').resources.cost).toBeCloseTo(3, 6);
+    expect(
+      issues.some((i) => i.severity === 'warning' && /derived/.test(i.message)),
+    ).toBe(false);
+  });
+
+  it('flags the still-unverified systems (briefing room, detention cells)', () => {
+    const { issues } = evaluateShip({
+      ...baseParams,
+      hullTons: 400,
+      systems: [{ type: 'briefingRoom', amount: 4 }],
+    });
     expect(
       issues.some(
-        (i) =>
-          i.severity === 'warning' &&
-          i.message.includes('Hangar') &&
-          i.message.includes('Laboratory'),
+        (i) => i.severity === 'warning' && i.message.includes('Briefing Room'),
       ),
     ).toBe(true);
   });
@@ -357,44 +363,39 @@ describe('evaluateShip', () => {
     ).toBe(true);
   });
 
-  it('lets small craft mount fixed weapons but not turrets', () => {
-    // A 10-ton fighter has one firmpoint; a fixed weapon is fine.
-    const fighter = evaluateShip({
+  it('installs an empty turret (the mount, with no weapon)', () => {
+    const { summary, issues } = evaluateShip({
       ...baseParams,
-      hullTons: 10,
-      tl: 12,
-      jump: 0,
-      thrust: 6,
-      powerPlantTons: 1,
-      fuelTons: 1,
-      bridge: 'cockpit',
-      staterooms: 0,
-      weapons: [{ mount: 'fixed', weapon: 'beamLaser' }],
+      weapons: [{ mount: 'double', weapon: 'none' }],
     });
-    expect(fighter.issues.filter((i) => i.severity === 'error')).toEqual([]);
-    // A turret on the same small craft is rejected.
-    const turreted = evaluateShip({
-      ...baseParams,
-      hullTons: 10,
-      tl: 12,
-      jump: 0,
-      thrust: 6,
-      powerPlantTons: 1,
-      fuelTons: 1,
-      bridge: 'cockpit',
-      staterooms: 0,
-      weapons: [{ mount: 'triple', weapon: 'beamLaser' }],
-    });
-    expect(
-      turreted.issues.some(
-        (i) => i.severity === 'error' && /Small craft/.test(i.message),
-      ),
-    ).toBe(true);
+    const line = summary.lineItems.find((l) => l.id === 'weapon')!;
+    // Double turret: 1 ton, MCr0.5, no power draw, named "(empty)".
+    expect(line.resources.tons).toBe(-1);
+    expect(line.resources.cost).toBeCloseTo(0.5, 6);
+    expect(line.resources.power ?? 0).toBe(0);
+    expect(line.name).toBe('Double Turret (empty)');
+    expect(issues.filter((i) => i.severity === 'error')).toEqual([]);
   });
 
-  it('carries nested craft, sizing the hangar and adding their cost', () => {
-    // Two 10-ton fighters (cost MCr3 each) need a hangar of ceil(10×1.3)=13t
-    // each → 26t, plus 26×0.025 = MCr0.65 of bay, plus the craft cost (MCr6).
+  it('lets a small craft mount a turret (e.g. the Gig)', () => {
+    const { issues } = evaluateShip({
+      ...baseParams,
+      hullTons: 20,
+      tl: 12,
+      jump: 0,
+      thrust: 7,
+      powerPlantTons: 2,
+      fuelTons: 1,
+      bridge: 'standard',
+      staterooms: 0,
+      weapons: [{ mount: 'single', weapon: 'none' }],
+    });
+    expect(issues.filter((i) => i.severity === 'error')).toEqual([]);
+  });
+
+  it('carries nested craft as Core docking space (craft tons + 10%)', () => {
+    // Two 10-ton fighters (MCr3 each): docking space ceil(10×1.1)=11t each →
+    // 22t, at MCr0.25/ton (5.5), plus the craft cost (MCr6).
     const { summary, issues } = evaluateShip({
       ...baseParams,
       hullTons: 400,
@@ -403,21 +404,19 @@ describe('evaluateShip', () => {
       ],
     });
     const line = summary.lineItems.find((l) => l.id === 'carriedCraft')!;
-    expect(line.resources.tons).toBe(-26);
-    expect(line.resources.cost).toBeCloseTo(2 * 3 + 26 * 0.025, 6);
-    expect(line.name).toBe('2× Light Fighter (hangar 26t)');
-    // Hangars are a derived rule, so the build warns.
+    expect(line.resources.tons).toBe(-22);
+    expect(line.resources.cost).toBeCloseTo(2 * 3 + 22 * 0.25, 6);
+    expect(line.name).toBe('2× Light Fighter (hangar 22t)');
+    // Docking space is a Core feature, so it does not warn.
     expect(
-      issues.some(
-        (i) => i.severity === 'warning' && /derived rules/.test(i.message),
-      ),
-    ).toBe(true);
+      issues.some((i) => i.severity === 'warning' && /derived/.test(i.message)),
+    ).toBe(false);
   });
 
-  it('adds embarked small-craft crew to the carrier roster', () => {
+  it('adds an embarked craft pilot to the carrier roster', () => {
     const count = (crew: { role: string; count: number }[], role: string) =>
       crew.find((c) => c.role === role)?.count ?? 0;
-    // A carrier with two fighters that each need a pilot + gunner of their own.
+    // A small craft is flown by a single pilot; carrying two adds two pilots.
     const fighter: ShipParams = {
       ...baseParams,
       hullTons: 10,
@@ -444,10 +443,7 @@ describe('evaluateShip', () => {
         },
       ],
     });
-    // Two fighters add 2 pilots and 2 gunners on top of the carrier's own crew.
     expect(count(carrier.crew, 'Pilot')).toBe(count(bare.crew, 'Pilot') + 2);
-    expect(count(carrier.crew, 'Gunner')).toBe(2);
-    // Those extra crew are paid, too.
     expect(carrier.runningCosts.monthlySalaryCr).toBeGreaterThan(
       bare.runningCosts.monthlySalaryCr,
     );
