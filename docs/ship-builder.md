@@ -211,3 +211,48 @@ and a menu option in `app.tsx`.
 - The Core Rulebook drive/power sizing, hull costs, hull-point formula, bridge
   sizing, and component costs come from you (stub fill).
 - Section ordering above follows the Core Rulebook sequence; easy to reorder.
+
+## Supporting High Guard later (design notes)
+
+The Core ruleset is essentially complete. High Guard is mostly a **superset**:
+the same drives/plants/staterooms/computers/basic turrets, plus extra
+components (more hull configs, armour, plants, bay weapons, spinal mounts,
+screens, hull options) and a handful of genuine **calculation deltas** (hull
+config Hull-Point modifiers, more granular crew, and the things currently
+approximated — reinforced hull, armoured bulkheads, drop tanks). Our
+component-level power model already matches High Guard's per-system accounting,
+so power scales for free.
+
+Planned approach when the High Guard text is in hand:
+
+- **`ruleset: 'core' | 'highGuard'` on `ShipParams`, chosen first.** It's a mode
+  that (a) filters the available catalogue and (b) selects the few differing
+  constants/rules. Carried in serialization; switching it re-validates a design
+  and warns about now-illegal components (like the TL clamp already does).
+- **One superset catalogue, components tagged with availability** via a
+  `rulesets?: Ruleset[]` field (default = both). Shared components stay a single
+  definition; High-Guard-only ones tag `['highGuard']`. Core is the base; High
+  Guard extends it.
+- **Thread `ruleset` into `DesignContext`** so the few components/rules whose
+  maths genuinely differ have a clean branch point, without forking the
+  catalogue. Most components ignore it.
+- **Compatibility** rides on the existing `minTL` / `unique` / `requires` plus
+  `Rule`s (e.g. "spinal mount requires hull ≥ X", "screens are High Guard
+  only"); add declarative `incompatibleWith` only if the rules get repetitive.
+
+Two seams already in place that make this cheap:
+
+- **`ComponentDef.source`** — provenance tag (e.g. `'High Guard'`). `evaluateShip`
+  collects these into `ShipEvaluation.sources`, and the ship sheet shows a
+  **Sources** panel listing the rulebooks a design needs (always the Core
+  Rulebook, plus any others). New non-Core components just set `source` and they
+  contribute automatically.
+- **The "derived rules" warning** is orthogonal to `source`: provenance says
+  _which book_, the warning says _not yet verified_. When real High Guard numbers
+  land, an item keeps its `source: 'High Guard'` and simply drops the warning.
+
+Deliberately **not** built yet (avoid speculative abstraction until the data is
+known): the full `ruleset` switch and per-ruleset value maps — we don't yet know
+whether High Guard mostly _adds_ components (simple) or also _overrides_ Core
+values (needs value maps). Retrofitting is cheap because the catalogue is
+centralised data, not scattered logic.

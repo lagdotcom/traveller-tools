@@ -471,6 +471,15 @@ describe('evaluateShip', () => {
     ).toBe(false);
   });
 
+  it('reports the source books a design needs', () => {
+    // A plain Core ship needs only the Core Rulebook.
+    expect(evaluateShip(baseParams).sources).toEqual(['Core Rulebook']);
+    // Reinforced structure is a High Guard feature, so it adds that source.
+    expect(
+      evaluateShip({ ...baseParams, reinforcementTons: 10 }).sources,
+    ).toEqual(['Core Rulebook', 'High Guard']);
+  });
+
   it('costs a holographic hull by hull tonnage and draws power', () => {
     const { summary } = evaluateShip({
       ...baseParams,

@@ -712,6 +712,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     category: 'reinforcement',
     unique: true,
     minTL: 9,
+    source: 'High Guard',
     // From the common-spacecraft examples: reinforcement runs MCr0.5 per ton.
     // Each ton adds ~1 Hull Point here (the book's exact Hull-Point rule isn't in
     // the construction text, so this stays flagged as approximate).
@@ -1448,6 +1449,21 @@ export interface ShipEvaluation {
     monthlyMaintenanceCr: number;
     monthlySalaryCr: number;
   };
+  /** Rulebooks a design draws on (always the Core Rulebook, plus any others). */
+  sources: string[];
+}
+
+/** The base rulebook every design uses; component `source` tags add to it. */
+const BASE_SOURCE = 'Core Rulebook';
+
+/** Books needed to build this design: the base plus any component sources. */
+function designSources(design: Design<ShipStats>): string[] {
+  const set = new Set<string>([BASE_SOURCE]);
+  for (const inst of design.installed) {
+    const src = SHIP_CATALOG[inst.defId]?.source;
+    if (src) set.add(src);
+  }
+  return [...set];
 }
 
 /** Drive + power plant tonnage, used for the engineer crew requirement. */
@@ -1606,6 +1622,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
         monthlyMaintenanceCr: 0,
         monthlySalaryCr: 0,
       },
+      sources: [BASE_SOURCE],
     };
   }
 
@@ -1685,5 +1702,6 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       monthlyMaintenanceCr: (purchaseMCr * 1000) / 12,
       monthlySalaryCr: crewSalary(crew),
     },
+    sources: designSources(design),
   };
 }

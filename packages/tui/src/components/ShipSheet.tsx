@@ -66,6 +66,7 @@ export interface ShipSheetProps {
     monthlyMaintenanceCr: number;
     monthlySalaryCr: number;
   };
+  sources: string[];
 }
 
 /** A book-style ship sheet: component breakdown plus derived stats / power. */
@@ -166,6 +167,16 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
             Maint Cr{Math.round(props.runningCosts.monthlyMaintenanceCr)}/mo
           </Text>
           <Text>Pay Cr{Math.round(props.runningCosts.monthlySalaryCr)}/mo</Text>
+        </Box>
+        <Box marginTop={1} flexDirection="column">
+          <Text bold color="yellow">
+            Sources
+          </Text>
+          {props.sources.map((s) => (
+            <Text key={s} dimColor>
+              {s}
+            </Text>
+          ))}
         </Box>
       </Box>
     </Box>

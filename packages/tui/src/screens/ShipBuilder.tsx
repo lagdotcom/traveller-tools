@@ -621,8 +621,15 @@ export function ShipBuilderScreen({
     standardDesign: form.values.standard === 'yes',
   };
   const currentDef: ShipDefinition = { name, params };
-  const { summary, issues, cargoTons, powerRequirements, crew, runningCosts } =
-    evaluateShip(params);
+  const {
+    summary,
+    issues,
+    cargoTons,
+    powerRequirements,
+    crew,
+    runningCosts,
+    sources,
+  } = evaluateShip(params);
   const usage = SHIP_RESOURCES.map((r) => summary.resources[r.key]!);
   const { thrust, jump, hullPoints } = summary.stats;
 
@@ -883,6 +890,7 @@ export function ShipBuilderScreen({
           powerRequirements={powerRequirements}
           crew={crew}
           runningCosts={runningCosts}
+          sources={sources}
         />
       </Box>
 

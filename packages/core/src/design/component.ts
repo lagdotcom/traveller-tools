@@ -44,6 +44,8 @@ export interface ComponentDef<S extends Stats = Stats> {
   requires?: string[];
   /** Minimum tech level to install. */
   minTL?: number;
+  /** Source book this component comes from, if not the base rules. */
+  source?: string;
   /** Signed resource contributions (positive provides, negative consumes). */
   resources: (inst: InstalledComponent, ctx: DesignContext) => ResourceDelta;
   /** Additive contributions to the design's derived stats. */
