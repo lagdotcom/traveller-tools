@@ -961,7 +961,13 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       const count = Math.max(1, Number(inst.options?.count ?? 1));
       const name = String(inst.options?.name ?? 'Craft');
       const bay = hangarTonsFor(Math.max(0, Number(inst.options?.tons ?? 0)));
-      return `${count > 1 ? `${count}× ` : ''}${name} (hangar ${count * bay}t)`;
+      const carries = Array.isArray(inst.options?.carries)
+        ? (inst.options.carries as string[])
+        : [];
+      const carryText = carries.length
+        ? ` — carrying ${carries.join(', ')}`
+        : '';
+      return `${count > 1 ? `${count}× ` : ''}${name} (hangar ${count * bay}t)${carryText}`;
     },
   },
 };
@@ -1129,6 +1135,8 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
           tons: craft.tons,
           cost: craft.cost,
           count: craft.count,
+          // Surface any craft nested inside (e.g. an ATV stored on a launch).
+          carries: (craft.ship?.carried ?? []).map((c) => c.name),
         },
       });
   }

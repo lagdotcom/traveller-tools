@@ -128,6 +128,34 @@ describe('evaluateShip', () => {
     expect(name('missileStorage')).toBe('Missile Storage (144 missiles)');
   });
 
+  it('lists craft nested inside a carried craft (e.g. an ATV on a launch)', () => {
+    const launchWithAtv: ShipParams = {
+      ...baseParams,
+      hullTons: 20,
+      jump: 0,
+      bridge: 'standard',
+      carried: [
+        { kind: 'vehicle', name: 'ATV', tons: 4, cost: 0.155, count: 1 },
+      ],
+    };
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullTons: 200,
+      carried: [
+        {
+          kind: 'ship',
+          name: 'Launch',
+          tons: 20,
+          cost: 5,
+          count: 1,
+          ship: launchWithAtv,
+        },
+      ],
+    });
+    const line = summary.lineItems.find((l) => l.id === 'carriedCraft')!;
+    expect(line.name).toContain('carrying ATV');
+  });
+
   it('costs multi-environment space with equipment power and cost', () => {
     // 8 tons of space -> 1 ton of equipment: 8t consumed, MCr0.5, 1 Power.
     const { summary } = evaluateShip({

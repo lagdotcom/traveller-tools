@@ -15,15 +15,26 @@ function ship(
   };
 }
 
-/** Carry a library ship, resolving its displacement and cost from its design. */
-function carryShip(def: ShipDefinition, count = 1): CarriedCraft {
+/**
+ * Carry a library ship, resolving its displacement and cost from its design.
+ * `nested` craft (e.g. an ATV stored on a launch) are folded into the carried
+ * ship's own design so their cost flows up and they're listed on the sheet.
+ */
+function carryShip(
+  def: ShipDefinition,
+  count = 1,
+  nested: CarriedCraft[] = [],
+): CarriedCraft {
+  const params = nested.length
+    ? { ...def.params, carried: [...def.params.carried, ...nested] }
+    : def.params;
   return {
     kind: 'ship',
     name: def.name,
     tons: def.params.hullTons,
-    cost: evaluateShip(def.params).summary.resources.cost.used,
+    cost: evaluateShip(params).summary.resources.cost.used,
     count,
-    ship: def.params,
+    ship: params,
   };
 }
 
@@ -151,7 +162,8 @@ const MODULAR_CUTTER = ship('Modular Cutter', '50-ton modular cutter.', {
  *     space / cargo of the same tonnage.
  *   - Sphere hulls and reduced-size jump drives use the standard equivalents;
  *     fibre-optic (fib) computers are priced like /bis.
- *   - Carried craft don't yet add an embarked ATV's own cost.
+ *   - A vehicle nested in an auxiliary craft (e.g. an ATV on a launch) is given
+ *     its own docking space inside that craft, so its cost runs a touch high.
  */
 export const BUILTIN_SHIPS: ShipDefinition[] = [
   ship('Scout / Courier (Type S)', '100-ton streamlined survey scout.', {
@@ -284,7 +296,10 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'multiEnvironment', amount: 8 },
       { type: 'multiEnvironment', amount: 8 },
     ],
-    carried: [carryShip(LAUNCH), carryVehicle('Air/Raft')],
+    carried: [
+      carryShip(LAUNCH, 1, [carryVehicle('ATV')]),
+      carryVehicle('Air/Raft'),
+    ],
     software: [
       { type: 'jumpControl', level: 2 },
       { type: 'library', level: 0 },
@@ -345,7 +360,10 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     fuelTons: 22,
     computer: '/5',
     sensors: 'civilian',
-    carried: [carryVehicle('Air/Raft'), carryShip(SHIPS_BOAT)],
+    carried: [
+      carryVehicle('Air/Raft'),
+      carryShip(SHIPS_BOAT, 1, [carryVehicle('ATV')]),
+    ],
     software: [
       { type: 'jumpControl', level: 1 },
       { type: 'library', level: 0 },
@@ -407,7 +425,10 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'probeDrones', amount: 3 },
       { type: 'laboratory', amount: 100 },
     ],
-    carried: [carryShip(PINNACE), carryVehicle('Air/Raft')],
+    carried: [
+      carryShip(PINNACE, 1, [carryVehicle('ATV')]),
+      carryVehicle('Air/Raft'),
+    ],
     software: [
       { type: 'jumpControl', level: 2 },
       { type: 'library', level: 0 },
@@ -553,7 +574,10 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { mount: 'triple', weapons: [] },
     ],
     systems: [{ type: 'repairDrones', amount: 8 }],
-    carried: [carryVehicle('Air/Raft'), carryShip(MODULAR_CUTTER, 2)],
+    carried: [
+      carryVehicle('Air/Raft'),
+      carryShip(MODULAR_CUTTER, 2, [carryVehicle('ATV')]),
+    ],
     software: [
       { type: 'autoRepair', level: 2 },
       { type: 'evade', level: 1 },
