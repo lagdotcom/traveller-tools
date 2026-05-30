@@ -211,12 +211,12 @@ export interface SensorSuite {
   cost: number;
 }
 export const SENSORS: Record<SensorId, SensorSuite> = {
-  basic: { id: 'basic', name: 'Basic', tl: 0, power: 0, tons: 0, cost: 0 },
+  basic: { id: 'basic', name: 'Basic', tl: 8, power: 0, tons: 0, cost: 0 },
   civilian: {
     id: 'civilian',
     name: 'Civilian Grade',
     tl: 9,
-    power: 0,
+    power: 1,
     tons: 1,
     cost: 3,
   },
