@@ -11,6 +11,7 @@ import React from 'react';
 import { BudgetBar } from '../components/BudgetBar.js';
 import { Field } from '../components/Field.js';
 import { IssueList } from '../components/IssueList.js';
+import { ShipSheet } from '../components/ShipSheet.js';
 import { useForm } from '../components/useForm.js';
 
 const num = (value: string, fallback = 0) => {
@@ -65,7 +66,8 @@ export function ShipBuilderScreen({
     staterooms: num(form.values.staterooms),
     turrets: num(form.values.turrets),
   };
-  const { summary, issues, cargoTons } = evaluateShip(params);
+  const { summary, issues, cargoTons, powerRequirements } =
+    evaluateShip(params);
   const usage = SHIP_RESOURCES.map((r) => summary.resources[r.key]!);
   const { thrust, jump, hullPoints } = summary.stats;
 
@@ -107,12 +109,17 @@ export function ShipBuilderScreen({
       </Box>
 
       <Box marginTop={1}>
-        <Text>
-          Thrust <Text color="cyan">{thrust}</Text> · Jump{' '}
-          <Text color="cyan">{jump}</Text> · Hull pts{' '}
-          <Text color="cyan">{hullPoints}</Text> · Cargo{' '}
-          <Text color="cyan">{Math.round(cargoTons * 100) / 100}</Text> tons
-        </Text>
+        <ShipSheet
+          lineItems={summary.lineItems}
+          totalTons={summary.resources.tons.used}
+          hullTons={summary.resources.tons.provided}
+          totalCost={summary.resources.cost.used}
+          hullPoints={hullPoints}
+          thrust={thrust}
+          jump={jump}
+          cargoTons={cargoTons}
+          powerRequirements={powerRequirements}
+        />
       </Box>
 
       <Box marginTop={1}>

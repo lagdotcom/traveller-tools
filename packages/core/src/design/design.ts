@@ -19,6 +19,17 @@ export interface DesignSummary<S extends Stats = Stats> {
   resources: Record<string, ResourceUsage>;
   /** Merged derived stats (chassis base + every component, summed). */
   stats: S;
+  /** One row per chassis + component, for a book-style breakdown table. */
+  lineItems: LineItem[];
+}
+
+/** A single line of a design breakdown: the chassis or one component group. */
+export interface LineItem {
+  id: string;
+  name: string;
+  quantity: number;
+  /** Signed resource contributions, scaled by quantity. */
+  resources: ResourceDelta;
 }
 
 const quantityOf = (inst: InstalledComponent) => inst.quantity ?? 1;
@@ -50,6 +61,14 @@ export function summarize<S extends Stats>(
       (contributions[key] ??= []).push(value);
     }
   };
+  const lineItems: LineItem[] = [
+    {
+      id: design.chassis.id,
+      name: design.chassis.name,
+      quantity: 1,
+      resources: design.chassis.provides,
+    },
+  ];
   push(design.chassis.provides);
 
   const stats: Stats = {};
@@ -63,7 +82,14 @@ export function summarize<S extends Stats>(
   for (const inst of design.installed) {
     const def = getDef(catalog, inst.defId);
     const n = quantityOf(inst);
-    push(scale(def.resources(inst, ctx), n));
+    const scaled = scale(def.resources(inst, ctx), n);
+    push(scaled);
+    lineItems.push({
+      id: def.id,
+      name: def.name,
+      quantity: n,
+      resources: scaled,
+    });
     if (def.stats) {
       const partial = def.stats(inst, ctx);
       for (let i = 0; i < n; i++) mergeStats(partial);
@@ -75,7 +101,7 @@ export function summarize<S extends Stats>(
     usage[def.key] = summariseResource(def, contributions[def.key] ?? []);
   }
 
-  return { resources: usage, stats: stats as S };
+  return { resources: usage, stats: stats as S, lineItems };
 }
 
 export interface Issue {

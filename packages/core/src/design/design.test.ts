@@ -143,6 +143,22 @@ describe('summarize', () => {
     expect(summary.stats.weapons).toBe(3);
   });
 
+  it('produces a line item per chassis + component for a breakdown', () => {
+    const summary = summarize(
+      design([{ defId: 'powerPlant' }, { defId: 'turret', quantity: 2 }]),
+      catalog,
+      RESOURCES,
+    );
+    expect(summary.lineItems.map((l) => l.name)).toEqual([
+      'Hull',
+      'Power Plant',
+      'Turret',
+    ]);
+    const turret = summary.lineItems[2]!;
+    expect(turret.quantity).toBe(2);
+    expect(turret.resources.tons).toBe(-2); // -1 each, scaled by quantity
+  });
+
   it('throws on an unknown component id', () => {
     expect(() =>
       summarize(design([{ defId: 'nope' }]), catalog, RESOURCES),

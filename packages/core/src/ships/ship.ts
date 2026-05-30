@@ -413,6 +413,8 @@ export interface ShipEvaluation {
   summary: DesignSummary<ShipStats>;
   issues: Issue[];
   cargoTons: number;
+  /** Power demand breakdown (for a book-style Power Requirements panel). */
+  powerRequirements: { basic: number; manoeuvre: number; jump: number };
 }
 
 const NUMERIC_FIELDS: Array<keyof ShipParams> = [
@@ -483,6 +485,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
         { severity: 'error', message: 'Hull tonnage must be greater than 0' },
       ],
       cargoTons: 0,
+      powerRequirements: { basic: 0, manoeuvre: 0, jump: 0 },
     };
   }
 
@@ -510,5 +513,10 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
     summary,
     issues: [...inputIssues, ...issues, ...extra],
     cargoTons: summary.resources.tons?.remaining ?? 0,
+    powerRequirements: {
+      basic: params.hullTons * BASIC_SYSTEMS_POWER,
+      manoeuvre: params.hullTons * DRIVE_POWER_PER_RATING * params.thrust,
+      jump: params.hullTons * DRIVE_POWER_PER_RATING * params.jump,
+    },
   };
 }

@@ -20,11 +20,14 @@ describe('Ship builder (real Ink)', () => {
     return ui;
   }
 
-  it('opens with a live budget and derived stats', async () => {
+  it('opens with a live budget and a book-style sheet', async () => {
     const ui = await openBuilder();
     expect(ui.frame()).toContain('Tons');
+    // The book-style breakdown table and sidebars.
+    expect(ui.frame()).toContain('COMPONENT');
+    expect(ui.frame()).toContain('Power Plant');
     expect(ui.frame()).toContain('Cargo');
-    expect(ui.frame()).toContain('Thrust');
+    expect(ui.frame()).toContain('Hull:');
     // The default 100-ton loadout is within budget.
     expect(ui.frame()).toContain('No issues');
     ui.unmount();
