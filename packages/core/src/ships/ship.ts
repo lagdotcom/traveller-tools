@@ -263,8 +263,13 @@ export type SystemTypeId =
   | 'medicalBay'
   | 'multiEnvironment'
   | 'cabinSpace'
-  | 'briefingRoom'
-  | 'detentionCells';
+  | 'aerofins'
+  | 'cargoScoop'
+  | 'collapsibleFuel'
+  | 'concealedCompartment'
+  | 'sensorStation'
+  | 'highStateroom'
+  | 'luxuryStateroom';
 export const SYSTEM_TYPES: Record<
   SystemTypeId,
   {
@@ -289,16 +294,16 @@ export const SYSTEM_TYPES: Record<
     label: 'Multi-Environment Space',
   },
   cabinSpace: { id: 'cabinSpace', label: 'Cabin Space' },
-  briefingRoom: {
-    id: 'briefingRoom',
-    label: 'Briefing Room',
-    unverified: true,
+  aerofins: { id: 'aerofins', label: 'Aerofins' },
+  cargoScoop: { id: 'cargoScoop', label: 'Cargo Scoop' },
+  collapsibleFuel: { id: 'collapsibleFuel', label: 'Collapsible Fuel Tank' },
+  concealedCompartment: {
+    id: 'concealedCompartment',
+    label: 'Concealed Compartment',
   },
-  detentionCells: {
-    id: 'detentionCells',
-    label: 'Detention Cells',
-    unverified: true,
-  },
+  sensorStation: { id: 'sensorStation', label: 'Sensor Station' },
+  highStateroom: { id: 'highStateroom', label: 'High Staterooms' },
+  luxuryStateroom: { id: 'luxuryStateroom', label: 'Luxury Staterooms' },
 };
 export interface SystemEntry {
   type: SystemTypeId;
@@ -622,7 +627,7 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       const per4Weeks = powerPlantFuel(plantTons);
       const weeks = Math.max(0, Math.floor((fuel - jumpTons) / per4Weeks)) * 4;
       const jumpText = jump > 0 ? `J-${jump}, ` : '';
-      return `Fuel — ${fuel} tons (${jumpText}${weeks} weeks operation)`;
+      return `Fuel — ${jumpText}${weeks} weeks operation`;
     },
   },
   stateroom: {
@@ -880,10 +885,11 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     id: 'medicalBay',
     name: 'Medical Bay',
     category: 'medicalBay',
-    resources: (inst) => ({
-      tons: -(inst.rating ?? 0),
-      cost: 0.5 * (inst.rating ?? 0),
-    }),
+    // 4 tons, MCr2 and 1 Power per bay (MCr0.5/ton; 1 Power per 4 tons).
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: 0.5 * t, power: -Math.ceil(t / 4) };
+    },
   },
   multiEnvironment: {
     id: 'multiEnvironment',
@@ -907,23 +913,80 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       cost: 0.05 * (inst.rating ?? 0),
     }),
   },
-  briefingRoom: {
-    id: 'briefingRoom',
-    name: 'Briefing Room',
-    category: 'briefingRoom',
+  aerofins: {
+    id: 'aerofins',
+    name: 'Aerofins',
+    category: 'aerofins',
+    // 5% of hull recommended; MCr0.1 per ton.
     resources: (inst) => ({
       tons: -(inst.rating ?? 0),
       cost: 0.1 * (inst.rating ?? 0),
     }),
   },
-  detentionCells: {
-    id: 'detentionCells',
-    name: 'Detention Cells',
-    category: 'detentionCells',
+  cargoScoop: {
+    id: 'cargoScoop',
+    name: 'Cargo Scoop',
+    category: 'cargoScoop',
+    // 2 tons, MCr0.5 (MCr0.25/ton).
     resources: (inst) => ({
       tons: -(inst.rating ?? 0),
-      cost: 0.1 * (inst.rating ?? 0),
+      cost: 0.25 * (inst.rating ?? 0),
     }),
+  },
+  collapsibleFuel: {
+    id: 'collapsibleFuel',
+    name: 'Collapsible Fuel Tank',
+    category: 'collapsibleFuel',
+    // Cr500 per ton (jump fuel cannot be drawn from these).
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.0005 * (inst.rating ?? 0),
+    }),
+  },
+  concealedCompartment: {
+    id: 'concealedCompartment',
+    name: 'Concealed Compartment',
+    category: 'concealedCompartment',
+    // Up to 5% of hull; Cr20,000 per ton.
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.02 * (inst.rating ?? 0),
+    }),
+  },
+  sensorStation: {
+    id: 'sensorStation',
+    name: 'Sensor Station',
+    category: 'sensorStation',
+    // 1 ton & MCr0.5 per station.
+    resources: (inst) => ({
+      tons: -(inst.rating ?? 0),
+      cost: 0.5 * (inst.rating ?? 0),
+    }),
+    describe: (inst) => `Sensor Station ×${inst.rating ?? 0}`,
+  },
+  highStateroom: {
+    id: 'highStateroom',
+    name: 'High Staterooms',
+    category: 'highStateroom',
+    // 6 tons & MCr0.8 per stateroom.
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: (0.8 / 6) * t };
+    },
+    describe: (inst) =>
+      `High Staterooms ×${Math.floor((inst.rating ?? 0) / 6)}`,
+  },
+  luxuryStateroom: {
+    id: 'luxuryStateroom',
+    name: 'Luxury Staterooms',
+    category: 'luxuryStateroom',
+    // 10 tons & MCr1.5 per stateroom.
+    resources: (inst) => {
+      const t = inst.rating ?? 0;
+      return { tons: -t, cost: 0.15 * t };
+    },
+    describe: (inst) =>
+      `Luxury Staterooms ×${Math.floor((inst.rating ?? 0) / 10)}`,
   },
   software: {
     id: 'software',

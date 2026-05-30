@@ -180,7 +180,7 @@ describe('evaluateShip', () => {
       fuelTons: 23,
     });
     const fuel = summary.lineItems.find((l) => l.id === 'fuel')!;
-    expect(fuel.name).toBe('Fuel — 23 tons (J-2, 12 weeks operation)');
+    expect(fuel.name).toBe('Fuel — J-2, 12 weeks operation');
   });
 
   it('always lists the fuel scoop (free on streamlined, MCr1 otherwise)', () => {
@@ -470,17 +470,25 @@ describe('evaluateShip', () => {
     ).toBe(false);
   });
 
-  it('flags the still-unverified systems (briefing room, detention cells)', () => {
-    const { issues } = evaluateShip({
+  it('implements the rest of the spacecraft-equipment list', () => {
+    const { summary } = evaluateShip({
       ...baseParams,
       hullTons: 400,
-      systems: [{ type: 'briefingRoom', amount: 4 }],
+      systems: [
+        { type: 'aerofins', amount: 20 }, // MCr0.1/ton
+        { type: 'cargoScoop', amount: 2 }, // MCr0.25/ton -> 0.5
+        { type: 'sensorStation', amount: 2 }, // MCr0.5/ton -> 1
+        { type: 'luxuryStateroom', amount: 10 }, // MCr0.15/ton -> 1.5
+        { type: 'medicalBay', amount: 4 }, // 1 Power per 4-ton bay
+      ],
     });
-    expect(
-      issues.some(
-        (i) => i.severity === 'warning' && i.message.includes('Briefing Room'),
-      ),
-    ).toBe(true);
+    const line = (id: string) => summary.lineItems.find((l) => l.id === id)!;
+    expect(line('aerofins').resources.cost).toBeCloseTo(2, 6);
+    expect(line('cargoScoop').resources.cost).toBeCloseTo(0.5, 6);
+    expect(line('sensorStation').resources.cost).toBeCloseTo(1, 6);
+    expect(line('luxuryStateroom').resources.cost).toBeCloseTo(1.5, 6);
+    expect(line('luxuryStateroom').name).toBe('Luxury Staterooms ×1');
+    expect(line('medicalBay').resources.power).toBe(-1);
   });
 
   it('warns when unverified countermeasures software is installed', () => {

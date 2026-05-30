@@ -350,7 +350,6 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     staterooms: 15,
     commonAreasTons: 4,
   }),
-  // TODO: the luxury stateroom is folded into common areas.
   ship('Yacht (Type Y)', '200-ton luxury yacht.', {
     hullTons: 200,
     tl: 12,
@@ -364,6 +363,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       carryVehicle('Air/Raft'),
       carryShip(SHIPS_BOAT, 1, [carryVehicle('ATV')]),
     ],
+    systems: [{ type: 'luxuryStateroom', amount: 10 }], // 1 luxury stateroom
     software: [
       { type: 'jumpControl', level: 1 },
       { type: 'library', level: 0 },
@@ -371,7 +371,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       { type: 'intellect', level: 0 },
     ],
     staterooms: 12,
-    commonAreasTons: 42,
+    commonAreasTons: 32,
   }),
   // TODO: reinforced hull, the armoury and the drop-tank mount are approximate;
   // modelled at its internal Jump-3 (the book reaches Jump-5 on drop tanks).
