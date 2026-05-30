@@ -21,6 +21,7 @@ const baseParams: ShipParams = {
   commonAreasTons: 0,
   fuelScoop: false,
   systems: [],
+  software: [],
   turrets: 0,
   crewType: 'commercial',
 };
@@ -218,6 +219,22 @@ describe('evaluateShip', () => {
     });
     expect(line('fuelProcessor', fp).resources.tons).toBe(-2);
     expect(line('fuelProcessor', fp).resources.cost).toBeCloseTo(0.1, 6);
+  });
+
+  it('costs ship software with no tonnage', () => {
+    const { summary } = evaluateShip({
+      ...baseParams,
+      software: [
+        { type: 'jumpControl', level: 2 },
+        { type: 'library', level: 0 },
+      ],
+    });
+    const sw = summary.lineItems.filter((l) => l.id === 'software');
+    expect(
+      sw.find((l) => l.name === 'Jump Control/2')?.resources.cost,
+    ).toBeCloseTo(0.2, 6);
+    expect(sw.find((l) => l.name === 'Library')?.resources.cost ?? 0).toBe(0);
+    expect(sw.every((l) => (l.resources.tons ?? 0) === 0)).toBe(true);
   });
 
   it('reports remaining tonnage as cargo for a valid ship', () => {

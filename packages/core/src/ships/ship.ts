@@ -263,6 +263,48 @@ export interface SystemEntry {
   amount: number;
 }
 
+/**
+ * Ship's software (cost only, no tonnage). Leveled packages cost per level;
+ * Library is a flat free package. (Bandwidth vs computer Processing isn't
+ * modelled yet.)
+ */
+export type SoftwareTypeId =
+  | 'jumpControl'
+  | 'evade'
+  | 'fireControl'
+  | 'autoRepair'
+  | 'library';
+export const SOFTWARE_TYPES: Record<
+  SoftwareTypeId,
+  { id: SoftwareTypeId; label: string; costPerLevel: number; leveled: boolean }
+> = {
+  jumpControl: {
+    id: 'jumpControl',
+    label: 'Jump Control',
+    costPerLevel: 0.1,
+    leveled: true,
+  },
+  evade: { id: 'evade', label: 'Evade', costPerLevel: 1, leveled: true },
+  fireControl: {
+    id: 'fireControl',
+    label: 'Fire Control',
+    costPerLevel: 2,
+    leveled: true,
+  },
+  autoRepair: {
+    id: 'autoRepair',
+    label: 'Auto-Repair',
+    costPerLevel: 5,
+    leveled: true,
+  },
+  library: { id: 'library', label: 'Library', costPerLevel: 0, leveled: false },
+};
+export interface SoftwareEntry {
+  type: SoftwareTypeId;
+  /** Program level (ignored for non-leveled packages). */
+  level: number;
+}
+
 /** Bridge tonnage by ship size (Bridges table). */
 function bridgeTons(hull: number): number {
   if (hull <= 50) return 3;
@@ -509,6 +551,22 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return { tons: -t, cost: 0.1 * t };
     },
   },
+  software: {
+    id: 'software',
+    name: 'Software',
+    category: 'software',
+    // rating = level; options.type picks the package. Cost only, no tonnage.
+    resources: (inst) => {
+      const sw = SOFTWARE_TYPES[inst.options?.type as SoftwareTypeId];
+      if (!sw) return { cost: 0 };
+      return { cost: sw.costPerLevel * (sw.leveled ? (inst.rating ?? 0) : 1) };
+    },
+    describe: (inst) => {
+      const sw = SOFTWARE_TYPES[inst.options?.type as SoftwareTypeId];
+      if (!sw) return 'Software';
+      return sw.leveled ? `${sw.label}/${inst.rating ?? 0}` : sw.label;
+    },
+  },
 };
 
 // --- Assembly + rules -------------------------------------------------------
@@ -535,6 +593,8 @@ export interface ShipParams {
   fuelScoop: boolean;
   /** Optional tonnage-based systems (fuel processor, drones, …). */
   systems: SystemEntry[];
+  /** Ship's software (cost only). */
+  software: SoftwareEntry[];
   turrets: number;
   crewType: CrewType;
 }
@@ -609,6 +669,14 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   for (const sys of params.systems) {
     if (SYSTEM_TYPES[sys.type] && sys.amount > 0)
       installed.push({ defId: sys.type, rating: sys.amount });
+  }
+  for (const sw of params.software) {
+    if (SOFTWARE_TYPES[sw.type])
+      installed.push({
+        defId: 'software',
+        rating: sw.level,
+        options: { type: sw.type },
+      });
   }
   if (params.staterooms > 0)
     installed.push({ defId: 'stateroom', quantity: params.staterooms });

@@ -11,6 +11,9 @@ import {
   SENSORS,
   SHIP_RESOURCES,
   type ShipParams,
+  SOFTWARE_TYPES,
+  type SoftwareEntry,
+  type SoftwareTypeId,
   SYSTEM_TYPES,
   type SystemEntry,
   type SystemTypeId,
@@ -45,9 +48,28 @@ function parsePlant(value: string): PowerPlantId {
 }
 
 const SYSTEM_IDS = Object.keys(SYSTEM_TYPES) as SystemTypeId[];
-const systemLabel = (id: SystemTypeId) => SYSTEM_TYPES[id].label;
-const systemIdByLabel = (label: string): SystemTypeId | undefined =>
-  SYSTEM_IDS.find((id) => SYSTEM_TYPES[id].label === label);
+const SOFTWARE_IDS = Object.keys(SOFTWARE_TYPES) as SoftwareTypeId[];
+const labelToId = <T extends string>(
+  ids: T[],
+  labelOf: (id: T) => string,
+  label: string,
+): T | undefined => ids.find((id) => labelOf(id) === label);
+
+/** A dynamic add/remove list section (Systems, Software). */
+interface ListConfig {
+  count: number;
+  itemLabel: (index: number) => string;
+  itemValue: (index: number) => string;
+  setItem: (index: number, value: string) => void;
+  isEmpty: (index: number) => boolean;
+  remove: (index: number) => void;
+  addOptions: string[];
+  addValue: string;
+  onAddChange: (value: string) => void;
+  onAdd: () => void;
+  hint: string;
+}
+type ListId = 'systems' | 'software';
 
 export function ShipBuilderScreen({
   onBack,
@@ -78,18 +100,82 @@ export function ShipBuilderScreen({
   type FormKey = keyof typeof form.values;
 
   const [systems, setSystems] = useState<SystemEntry[]>([]);
-  const [addType, setAddType] = useState('');
+  const [software, setSoftware] = useState<SoftwareEntry[]>([]);
+  const [addSystem, setAddSystem] = useState('');
+  const [addSoftware, setAddSoftware] = useState('');
   const [active, setActive] = useState(0);
 
-  const availableLabels = SYSTEM_IDS.filter(
-    (id) => !systems.some((s) => s.type === id),
-  ).map(systemLabel);
-  const effectiveAdd = availableLabels.includes(addType)
-    ? addType
-    : (availableLabels[0] ?? '');
+  const sysLabel = (id: SystemTypeId) => SYSTEM_TYPES[id].label;
+  const swLabel = (id: SoftwareTypeId) => SOFTWARE_TYPES[id].label;
 
-  // Build the navigable rows in section order; the Systems section expands to
-  // one amount row per installed system plus an "add" row.
+  const sysAvailable = SYSTEM_IDS.filter(
+    (id) => !systems.some((s) => s.type === id),
+  ).map(sysLabel);
+  const swAvailable = SOFTWARE_IDS.filter(
+    (id) => !software.some((s) => s.type === id),
+  ).map(swLabel);
+  const effective = (value: string, available: string[]) =>
+    available.includes(value) ? value : (available[0] ?? '');
+
+  const lists: Record<ListId, ListConfig> = {
+    systems: {
+      count: systems.length,
+      itemLabel: (i) => `${sysLabel(systems[i]!.type)} (t)`,
+      itemValue: (i) => String(systems[i]!.amount),
+      setItem: (i, v) =>
+        setSystems((prev) =>
+          prev.map((e, k) => (k === i ? { ...e, amount: num(v) } : e)),
+        ),
+      isEmpty: (i) => systems[i]!.amount <= 0,
+      remove: (i) => setSystems((prev) => prev.filter((_, k) => k !== i)),
+      addOptions: sysAvailable,
+      addValue: effective(addSystem, sysAvailable),
+      onAddChange: setAddSystem,
+      onAdd: () => {
+        const id = labelToId(
+          SYSTEM_IDS,
+          sysLabel,
+          effective(addSystem, sysAvailable),
+        );
+        if (id) {
+          setSystems((prev) => [...prev, { type: id, amount: 1 }]);
+          setAddSystem('');
+        }
+      },
+      hint: 'Enter on a system with 0 tons removes it.',
+    },
+    software: {
+      count: software.length,
+      itemLabel: (i) =>
+        SOFTWARE_TYPES[software[i]!.type].leveled
+          ? `${swLabel(software[i]!.type)} (level)`
+          : swLabel(software[i]!.type),
+      itemValue: (i) => String(software[i]!.level),
+      setItem: (i, v) =>
+        setSoftware((prev) =>
+          prev.map((e, k) => (k === i ? { ...e, level: num(v) } : e)),
+        ),
+      isEmpty: (i) =>
+        SOFTWARE_TYPES[software[i]!.type].leveled && software[i]!.level <= 0,
+      remove: (i) => setSoftware((prev) => prev.filter((_, k) => k !== i)),
+      addOptions: swAvailable,
+      addValue: effective(addSoftware, swAvailable),
+      onAddChange: setAddSoftware,
+      onAdd: () => {
+        const id = labelToId(
+          SOFTWARE_IDS,
+          swLabel,
+          effective(addSoftware, swAvailable),
+        );
+        if (id) {
+          setSoftware((prev) => [...prev, { type: id, level: 1 }]);
+          setAddSoftware('');
+        }
+      },
+      hint: 'Enter on a 0-level program removes it.',
+    },
+  };
+
   interface FieldDef {
     key: FormKey;
     label: string;
@@ -97,85 +183,81 @@ export function ShipBuilderScreen({
   }
   type Row =
     | { section: number; kind: 'field'; field: FieldDef }
-    | { section: number; kind: 'sysAmount'; index: number }
-    | { section: number; kind: 'sysAdd' };
+    | { section: number; kind: 'listItem'; list: ListId; index: number }
+    | { section: number; kind: 'listAdd'; list: ListId };
 
-  const sectionDefs: { label: string; fields?: FieldDef[]; systems?: true }[] =
-    [
-      {
-        label: 'Hull',
-        fields: [
-          { key: 'hull', label: 'Hull tonnage' },
-          { key: 'tl', label: 'Tech level' },
-          {
-            key: 'config',
-            label: 'Hull config',
-            options: ['standard', 'streamlined', 'dispersed'],
-          },
-        ],
-      },
-      {
-        label: 'Drives & Power',
-        fields: [
-          { key: 'thrust', label: 'Thrust (M-drive)' },
-          { key: 'jump', label: 'Jump (J-drive)' },
-          {
-            key: 'plant',
-            label: 'Power plant',
-            options: ['TL8', 'TL12', 'TL15'],
-          },
-          { key: 'power', label: 'Power plant (tons)' },
-          { key: 'fuel', label: 'Fuel (tons)' },
-          { key: 'scoop', label: 'Fuel scoop', options: ['no', 'yes'] },
-        ],
-      },
-      {
-        label: 'Defences',
-        fields: [
-          {
-            key: 'armourType',
-            label: 'Armour type',
-            options: Object.keys(ARMOUR_TYPES),
-          },
-          { key: 'armour', label: 'Armour points' },
-          {
-            key: 'computer',
-            label: 'Computer',
-            options: Object.keys(COMPUTERS),
-          },
-          { key: 'bis', label: 'Computer /bis', options: ['no', 'yes'] },
-          { key: 'sensors', label: 'Sensors', options: Object.keys(SENSORS) },
-        ],
-      },
-      {
-        label: 'Accommodation',
-        fields: [
-          { key: 'staterooms', label: 'Staterooms' },
-          { key: 'lowBerths', label: 'Low berths' },
-          { key: 'common', label: 'Common areas (t)' },
-        ],
-      },
-      { label: 'Weapons', fields: [{ key: 'turrets', label: 'Turrets' }] },
-      { label: 'Systems', systems: true },
-      {
-        label: 'Crew',
-        fields: [
-          {
-            key: 'crewType',
-            label: 'Crew',
-            options: ['commercial', 'military'],
-          },
-        ],
-      },
-    ];
+  const sectionDefs: {
+    label: string;
+    fields?: FieldDef[];
+    list?: ListId;
+  }[] = [
+    {
+      label: 'Hull',
+      fields: [
+        { key: 'hull', label: 'Hull tonnage' },
+        { key: 'tl', label: 'Tech level' },
+        {
+          key: 'config',
+          label: 'Hull config',
+          options: ['standard', 'streamlined', 'dispersed'],
+        },
+      ],
+    },
+    {
+      label: 'Drives & Power',
+      fields: [
+        { key: 'thrust', label: 'Thrust (M-drive)' },
+        { key: 'jump', label: 'Jump (J-drive)' },
+        {
+          key: 'plant',
+          label: 'Power plant',
+          options: ['TL8', 'TL12', 'TL15'],
+        },
+        { key: 'power', label: 'Power plant (tons)' },
+        { key: 'fuel', label: 'Fuel (tons)' },
+        { key: 'scoop', label: 'Fuel scoop', options: ['no', 'yes'] },
+      ],
+    },
+    {
+      label: 'Defences',
+      fields: [
+        {
+          key: 'armourType',
+          label: 'Armour type',
+          options: Object.keys(ARMOUR_TYPES),
+        },
+        { key: 'armour', label: 'Armour points' },
+        { key: 'computer', label: 'Computer', options: Object.keys(COMPUTERS) },
+        { key: 'bis', label: 'Computer /bis', options: ['no', 'yes'] },
+        { key: 'sensors', label: 'Sensors', options: Object.keys(SENSORS) },
+      ],
+    },
+    {
+      label: 'Accommodation',
+      fields: [
+        { key: 'staterooms', label: 'Staterooms' },
+        { key: 'lowBerths', label: 'Low berths' },
+        { key: 'common', label: 'Common areas (t)' },
+      ],
+    },
+    { label: 'Weapons', fields: [{ key: 'turrets', label: 'Turrets' }] },
+    { label: 'Systems', list: 'systems' },
+    { label: 'Software', list: 'software' },
+    {
+      label: 'Crew',
+      fields: [
+        { key: 'crewType', label: 'Crew', options: ['commercial', 'military'] },
+      ],
+    },
+  ];
 
   const rows: Row[] = [];
   sectionDefs.forEach((section, si) => {
-    if (section.systems) {
-      systems.forEach((_, index) =>
-        rows.push({ section: si, kind: 'sysAmount', index }),
-      );
-      rows.push({ section: si, kind: 'sysAdd' });
+    if (section.list) {
+      const list = lists[section.list];
+      for (let index = 0; index < list.count; index++)
+        rows.push({ section: si, kind: 'listItem', list: section.list, index });
+      rows.push({ section: si, kind: 'listAdd', list: section.list });
     } else {
       section.fields!.forEach((field) =>
         rows.push({ section: si, kind: 'field', field }),
@@ -186,7 +268,6 @@ export function ShipBuilderScreen({
   const safeActive = Math.min(active, rows.length - 1);
   const activeSection = rows[safeActive]!.section;
   const advance = () => setActive((i) => Math.min(i + 1, rows.length - 1));
-
   const gotoSection = (sectionIndex: number) => {
     const idx = rows.findIndex((r) => r.section === sectionIndex);
     if (idx >= 0) setActive(idx);
@@ -202,20 +283,6 @@ export function ShipBuilderScreen({
       );
     else if (key.tab) gotoSection((activeSection + 1) % sectionDefs.length);
   });
-
-  const setSystemAmount = (index: number, value: string) =>
-    setSystems((prev) =>
-      prev.map((e, i) => (i === index ? { ...e, amount: num(value) } : e)),
-    );
-  const removeSystem = (index: number) =>
-    setSystems((prev) => prev.filter((_, i) => i !== index));
-  const addSystem = () => {
-    const id = systemIdByLabel(effectiveAdd);
-    if (id) {
-      setSystems((prev) => [...prev, { type: id, amount: 1 }]);
-      setAddType('');
-    }
-  };
 
   const params: ShipParams = {
     hullTons: num(form.values.hull),
@@ -236,6 +303,7 @@ export function ShipBuilderScreen({
     lowBerths: num(form.values.lowBerths),
     commonAreasTons: num(form.values.common),
     systems,
+    software,
     turrets: num(form.values.turrets),
     crewType: form.values.crewType as CrewType,
   };
@@ -243,6 +311,8 @@ export function ShipBuilderScreen({
     evaluateShip(params);
   const usage = SHIP_RESOURCES.map((r) => summary.resources[r.key]!);
   const { thrust, jump, hullPoints } = summary.stats;
+
+  const activeList = sectionDefs[activeSection]!.list;
 
   return (
     <Box flexDirection="column">
@@ -294,38 +364,33 @@ export function ShipBuilderScreen({
               />
             );
           }
-          if (row.kind === 'sysAmount') {
-            const entry = systems[row.index]!;
+          const list = lists[row.list];
+          if (row.kind === 'listItem') {
             const i = row.index;
             return (
               <Field
-                key={entry.type}
-                label={`${systemLabel(entry.type)} (t)`}
-                value={String(entry.amount)}
+                key={`${row.list}-${i}`}
+                label={list.itemLabel(i)}
+                value={list.itemValue(i)}
                 isActive={index === safeActive}
-                onChange={(v) => setSystemAmount(i, v)}
-                onSubmit={() =>
-                  entry.amount > 0 ? advance() : removeSystem(i)
-                }
+                onChange={(v) => list.setItem(i, v)}
+                onSubmit={() => (list.isEmpty(i) ? list.remove(i) : advance())}
               />
             );
           }
-          // sysAdd
           return (
             <ChoiceField
-              key="sys-add"
-              label="Add system"
-              options={availableLabels.length > 0 ? availableLabels : ['—']}
-              value={availableLabels.length > 0 ? effectiveAdd : '—'}
+              key={`${row.list}-add`}
+              label="Add…"
+              options={list.addOptions.length > 0 ? list.addOptions : ['—']}
+              value={list.addOptions.length > 0 ? list.addValue : '—'}
               isActive={index === safeActive}
-              onChange={setAddType}
-              onSubmit={availableLabels.length > 0 ? addSystem : advance}
+              onChange={list.onAddChange}
+              onSubmit={list.addOptions.length > 0 ? list.onAdd : advance}
             />
           );
         })}
-        {activeSection === sectionDefs.findIndex((s) => s.systems) && (
-          <Text dimColor>Enter on a system with 0 tons removes it.</Text>
-        )}
+        {activeList && <Text dimColor>{lists[activeList].hint}</Text>}
       </Box>
 
       <Box marginTop={1}>

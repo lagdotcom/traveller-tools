@@ -80,6 +80,16 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('adds software from the Software list', async () => {
+    const ui = await openBuilder();
+    // Tab to Software (Hull→Drives→Defences→Accom→Weapons→Systems→Software = 6).
+    for (let i = 0; i < 6; i++) await ui.type(TAB);
+    await ui.type(ENTER); // add the first available program (Jump Control)
+    await ui.waitFor('Jump Control'); // now a line item in the sheet
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('steps a numeric field with the right arrow', async () => {
     const ui = await openBuilder();
     // Hull tonnage is the first field, default 100; Right arrow increments it.
