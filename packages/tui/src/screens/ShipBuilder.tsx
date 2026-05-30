@@ -98,17 +98,23 @@ const SOFTWARE_IDS = Object.keys(SOFTWARE_TYPES) as SoftwareTypeId[];
 const MOUNT_IDS = Object.keys(MOUNTS) as MountId[];
 const WEAPON_IDS = Object.keys(WEAPONS) as WeaponId[];
 const MOUNT_LABELS = MOUNT_IDS.map((id) => MOUNTS[id].label);
-const REMOVE_WEAPON = '✗ remove';
-const WEAPON_LABELS = [
+const REMOVE_TURRET = '✗ remove turret';
+const MOUNT_LABELS_REMOVE = [...MOUNT_LABELS, REMOVE_TURRET];
+const EMPTY_SLOT = '— empty —';
+// Each weapon slot can hold a weapon or be left empty.
+const WEAPON_SLOT_LABELS = [
+  EMPTY_SLOT,
   ...WEAPON_IDS.map((id) => WEAPONS[id].label),
-  REMOVE_WEAPON,
 ];
 const mountByLabel = (label: string): MountId =>
   MOUNT_IDS.find((id) => MOUNTS[id].label === label) ?? 'single';
-const weaponByLabel = (label: string): WeaponId | 'none' =>
-  label === REMOVE_WEAPON
-    ? 'none'
-    : (WEAPON_IDS.find((id) => WEAPONS[id].label === label) ?? 'beamLaser');
+const weaponByLabel = (label: string): WeaponId | undefined =>
+  WEAPON_IDS.find((id) => WEAPONS[id].label === label);
+/** Capacity of a mount (a particle barbette occupies its whole mount). */
+const mountCapacity = (entry: WeaponEntry): number =>
+  entry.weapons.some((w) => WEAPONS[w]?.barbette)
+    ? 1
+    : MOUNTS[entry.mount].capacity;
 const labelToId = <T extends string>(
   ids: T[],
   labelOf: (id: T) => string,
@@ -293,7 +299,7 @@ export function ShipBuilderScreen({
     | { section: number; kind: 'listItem'; list: ListId; index: number }
     | { section: number; kind: 'listAdd'; list: ListId }
     | { section: number; kind: 'wpnMount'; index: number }
-    | { section: number; kind: 'wpnWeapon'; index: number }
+    | { section: number; kind: 'wpnSlot'; index: number; slot: number }
     | { section: number; kind: 'wpnAdd' };
 
   const sectionDefs: {
@@ -377,9 +383,11 @@ export function ShipBuilderScreen({
   const rows: Row[] = [];
   sectionDefs.forEach((section, si) => {
     if (section.weapons) {
-      weapons.forEach((_, index) => {
+      weapons.forEach((entry, index) => {
         rows.push({ section: si, kind: 'wpnMount', index });
-        rows.push({ section: si, kind: 'wpnWeapon', index });
+        const cap = mountCapacity(entry);
+        for (let slot = 0; slot < cap; slot++)
+          rows.push({ section: si, kind: 'wpnSlot', index, slot });
       });
       rows.push({ section: si, kind: 'wpnAdd' });
     } else if (section.list) {
@@ -477,22 +485,42 @@ export function ShipBuilderScreen({
   const effectiveAddWeapon = MOUNT_LABELS.includes(addWeapon)
     ? addWeapon
     : MOUNT_LABELS[0]!;
-  const setWeaponMount = (i: number, label: string) =>
-    setWeapons((prev) =>
-      prev.map((e, k) => (k === i ? { ...e, mount: mountByLabel(label) } : e)),
-    );
-  const setWeaponWeapon = (i: number, label: string) =>
-    setWeapons((prev) =>
-      prev.map((e, k) =>
-        k === i ? { ...e, weapon: weaponByLabel(label) } : e,
-      ),
-    );
   const removeWeapon = (i: number) =>
     setWeapons((prev) => prev.filter((_, k) => k !== i));
+  // Choosing a mount (or removing the turret); the weapon list is truncated to
+  // the new mount's capacity.
+  const setWeaponMount = (i: number, label: string) => {
+    if (label === REMOVE_TURRET) return removeWeapon(i);
+    const mount = mountByLabel(label);
+    setWeapons((prev) =>
+      prev.map((e, k) =>
+        k === i
+          ? { mount, weapons: e.weapons.slice(0, MOUNTS[mount].capacity) }
+          : e,
+      ),
+    );
+  };
+  // Set a single weapon slot; empty slots are dropped, keeping the list compact.
+  const setWeaponSlot = (i: number, slot: number, label: string) =>
+    setWeapons((prev) =>
+      prev.map((e, k) => {
+        if (k !== i) return e;
+        const cap = mountCapacity(e);
+        const slots: (WeaponId | undefined)[] = Array.from(
+          { length: cap },
+          (_, s) => e.weapons[s],
+        );
+        slots[slot] = label === EMPTY_SLOT ? undefined : weaponByLabel(label);
+        return {
+          ...e,
+          weapons: slots.filter((w): w is WeaponId => Boolean(w)),
+        };
+      }),
+    );
   const addWeaponEntry = () =>
     setWeapons((prev) => [
       ...prev,
-      { mount: mountByLabel(effectiveAddWeapon), weapon: 'beamLaser' },
+      { mount: mountByLabel(effectiveAddWeapon), weapons: ['beamLaser'] },
     ]);
 
   const params: ShipParams = {
@@ -633,8 +661,8 @@ export function ShipBuilderScreen({
             return (
               <ChoiceField
                 key={`wpn-mount-${i}`}
-                label="Turret"
-                options={MOUNT_LABELS}
+                label={`Turret ${i + 1}`}
+                options={MOUNT_LABELS_REMOVE}
                 value={MOUNTS[weapons[i]!.mount].label}
                 isActive={mode === 'edit' && index === safeActive}
                 onChange={(v) => setWeaponMount(i, v)}
@@ -642,20 +670,18 @@ export function ShipBuilderScreen({
               />
             );
           }
-          if (row.kind === 'wpnWeapon') {
-            const i = row.index;
-            const w = weapons[i]!.weapon;
+          if (row.kind === 'wpnSlot') {
+            const { index: i, slot } = row;
+            const w = weapons[i]!.weapons[slot];
             return (
               <ChoiceField
-                key={`wpn-weapon-${i}`}
-                label="Weapon"
-                options={WEAPON_LABELS}
-                value={w === 'none' ? REMOVE_WEAPON : WEAPONS[w].label}
+                key={`wpn-slot-${i}-${slot}`}
+                label={`  Weapon ${slot + 1}`}
+                options={WEAPON_SLOT_LABELS}
+                value={w ? WEAPONS[w].label : EMPTY_SLOT}
                 isActive={mode === 'edit' && index === safeActive}
-                onChange={(v) => setWeaponWeapon(i, v)}
-                onSubmit={() =>
-                  weapons[i]!.weapon === 'none' ? removeWeapon(i) : advance()
-                }
+                onChange={(v) => setWeaponSlot(i, slot, v)}
+                onSubmit={advance}
               />
             );
           }
@@ -700,7 +726,10 @@ export function ShipBuilderScreen({
         })}
         {activeList && <Text dimColor>{lists[activeList].hint}</Text>}
         {sectionDefs[activeSection]?.weapons && (
-          <Text dimColor>Set Weapon to “✗ remove” then Enter to delete.</Text>
+          <Text dimColor>
+            Turrets hold multiple weapons; set Turret to “✗ remove turret” to
+            delete.
+          </Text>
         )}
       </Box>
 

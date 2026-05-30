@@ -56,7 +56,7 @@ describe('ship library', () => {
     );
     expect(def.params.systems).toEqual([]);
     expect(def.params.weapons).toEqual([
-      { mount: 'single', weapon: 'beamLaser' },
+      { mount: 'single', weapons: ['beamLaser'] },
     ]);
   });
 

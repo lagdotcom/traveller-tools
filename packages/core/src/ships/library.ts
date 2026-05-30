@@ -115,17 +115,20 @@ function normalizeSoftware(v: unknown): SoftwareEntry[] {
 
 function normalizeWeapons(v: unknown): WeaponEntry[] {
   if (!Array.isArray(v)) return [];
+  const isWeapon = (x: unknown): x is WeaponId =>
+    typeof x === 'string' && x in WEAPONS;
   return v
     .filter(isObject)
     .filter((e) => typeof e.mount === 'string' && e.mount in MOUNTS)
-    .map((e) => ({
-      mount: e.mount as MountId,
-      weapon:
-        e.weapon === 'none' ||
-        (typeof e.weapon === 'string' && e.weapon in WEAPONS)
-          ? (e.weapon as WeaponId | 'none')
-          : 'none',
-    }));
+    .map((e) => {
+      // Prefer the `weapons` array; fall back to a legacy single `weapon`.
+      const weapons = Array.isArray(e.weapons)
+        ? e.weapons.filter(isWeapon)
+        : isWeapon(e.weapon)
+          ? [e.weapon]
+          : [];
+      return { mount: e.mount as MountId, weapons };
+    });
 }
 
 function normalizeCarried(v: unknown): CarriedCraft[] {

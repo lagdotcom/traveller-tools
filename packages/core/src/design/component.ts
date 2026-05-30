@@ -14,8 +14,8 @@ export interface InstalledComponent {
   quantity?: number;
   /** A single numeric parameter — drive Thrust/Jump code, armour points, … */
   rating?: number;
-  /** Any further per-install parameters. */
-  options?: Record<string, number | string>;
+  /** Any further per-install parameters (e.g. a list of fitted weapons). */
+  options?: Record<string, number | string | string[]>;
 }
 
 /**

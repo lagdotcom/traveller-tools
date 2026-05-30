@@ -75,7 +75,9 @@ describe('evaluateShip', () => {
     // (4×3), cost mount 1 + 0.5×3 = 2.5; two of them exceed the hardpoint.
     const one = evaluateShip({
       ...baseParams,
-      weapons: [{ mount: 'triple', weapon: 'beamLaser' }],
+      weapons: [
+        { mount: 'triple', weapons: ['beamLaser', 'beamLaser', 'beamLaser'] },
+      ],
     });
     const line = one.summary.lineItems.find((l) => l.id === 'weapon')!;
     expect(line.resources.tons).toBe(-1);
@@ -86,8 +88,8 @@ describe('evaluateShip', () => {
     const two = evaluateShip({
       ...baseParams,
       weapons: [
-        { mount: 'single', weapon: 'beamLaser' },
-        { mount: 'single', weapon: 'pulseLaser' },
+        { mount: 'single', weapons: ['beamLaser'] },
+        { mount: 'single', weapons: ['pulseLaser'] },
       ],
     });
     expect(two.issues.some((i) => i.message.startsWith('Hardpoints'))).toBe(
@@ -95,11 +97,41 @@ describe('evaluateShip', () => {
     );
   });
 
+  it('mounts mixed weapons in one turret', () => {
+    // A double turret with a beam laser + a sandcaster: 1 ton, MCr0.5 (mount) +
+    // 0.5 (beam) + 0.25 (sandcaster) = 1.25, power 4 (beam only).
+    const { summary } = evaluateShip({
+      ...baseParams,
+      hullTons: 200,
+      weapons: [{ mount: 'double', weapons: ['beamLaser', 'sandcaster'] }],
+    });
+    const line = summary.lineItems.find((l) => l.id === 'weapon')!;
+    expect(line.resources.tons).toBe(-1);
+    expect(line.resources.cost).toBeCloseTo(1.25, 6);
+    expect(line.resources.power).toBe(-4);
+    expect(line.name).toBe('Double Turret — Beam Laser, Sandcaster');
+  });
+
+  it('rejects more weapons than a mount can hold', () => {
+    const { issues } = evaluateShip({
+      ...baseParams,
+      hullTons: 200,
+      weapons: [
+        { mount: 'single', weapons: ['beamLaser', 'sandcaster'] }, // cap 1
+      ],
+    });
+    expect(
+      issues.some(
+        (i) => i.severity === 'error' && /holds at most/.test(i.message),
+      ),
+    ).toBe(true);
+  });
+
   it('costs a particle barbette as a 5-ton mount', () => {
     const { summary } = evaluateShip({
       ...baseParams,
       hullTons: 400,
-      weapons: [{ mount: 'single', weapon: 'particleBarbette' }],
+      weapons: [{ mount: 'single', weapons: ['particleBarbette'] }],
     });
     const line = summary.lineItems.find((l) => l.id === 'weapon')!;
     expect(line.resources.tons).toBe(-5);
@@ -231,8 +263,8 @@ describe('evaluateShip', () => {
       ...baseParams,
       hullTons: 200,
       weapons: [
-        { mount: 'single' as const, weapon: 'beamLaser' as const },
-        { mount: 'single' as const, weapon: 'beamLaser' as const },
+        { mount: 'single', weapons: ['beamLaser'] },
+        { mount: 'single', weapons: ['beamLaser'] },
       ],
     };
     const commercial = evaluateShip({ ...turreted, crewType: 'commercial' });
@@ -367,13 +399,13 @@ describe('evaluateShip', () => {
   it('installs an empty turret (the mount, with no weapon)', () => {
     const { summary, issues } = evaluateShip({
       ...baseParams,
-      weapons: [{ mount: 'double', weapon: 'none' }],
+      weapons: [{ mount: 'double', weapons: [] }],
     });
     const line = summary.lineItems.find((l) => l.id === 'weapon')!;
     // Double turret: 1 ton, MCr0.5, no power draw, named "(empty)".
     expect(line.resources.tons).toBe(-1);
     expect(line.resources.cost).toBeCloseTo(0.5, 6);
-    expect(line.resources.power ?? 0).toBe(0);
+    expect(line.resources.power ?? 0).toBeCloseTo(0, 6);
     expect(line.name).toBe('Double Turret (empty)');
     expect(issues.filter((i) => i.severity === 'error')).toEqual([]);
   });
@@ -389,7 +421,7 @@ describe('evaluateShip', () => {
       fuelTons: 1,
       bridge: 'standard',
       staterooms: 0,
-      weapons: [{ mount: 'single', weapon: 'none' }],
+      weapons: [{ mount: 'single', weapons: [] }],
     });
     expect(issues.filter((i) => i.severity === 'error')).toEqual([]);
   });
@@ -427,7 +459,7 @@ describe('evaluateShip', () => {
       fuelTons: 1,
       bridge: 'cockpit',
       staterooms: 0,
-      weapons: [{ mount: 'fixed', weapon: 'beamLaser' }],
+      weapons: [{ mount: 'fixed', weapons: ['beamLaser'] }],
     };
     const bare = evaluateShip({ ...baseParams, hullTons: 400 });
     const carrier = evaluateShip({

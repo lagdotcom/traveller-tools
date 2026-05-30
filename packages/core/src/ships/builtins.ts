@@ -57,7 +57,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     computerBis: true,
     sensors: 'military',
     fuelScoop: true,
-    weapons: [{ mount: 'double', weapon: 'none' }],
+    weapons: [{ mount: 'double', weapons: [] }],
     systems: [
       { type: 'fuelProcessor', amount: 2 },
       { type: 'probeDrones', amount: 2 },
@@ -86,7 +86,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     computerBis: true,
     sensors: 'military',
     fuelScoop: true,
-    weapons: [{ mount: 'double', weapon: 'none' }],
+    weapons: [{ mount: 'double', weapons: [] }],
     systems: [
       { type: 'fuelProcessor', amount: 1 },
       { type: 'miningDrones', amount: 10 },
@@ -168,7 +168,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     computerBis: true,
     sensors: 'civilian',
     fuelScoop: true,
-    weapons: [{ mount: 'double', weapon: 'none' }],
+    weapons: [{ mount: 'double', weapons: [] }],
     systems: [
       { type: 'fuelProcessor', amount: 2 },
       { type: 'laboratory', amount: 16 },
@@ -200,8 +200,11 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     sensors: 'improved',
     crewType: 'military',
     weapons: [
-      { mount: 'triple', weapon: 'beamLaser' },
-      { mount: 'triple', weapon: 'missileRack' },
+      { mount: 'triple', weapons: ['beamLaser', 'beamLaser', 'beamLaser'] },
+      {
+        mount: 'triple',
+        weapons: ['missileRack', 'missileRack', 'missileRack'],
+      },
     ],
     systems: [
       { type: 'missileStorage', amount: 12 },
@@ -260,10 +263,10 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
       sensors: 'military',
       crewType: 'military',
       weapons: [
-        { mount: 'single', weapon: 'particleBarbette' },
-        { mount: 'single', weapon: 'particleBarbette' },
-        { mount: 'triple', weapon: 'beamLaser' },
-        { mount: 'triple', weapon: 'beamLaser' },
+        { mount: 'single', weapons: ['particleBarbette'] },
+        { mount: 'single', weapons: ['particleBarbette'] },
+        { mount: 'triple', weapons: ['beamLaser', 'beamLaser', 'beamLaser'] },
+        { mount: 'triple', weapons: ['beamLaser', 'beamLaser', 'beamLaser'] },
       ],
       systems: [{ type: 'fuelProcessor', amount: 6 }],
       carried: [carried('Gig', 20, 6.257)],
@@ -317,10 +320,16 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     sensors: 'military',
     crewType: 'military',
     weapons: [
-      { mount: 'triple', weapon: 'pulseLaser' },
-      { mount: 'triple', weapon: 'pulseLaser' },
-      { mount: 'triple', weapon: 'missileRack' },
-      { mount: 'triple', weapon: 'missileRack' },
+      { mount: 'triple', weapons: ['pulseLaser', 'pulseLaser', 'pulseLaser'] },
+      { mount: 'triple', weapons: ['pulseLaser', 'pulseLaser', 'pulseLaser'] },
+      {
+        mount: 'triple',
+        weapons: ['missileRack', 'missileRack', 'missileRack'],
+      },
+      {
+        mount: 'triple',
+        weapons: ['missileRack', 'missileRack', 'missileRack'],
+      },
     ],
     systems: [{ type: 'fuelProcessor', amount: 4 }],
     carried: [
@@ -429,14 +438,14 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     sensors: 'military',
     crewType: 'military',
     weapons: [
-      { mount: 'triple', weapon: 'none' },
-      { mount: 'triple', weapon: 'none' },
-      { mount: 'triple', weapon: 'none' },
-      { mount: 'triple', weapon: 'none' },
-      { mount: 'triple', weapon: 'none' },
-      { mount: 'triple', weapon: 'none' },
-      { mount: 'triple', weapon: 'none' },
-      { mount: 'triple', weapon: 'none' },
+      { mount: 'triple', weapons: [] },
+      { mount: 'triple', weapons: [] },
+      { mount: 'triple', weapons: [] },
+      { mount: 'triple', weapons: [] },
+      { mount: 'triple', weapons: [] },
+      { mount: 'triple', weapons: [] },
+      { mount: 'triple', weapons: [] },
+      { mount: 'triple', weapons: [] },
     ],
     systems: [{ type: 'repairDrones', amount: 8 }],
     carried: [
@@ -469,7 +478,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     armourPoints: 2,
     computer: '/5',
     sensors: 'military',
-    weapons: [{ mount: 'fixed', weapon: 'pulseLaser' }],
+    weapons: [{ mount: 'fixed', weapons: ['pulseLaser'] }],
     software: [
       { type: 'fireControl', level: 1 },
       { type: 'library', level: 0 },
@@ -487,7 +496,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     powerPlantTons: 2,
     fuelTons: 1,
     computer: '/5',
-    weapons: [{ mount: 'single', weapon: 'none' }],
+    weapons: [{ mount: 'single', weapons: [] }],
     systems: [{ type: 'cabinSpace', amount: 3 }],
     software: [
       { type: 'library', level: 0 },
@@ -522,7 +531,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     powerPlantTons: 2,
     fuelTons: 1,
     computer: '/5',
-    weapons: [{ mount: 'fixed', weapon: 'none' }],
+    weapons: [{ mount: 'fixed', weapons: [] }],
     systems: [{ type: 'cabinSpace', amount: 9 }],
     software: [
       { type: 'library', level: 0 },
@@ -540,7 +549,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     powerPlantTons: 1,
     fuelTons: 1,
     computer: '/5',
-    weapons: [{ mount: 'fixed', weapon: 'none' }],
+    weapons: [{ mount: 'fixed', weapons: [] }],
     systems: [{ type: 'cabinSpace', amount: 3 }],
     software: [
       { type: 'library', level: 0 },
@@ -558,7 +567,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     powerPlantTons: 2,
     fuelTons: 1,
     computer: '/5',
-    weapons: [{ mount: 'fixed', weapon: 'none' }],
+    weapons: [{ mount: 'fixed', weapons: [] }],
     systems: [{ type: 'cabinSpace', amount: 9 }],
     software: [
       { type: 'library', level: 0 },
@@ -577,7 +586,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     powerPlantTons: 2,
     fuelTons: 1,
     computer: '/5',
-    weapons: [{ mount: 'fixed', weapon: 'none' }],
+    weapons: [{ mount: 'fixed', weapons: [] }],
     software: [
       { type: 'library', level: 0 },
       { type: 'manoeuvre', level: 0 },
@@ -596,7 +605,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     powerPlantTons: 3,
     fuelTons: 1,
     computer: '/5',
-    weapons: [{ mount: 'fixed', weapon: 'none' }],
+    weapons: [{ mount: 'fixed', weapons: [] }],
     systems: [{ type: 'cabinSpace', amount: 6 }],
     software: [
       { type: 'library', level: 0 },
@@ -614,7 +623,7 @@ export const BUILTIN_SHIPS: ShipDefinition[] = [
     powerPlantTons: 4,
     fuelTons: 1,
     computer: '/5',
-    weapons: [{ mount: 'fixed', weapon: 'none' }],
+    weapons: [{ mount: 'fixed', weapons: [] }],
     systems: [{ type: 'cabinSpace', amount: 12 }],
     software: [
       { type: 'library', level: 0 },

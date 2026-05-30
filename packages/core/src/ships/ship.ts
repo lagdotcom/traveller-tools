@@ -478,7 +478,8 @@ export const WEAPONS: Record<
 };
 export interface WeaponEntry {
   mount: MountId;
-  weapon: WeaponId | 'none';
+  /** Weapons fitted in the mount (0..mount capacity); mixed types allowed. */
+  weapons: WeaponId[];
 }
 
 /** Bridge variants. Cockpit is for ships ≤50t; holographic adds +25% cost. */
@@ -615,43 +616,52 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     id: 'weapon',
     name: 'Weapon',
     category: 'weapon',
-    // options.mount (turret type) + options.weapon. A turret holds its
-    // capacity of the weapon; a particle barbette is its own 5-ton mount. An
-    // empty mount (weapon 'none') still costs its tonnage, price and hardpoint.
+    // options.mount (turret type) + options.weapons (0..capacity weapons, mixed
+    // types allowed). An empty mount still costs its tonnage, price and a
+    // hardpoint; a particle barbette is its own 5-ton mount.
     resources: (inst) => {
       const mount = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
-      const w = WEAPONS[inst.options?.weapon as WeaponId];
-      if (!w)
-        return {
-          tons: -mount.tons,
-          power: 0,
-          cost: mount.cost,
-          hardpoints: -1,
-        };
-      if (w.barbette)
-        return { tons: -5, power: -15, cost: w.cost, hardpoints: -1 };
+      const weapons = (
+        Array.isArray(inst.options?.weapons)
+          ? (inst.options.weapons as WeaponId[])
+          : []
+      )
+        .map((id) => WEAPONS[id])
+        .filter((w): w is (typeof WEAPONS)[WeaponId] => Boolean(w));
+      const power = weapons.reduce((s, w) => s + w.power, 0);
+      const weaponCost = weapons.reduce((s, w) => s + w.cost, 0);
+      // A particle barbette replaces the turret with its own 5-ton mount.
+      if (weapons.some((w) => w.barbette))
+        return { tons: -5, power: -power, cost: weaponCost, hardpoints: -1 };
       return {
         tons: -mount.tons,
-        power: -(w.power * mount.capacity),
-        cost: mount.cost + w.cost * mount.capacity,
+        power: -power,
+        cost: mount.cost + weaponCost,
         hardpoints: -1,
       };
     },
-    stats: (inst) => {
-      const w = WEAPONS[inst.options?.weapon as WeaponId];
-      const cap = !w
-        ? 0
-        : w.barbette
-          ? 1
-          : (MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single).capacity;
-      return { turrets: 1, weapons: cap };
-    },
+    stats: (inst) => ({
+      turrets: 1,
+      weapons: (Array.isArray(inst.options?.weapons)
+        ? (inst.options.weapons as WeaponId[])
+        : []
+      ).length,
+    }),
     describe: (inst) => {
       const m = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
-      const w = WEAPONS[inst.options?.weapon as WeaponId];
-      if (!w) return `${m.label} (empty)`;
-      if (w.barbette) return 'Particle Barbette';
-      return `${m.label} — ${w.label}${m.capacity > 1 ? ` ×${m.capacity}` : ''}`;
+      const weapons = Array.isArray(inst.options?.weapons)
+        ? (inst.options.weapons as WeaponId[])
+        : [];
+      if (weapons.length === 0) return `${m.label} (empty)`;
+      if (weapons.some((id) => WEAPONS[id]?.barbette))
+        return 'Particle Barbette';
+      // All the same weapon: "Triple Turret — Beam Laser ×3"; otherwise list.
+      const unique = [...new Set(weapons)];
+      const body =
+        unique.length === 1
+          ? `${WEAPONS[unique[0]!]!.label}${weapons.length > 1 ? ` ×${weapons.length}` : ''}`
+          : weapons.map((id) => WEAPONS[id]?.label ?? id).join(', ');
+      return `${m.label} — ${body}`;
     },
   },
   armour: {
@@ -1049,11 +1059,11 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
   });
   installed.push({ defId: 'sensors', options: { grade: params.sensors } });
   for (const wpn of params.weapons) {
-    // Always install the mount; an empty mount (weapon 'none') still costs its
-    // tonnage, price and hardpoint (e.g. an unarmed turret).
+    // Always install the mount; an empty mount still costs its tonnage, price
+    // and hardpoint (e.g. an unarmed turret).
     installed.push({
       defId: 'weapon',
-      options: { mount: wpn.mount, weapon: wpn.weapon },
+      options: { mount: wpn.mount, weapons: wpn.weapons },
     });
   }
   // Streamlined hulls have fuel scoops built in (free), so only add the
@@ -1205,16 +1215,40 @@ export const SHIP_RULES: Rule<ShipStats>[] = [
     const seen = new Set<string>();
     for (const inst of design.installed) {
       if (inst.defId !== 'weapon') continue;
-      const w = WEAPONS[inst.options?.weapon as WeaponId];
       const m = MOUNTS[inst.options?.mount as MountId];
-      if (!w) continue;
-      const need = w.barbette ? w.minTL : Math.max(w.minTL, m?.minTL ?? 0);
-      const tag = `${w.id}-${m?.id ?? ''}`;
-      if (need > context.tl && !seen.has(tag)) {
-        seen.add(tag);
+      for (const id of Array.isArray(inst.options?.weapons)
+        ? (inst.options.weapons as WeaponId[])
+        : []) {
+        const w = WEAPONS[id];
+        if (!w) continue;
+        const need = w.barbette ? w.minTL : Math.max(w.minTL, m?.minTL ?? 0);
+        const tag = `${w.id}-${m?.id ?? ''}`;
+        if (need > context.tl && !seen.has(tag)) {
+          seen.add(tag);
+          issues.push({
+            severity: 'error',
+            message: `${w.label}${w.barbette ? '' : ` (${m?.label})`} requires TL ${need}`,
+          });
+        }
+      }
+    }
+    return issues;
+  },
+  // A mount cannot hold more weapons than its capacity (barbettes hold one).
+  ({ design }) => {
+    const issues: Issue[] = [];
+    for (const inst of design.installed) {
+      if (inst.defId !== 'weapon') continue;
+      const m = MOUNTS[inst.options?.mount as MountId] ?? MOUNTS.single;
+      const weapons = Array.isArray(inst.options?.weapons)
+        ? (inst.options.weapons as WeaponId[])
+        : [];
+      const hasBarbette = weapons.some((id) => WEAPONS[id]?.barbette);
+      const capacity = hasBarbette ? 1 : m.capacity;
+      if (weapons.length > capacity) {
         issues.push({
           severity: 'error',
-          message: `${w.label}${w.barbette ? '' : ` (${m?.label})`} requires TL ${need}`,
+          message: `${m.label} holds at most ${capacity} weapon${capacity > 1 ? 's' : ''}`,
         });
       }
     }
@@ -1313,7 +1347,7 @@ function crewRoster(params: ShipParams, depth = 0): CrewMember[] {
   if (params.jump > 0) roster.push({ role: 'Astrogator', count: 1 });
   const engineers = Math.ceil(driveAndPlantTons(params) / 35);
   if (engineers > 0) roster.push({ role: 'Engineer', count: engineers });
-  const guns = params.weapons.filter((w) => w.weapon !== 'none').length;
+  const guns = params.weapons.filter((w) => w.weapons.length > 0).length;
   if (guns > 0)
     roster.push({ role: 'Gunner', count: guns * (military ? 2 : 1) });
 
