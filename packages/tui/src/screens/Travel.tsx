@@ -58,7 +58,7 @@ export function TravelScreen({
           placeholder="e.g. 1"
           value={form.values.distance}
           isActive={form.activeIndex === 0}
-          onChange={form.set('distance')}
+          onChange={form.setters.distance}
           onSubmit={form.next}
         />
         <Field
@@ -66,7 +66,7 @@ export function TravelScreen({
           placeholder="AU"
           value={form.values.unit}
           isActive={form.activeIndex === 1}
-          onChange={form.set('unit')}
+          onChange={form.setters.unit}
           onSubmit={form.next}
         />
         <Field
@@ -74,7 +74,7 @@ export function TravelScreen({
           placeholder="1-6"
           value={form.values.thrust}
           isActive={form.activeIndex === 2}
-          onChange={form.set('thrust')}
+          onChange={form.setters.thrust}
           onSubmit={form.next}
         />
         <Field
@@ -82,7 +82,7 @@ export function TravelScreen({
           placeholder={`default ${G_MS2}`}
           value={form.values.gravity}
           isActive={form.activeIndex === 3}
-          onChange={form.set('gravity')}
+          onChange={form.setters.gravity}
           onSubmit={form.next}
         />
       </Box>

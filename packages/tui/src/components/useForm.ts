@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 export interface Form<T extends Record<string, string>> {
   values: T;
   activeIndex: number;
-  /** Returns an onChange handler bound to a specific field. */
-  set: (key: keyof T) => (value: string) => void;
+  /** Stable onChange handler per field (safe to pass to inputs' deps). */
+  setters: Record<keyof T, (value: string) => void>;
   /** Advance focus to the next field, wrapping around. */
   next: () => void;
 }
@@ -12,16 +12,31 @@ export interface Form<T extends Record<string, string>> {
 /**
  * Minimal form state for a fixed set of text fields navigated with Enter.
  * Field order is the key order of `initial`.
+ *
+ * The per-field setters and `next` have stable identities. This matters because
+ * @inkjs/ui's TextInput lists `onChange` in a useEffect dependency array; an
+ * onChange whose identity changed every render would re-fire that effect in a
+ * loop ("Maximum update depth exceeded").
  */
 export function useForm<T extends Record<string, string>>(initial: T): Form<T> {
   const [values, setValues] = useState<T>(initial);
   const [activeIndex, setActiveIndex] = useState(0);
-  const count = Object.keys(initial).length;
+  const keys = useRef(Object.keys(initial) as Array<keyof T>);
+  const count = keys.current.length;
 
-  const set = (key: keyof T) => (value: string) =>
-    setValues((prev) => ({ ...prev, [key]: value }));
+  const next = useCallback(
+    () => setActiveIndex((index) => (index + 1) % count),
+    [count],
+  );
 
-  const next = () => setActiveIndex((i) => (i + 1) % count);
+  const setters = useMemo(() => {
+    const map = {} as Record<keyof T, (value: string) => void>;
+    for (const key of keys.current) {
+      map[key] = (value: string) =>
+        setValues((prev) => ({ ...prev, [key]: value }));
+    }
+    return map;
+  }, []);
 
-  return { values, activeIndex, set, next };
+  return { values, activeIndex, setters, next };
 }
