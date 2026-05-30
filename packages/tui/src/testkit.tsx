@@ -1,5 +1,7 @@
 import { EventEmitter } from 'node:events';
 
+import stripAnsi from 'strip-ansi';
+
 import { mount } from './mount.js';
 
 /**
@@ -15,28 +17,6 @@ import { mount } from './mount.js';
 
 const ESC_CODE = 27;
 const CSI = 0x5b; // '['
-
-/** Remove ANSI escape sequences (ESC [ ... final-byte) via a char scan. */
-function stripAnsi(input: string): string {
-  let out = '';
-  for (let i = 0; i < input.length; i++) {
-    if (input.charCodeAt(i) === ESC_CODE) {
-      i++;
-      if (input.charCodeAt(i) === CSI) {
-        i++;
-        // Skip params/intermediates until the final byte (0x40-0x7e).
-        while (i < input.length) {
-          const code = input.charCodeAt(i);
-          if (code >= 0x40 && code <= 0x7e) break;
-          i++;
-        }
-      }
-      continue;
-    }
-    out += input[i];
-  }
-  return out;
-}
 
 export const ARROW_DOWN = String.fromCharCode(ESC_CODE, CSI, 0x42); // ESC [ B
 export const ARROW_UP = String.fromCharCode(ESC_CODE, CSI, 0x41); // ESC [ A
