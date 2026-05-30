@@ -11,6 +11,7 @@ const baseParams: ShipParams = {
   powerPlantType: 'fusionTL12',
   powerPlantTons: 4,
   fuelTons: 12,
+  bridge: 'standard',
   armourType: 'crystaliron',
   armourPoints: 0,
   computer: '/5',
@@ -235,6 +236,25 @@ describe('evaluateShip', () => {
     ).toBeCloseTo(0.2, 6);
     expect(sw.find((l) => l.name === 'Library')?.resources.cost ?? 0).toBe(0);
     expect(sw.every((l) => (l.resources.tons ?? 0) === 0)).toBe(true);
+  });
+
+  it('handles bridge variants and sensor power', () => {
+    const line = (s: ReturnType<typeof evaluateShip>) =>
+      s.summary.lineItems.find((l) => l.id === 'bridge')!;
+    // Holographic bridge: 100t base cost 0.5 -> +25% = 0.625.
+    const holo = evaluateShip({ ...baseParams, bridge: 'holographic' });
+    expect(line(holo).resources.cost).toBeCloseTo(0.625, 6);
+    // Cockpit is illegal on a 100t hull.
+    expect(
+      evaluateShip({ ...baseParams, bridge: 'cockpit' }).issues.some((i) =>
+        i.message.includes('cockpit'),
+      ),
+    ).toBe(true);
+    // Sensors power feeds the Power Requirements panel.
+    expect(
+      evaluateShip({ ...baseParams, sensors: 'military' }).powerRequirements
+        .sensors,
+    ).toBe(2);
   });
 
   it('reports remaining tonnage as cargo for a valid ship', () => {

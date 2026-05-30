@@ -49,7 +49,12 @@ export interface ShipSheetProps {
   thrust: number;
   jump: number;
   cargoTons: number;
-  powerRequirements: { basic: number; manoeuvre: number; jump: number };
+  powerRequirements: {
+    basic: number;
+    manoeuvre: number;
+    jump: number;
+    sensors: number;
+  };
   crew: CrewMember[];
   runningCosts: {
     purchaseMCr: number;
@@ -109,6 +114,7 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
           <Text>Basic {fmt(props.powerRequirements.basic)}</Text>
           <Text>Manoeuvre {fmt(props.powerRequirements.manoeuvre)}</Text>
           <Text>Jump {fmt(props.powerRequirements.jump)}</Text>
+          <Text>Sensors {fmt(props.powerRequirements.sensors)}</Text>
         </Box>
         <Box marginTop={1} flexDirection="column">
           <Text bold color="yellow">

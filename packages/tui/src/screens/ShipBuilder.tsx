@@ -1,6 +1,7 @@
 import {
   ARMOUR_TYPES,
   type ArmourTypeId,
+  type BridgeId,
   type ComputerId,
   COMPUTERS,
   type CrewType,
@@ -85,6 +86,7 @@ export function ShipBuilderScreen({
     plant: 'TL12',
     power: '4',
     fuel: '12',
+    bridge: 'standard',
     scoop: 'no',
     armourType: 'crystaliron',
     armour: '0',
@@ -216,6 +218,11 @@ export function ShipBuilderScreen({
         { key: 'power', label: 'Power plant (tons)' },
         { key: 'fuel', label: 'Fuel (tons)' },
         { key: 'scoop', label: 'Fuel scoop', options: ['no', 'yes'] },
+        {
+          key: 'bridge',
+          label: 'Bridge',
+          options: ['standard', 'cockpit', 'holographic'],
+        },
       ],
     },
     {
@@ -293,6 +300,7 @@ export function ShipBuilderScreen({
     powerPlantType: parsePlant(form.values.plant),
     powerPlantTons: num(form.values.power),
     fuelTons: num(form.values.fuel),
+    bridge: form.values.bridge as BridgeId,
     fuelScoop: form.values.scoop === 'yes',
     armourType: form.values.armourType as ArmourTypeId,
     armourPoints: num(form.values.armour),

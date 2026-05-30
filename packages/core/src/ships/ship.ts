@@ -247,7 +247,8 @@ export type SystemTypeId =
   | 'fuelProcessor'
   | 'probeDrones'
   | 'repairDrones'
-  | 'miningDrones';
+  | 'miningDrones'
+  | 'missileStorage';
 export const SYSTEM_TYPES: Record<
   SystemTypeId,
   { id: SystemTypeId; label: string }
@@ -256,6 +257,7 @@ export const SYSTEM_TYPES: Record<
   probeDrones: { id: 'probeDrones', label: 'Probe Drones' },
   repairDrones: { id: 'repairDrones', label: 'Repair Drones' },
   miningDrones: { id: 'miningDrones', label: 'Mining Drones' },
+  missileStorage: { id: 'missileStorage', label: 'Missile Storage' },
 };
 export interface SystemEntry {
   type: SystemTypeId;
@@ -304,6 +306,9 @@ export interface SoftwareEntry {
   /** Program level (ignored for non-leveled packages). */
   level: number;
 }
+
+/** Bridge variants. Cockpit is for ships ≤50t; holographic adds +25% cost. */
+export type BridgeId = 'standard' | 'cockpit' | 'holographic';
 
 /** Bridge tonnage by ship size (Bridges table). */
 function bridgeTons(hull: number): number {
@@ -401,10 +406,21 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
     name: 'Bridge',
     category: 'bridge',
     unique: true,
-    resources: (_inst, ctx) => ({
-      tons: -bridgeTons(ctx.chassisSize),
-      cost: Math.ceil(ctx.chassisSize / 100) * 0.5, // MCr0.5 per 100t (or part)
-    }),
+    // options.variant: standard | cockpit (≤50t) | holographic (+25% cost).
+    resources: (inst, ctx) => {
+      const variant = (inst.options?.variant as BridgeId) ?? 'standard';
+      if (variant === 'cockpit') return { tons: -1.5, cost: 0.01 };
+      const base = Math.ceil(ctx.chassisSize / 100) * 0.5; // MCr0.5 per 100t
+      return {
+        tons: -bridgeTons(ctx.chassisSize),
+        cost: variant === 'holographic' ? base * 1.25 : base,
+      };
+    },
+    describe: (inst) => {
+      const v = (inst.options?.variant as BridgeId) ?? 'standard';
+      if (v === 'cockpit') return 'Cockpit';
+      return v === 'holographic' ? 'Bridge (Holographic)' : 'Bridge';
+    },
   },
   fuel: {
     id: 'fuel',
@@ -551,6 +567,13 @@ export const SHIP_CATALOG: Catalog<ShipStats> = {
       return { tons: -t, cost: 0.1 * t };
     },
   },
+  missileStorage: {
+    id: 'missileStorage',
+    name: 'Missile Storage',
+    category: 'missileStorage',
+    // rating = tons of magazine (12 tons holds 144 missiles); no extra cost.
+    resources: (inst) => ({ tons: -(inst.rating ?? 0) }),
+  },
   software: {
     id: 'software',
     name: 'Software',
@@ -582,6 +605,7 @@ export interface ShipParams {
   powerPlantType: PowerPlantId;
   powerPlantTons: number;
   fuelTons: number;
+  bridge: BridgeId;
   armourType: ArmourTypeId;
   armourPoints: number;
   computer: ComputerId;
@@ -654,7 +678,7 @@ export function makeShipDesign(params: ShipParams): Design<ShipStats> {
     });
   if (params.fuelTons > 0)
     installed.push({ defId: 'fuel', rating: params.fuelTons });
-  installed.push({ defId: 'bridge' });
+  installed.push({ defId: 'bridge', options: { variant: params.bridge } });
   installed.push({
     defId: 'computer',
     options: { model: params.computer, bis: params.computerBis ? 1 : 0 },
@@ -834,7 +858,12 @@ export interface ShipEvaluation {
   issues: Issue[];
   cargoTons: number;
   /** Power demand breakdown (for a book-style Power Requirements panel). */
-  powerRequirements: { basic: number; manoeuvre: number; jump: number };
+  powerRequirements: {
+    basic: number;
+    manoeuvre: number;
+    jump: number;
+    sensors: number;
+  };
   /** Operating crew (commercial or military). */
   crew: CrewMember[];
   /** Purchase price (MCr), monthly maintenance and crew salary (Cr). */
@@ -963,7 +992,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
         { severity: 'error', message: 'Hull tonnage must be greater than 0' },
       ],
       cargoTons: 0,
-      powerRequirements: { basic: 0, manoeuvre: 0, jump: 0 },
+      powerRequirements: { basic: 0, manoeuvre: 0, jump: 0, sensors: 0 },
       crew: [],
       runningCosts: {
         purchaseMCr: 0,
@@ -992,6 +1021,12 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       message: `Fuel: need ${neededFuel} tons (jump + power plant), have ${params.fuelTons}`,
     });
   }
+  if (params.bridge === 'cockpit' && params.hullTons > 50) {
+    extra.push({
+      severity: 'error',
+      message: 'A cockpit may only be used on ships of 50 tons or less',
+    });
+  }
 
   const purchaseMCr = summary.resources.cost?.used ?? 0;
   const crew = crewRoster(params);
@@ -1003,6 +1038,7 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
       basic: params.hullTons * BASIC_SYSTEMS_POWER,
       manoeuvre: params.hullTons * DRIVE_POWER_PER_RATING * params.thrust,
       jump: params.hullTons * DRIVE_POWER_PER_RATING * params.jump,
+      sensors: SENSORS[params.sensors]?.power ?? 0,
     },
     crew,
     runningCosts: {
