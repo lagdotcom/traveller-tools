@@ -3,9 +3,10 @@ import { Box, Text, useApp, useInput } from 'ink';
 import React, { useState } from 'react';
 
 import { JumpFuelScreen } from './screens/JumpFuel.js';
+import { ShipBuilderScreen } from './screens/ShipBuilder.js';
 import { TravelScreen } from './screens/Travel.js';
 
-type Screen = 'menu' | 'jump' | 'travel';
+type Screen = 'menu' | 'jump' | 'travel' | 'ship';
 
 export function App(): React.JSX.Element {
   const [screen, setScreen] = useState<Screen>('menu');
@@ -21,6 +22,9 @@ export function App(): React.JSX.Element {
   if (screen === 'travel') {
     return <TravelScreen onBack={() => setScreen('menu')} />;
   }
+  if (screen === 'ship') {
+    return <ShipBuilderScreen onBack={() => setScreen('menu')} />;
+  }
 
   return (
     <Box flexDirection="column">
@@ -34,6 +38,7 @@ export function App(): React.JSX.Element {
         options={[
           { label: 'Jump & Fuel calculator', value: 'jump' },
           { label: 'Travel time (velocity) calculator', value: 'travel' },
+          { label: 'Ship builder', value: 'ship' },
           { label: 'Quit', value: 'quit' },
         ]}
         onChange={(value) => {
