@@ -18,8 +18,8 @@ import { jumpFuel } from '../jump.js';
  * Standard hull configuration is assumed (no streamlined/dispersed cost
  * modifiers yet) and computer/sensors/armour are not yet builder fields.
  *
- * Thrust ratings run 1-9 and Jump 1-6; the minimum TLs for Thrust 7-9 are not
- * yet confirmed (see THRUST_TL).
+ * Thrust ratings run 1-9 (drive = Thrust% of hull); Jump 1-6 (drive =
+ * Jump × 2.5% of hull, +5t, minimum 10t).
  */
 
 export interface ShipStats extends Record<string, number> {
@@ -45,28 +45,26 @@ const HULL_POINTS_PER_TON = 1 / 2.5; // 1 Hull Point per full 2.5 tons
 const BASIC_SYSTEMS_POWER = 0.2; // 20% of hull tonnage
 const DRIVE_POWER_PER_RATING = 0.1; // 10% of hull tonnage × rating
 
-const M_DRIVE_HULL_PCT_PER_THRUST = 0.025; // 2.5% of hull per Thrust
+const M_DRIVE_HULL_PCT_PER_THRUST = 0.01; // % of hull = Thrust rating
 const M_DRIVE_COST_PER_TON = 2; // MCr
-const J_DRIVE_HULL_PCT_PER_JUMP = 0.01; // 1% of hull per Jump (+5t, min 10t)
+const J_DRIVE_HULL_PCT_PER_JUMP = 0.025; // % of hull = Jump rating × 2.5 (+5t, min 10t)
 const J_DRIVE_TON_BONUS = 5;
 const J_DRIVE_MIN_TONS = 10;
 const J_DRIVE_COST_PER_TON = 1.5; // MCr
 
-/**
- * Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table).
- * Thrust runs 1-9; the TL values for Thrust 7-9 are not yet confirmed, so those
- * ratings are allowed but not TL-gated until the numbers are supplied.
- */
+/** Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table). */
 const THRUST_TL: Record<number, number> = {
   1: 9,
-  2: 11,
-  3: 12,
-  4: 13,
-  5: 14,
-  6: 15,
-  // 7, 8, 9: TODO confirm minimum TL
+  2: 10,
+  3: 10,
+  4: 11,
+  5: 11,
+  6: 12,
+  7: 12,
+  8: 13,
+  9: 13,
 };
-/** Minimum TL by Jump rating (mirrors the Thrust column; Jump runs 1-6). */
+/** Minimum TL by Jump rating (Jump Potential table). */
 const JUMP_TL: Record<number, number> = {
   1: 9,
   2: 11,

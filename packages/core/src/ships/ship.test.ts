@@ -64,11 +64,16 @@ describe('evaluateShip', () => {
   });
 
   it('flags a drive rating above the hull tech level', () => {
-    const { issues } = evaluateShip({ ...baseParams, tl: 9, thrust: 3 });
-    // Thrust-3 needs TL12.
+    const { issues } = evaluateShip({
+      ...baseParams,
+      tl: 9,
+      jump: 3,
+      fuelTons: 40,
+    });
+    // Jump-3 needs TL12.
     expect(issues).toContainEqual({
       severity: 'error',
-      message: 'Thrust-3 requires TL 12',
+      message: 'Jump-3 requires TL 12',
     });
   });
 
@@ -105,6 +110,8 @@ describe('evaluateShip', () => {
   it('reports remaining tonnage as cargo for a valid ship', () => {
     const { cargoTons, issues } = evaluateShip(baseParams);
     expect(issues).toEqual([]);
-    expect(cargoTons).toBeGreaterThan(0);
+    // 100t hull − bridge 10 − power 4 − M-drive (1% × 100 = 1) − J-drive
+    // (max(10, 2.5% × 100 + 5) = 10) − fuel 12 − staterooms 8 = 55.
+    expect(cargoTons).toBe(55);
   });
 });

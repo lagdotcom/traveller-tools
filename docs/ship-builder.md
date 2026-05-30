@@ -5,10 +5,10 @@ Rulebook (2022)**. Target ruleset: **MgT2 Core Rulebook** spacecraft design (the
 simpler, self-contained subset; High Guard can extend it later). Scope:
 **Essentials**.
 
-Remaining/assumed: standard hull configuration only (no streamlined/dispersed
-modifiers yet); computer/sensors/armour/common-areas not yet builder fields;
-Thrust runs 1-9 and Jump 1-6, but the minimum TLs for **Thrust 7-9** are not yet
-confirmed (those ratings are allowed but not TL-gated — see `THRUST_TL`).
+Remaining: standard hull configuration only (no streamlined/dispersed modifiers
+yet); computer/sensors/armour/common-areas not yet builder fields. Drive tables
+are confirmed: Thrust 1-9 (drive = Thrust% of hull), Jump 1-6 (drive =
+Jump × 2.5% of hull, +5t, min 10t).
 
 ## Context & goal
 
