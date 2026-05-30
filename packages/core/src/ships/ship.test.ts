@@ -27,6 +27,7 @@ const baseParams: ShipParams = {
   weapons: [],
   carried: [],
   crewType: 'commercial',
+  standardDesign: true,
 };
 
 describe('evaluateShip', () => {
@@ -446,6 +447,25 @@ describe('evaluateShip', () => {
     expect(count(carrier.crew, 'Pilot')).toBe(count(bare.crew, 'Pilot') + 2);
     expect(carrier.runningCosts.monthlySalaryCr).toBeGreaterThan(
       bare.runningCosts.monthlySalaryCr,
+    );
+  });
+
+  it('applies the 10% standard-design discount to the purchase price', () => {
+    const std = evaluateShip({ ...baseParams, standardDesign: true });
+    const custom = evaluateShip({ ...baseParams, standardDesign: false });
+    // The component total (sheet TOTAL) is unchanged; only the purchase price is.
+    expect(std.summary.resources.cost.used).toBeCloseTo(
+      custom.summary.resources.cost.used,
+      6,
+    );
+    expect(std.runningCosts.purchaseMCr).toBeCloseTo(
+      custom.runningCosts.purchaseMCr * 0.9,
+      6,
+    );
+    // Maintenance follows the discounted price.
+    expect(std.runningCosts.monthlyMaintenanceCr).toBeCloseTo(
+      (std.runningCosts.purchaseMCr * 1000) / 12,
+      6,
     );
   });
 

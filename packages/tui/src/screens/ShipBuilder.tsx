@@ -89,6 +89,7 @@ function formValues(p: ShipParams) {
     lowBerths: String(p.lowBerths),
     common: String(p.commonAreasTons),
     crewType: p.crewType,
+    standard: p.standardDesign ? 'yes' : 'no',
   };
 }
 
@@ -364,6 +365,11 @@ export function ShipBuilderScreen({
       label: 'Crew',
       fields: [
         { key: 'crewType', label: 'Crew', options: ['commercial', 'military'] },
+        {
+          key: 'standard',
+          label: 'Standard design (−10%)',
+          options: ['yes', 'no'],
+        },
       ],
     },
   ];
@@ -514,6 +520,7 @@ export function ShipBuilderScreen({
     weapons,
     carried,
     crewType: form.values.crewType as CrewType,
+    standardDesign: form.values.standard === 'yes',
   };
   const currentDef: ShipDefinition = { name, params };
   const { summary, issues, cargoTons, powerRequirements, crew, runningCosts } =

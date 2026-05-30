@@ -68,6 +68,7 @@ export const DEFAULT_SHIP_PARAMS: ShipParams = {
   weapons: [],
   carried: [],
   crewType: 'commercial',
+  standardDesign: true,
 };
 
 // --- Validation helpers -----------------------------------------------------
@@ -183,6 +184,7 @@ export function normalizeParams(input: unknown): ShipParams {
       { commercial: 1, military: 1 },
       d.crewType,
     ),
+    standardDesign: bool(p.standardDesign, d.standardDesign),
   };
 }
 

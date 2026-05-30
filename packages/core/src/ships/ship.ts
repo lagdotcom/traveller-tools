@@ -977,6 +977,8 @@ export interface ShipParams {
   /** Small craft (and, later, vehicles) carried in hangars / docking space. */
   carried: CarriedCraft[];
   crewType: CrewType;
+  /** Standard (production) design: 10% off the purchase price. */
+  standardDesign: boolean;
 }
 
 function shipHull(
@@ -1477,7 +1479,11 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
     });
   }
 
-  const purchaseMCr = summary.resources.cost?.used ?? 0;
+  // Standard (production) designs get a 10% discount off the printed purchase
+  // price; the component table still shows full prices. Maintenance is 0.1% of
+  // the (discounted) purchase price per year.
+  const componentCost = summary.resources.cost?.used ?? 0;
+  const purchaseMCr = componentCost * (params.standardDesign ? 0.9 : 1);
   const crew = crewRoster(params);
   return {
     summary,
