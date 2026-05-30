@@ -17,6 +17,7 @@ const KEYS = {
   shiftTab: '\x1b[Z',
   ctrlS: '\x13', // Save
   ctrlE: '\x05', // Export
+  ctrlO: '\x0f', // Import (opens the native file picker on the web)
 } as const;
 
 /** True on phones/tablets (coarse pointer) or when forced via `?touch`. */
@@ -64,6 +65,7 @@ export function installTouchControls(
     [
       { label: 'Save', seq: KEYS.ctrlS, wide: true },
       { label: 'Export', seq: KEYS.ctrlE, wide: true },
+      { label: 'Import', seq: KEYS.ctrlO, wide: true },
     ],
   ];
 

@@ -15,10 +15,11 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
   tonnage / power / cost / hardpoint budgets, a book-style sheet, derived stats,
   crew and running costs. Mounts (incl. mixed-weapon turrets), the full Core
   "spacecraft equipment" list, and carried craft — ships or catalogue vehicles,
-  with one level of nesting (e.g. an ATV on a launch). `Ctrl+S/E/I` to
-  save / export / import a design (JSON).
+  with one level of nesting (e.g. an ATV on a launch). `Ctrl+S` save,
+  `Ctrl+E` export, `Ctrl+O` import (a native file dialog in the browser, a file
+  path on the CLI).
 - **Ship library** — load any of the 24 built-in common spacecraft or your saved
-  designs into the builder; import a design from pasted JSON.
+  designs into the builder; import a design from a JSON file.
 - **Vehicle catalogue** — the Core Rulebook vehicles, with stat blocks, also
   selectable as carried craft.
 - **Jump & Fuel** — jump fuel by hull tonnage and jump number, jump validity

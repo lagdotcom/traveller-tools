@@ -41,6 +41,7 @@ import { Field } from '../components/Field.js';
 import { IssueList } from '../components/IssueList.js';
 import { ShipSheet } from '../components/ShipSheet.js';
 import { useForm } from '../components/useForm.js';
+import { useFiles } from '../files.js';
 import { useStore } from '../storage.js';
 
 const num = (value: string, fallback = 0) => {
@@ -142,6 +143,7 @@ export function ShipBuilderScreen({
   onLoad: (def: ShipDefinition) => void;
 }): React.JSX.Element {
   const store = useStore();
+  const files = useFiles();
   const startParams = initial?.params ?? DEFAULT_SHIP_PARAMS;
   const form = useForm(formValues(startParams));
   type FormKey = keyof typeof form.values;
@@ -415,34 +417,6 @@ export function ShipBuilderScreen({
   };
 
   useInput((input, key) => {
-    // Import mode accumulates pasted JSON (which arrives as one burst) and
-    // loads it the moment it parses; Esc cancels.
-    if (mode === 'import') {
-      if (key.escape) {
-        setMode('edit');
-        setImportBuffer('');
-        setMessage('Import cancelled.');
-        return;
-      }
-      if (key.backspace || key.delete) {
-        setImportBuffer((b) => b.slice(0, -1));
-        return;
-      }
-      if (key.leftArrow || key.rightArrow || key.upArrow || key.downArrow)
-        return;
-      const next = importBuffer + (key.return ? '\n' : input);
-      setImportBuffer(next);
-      try {
-        const def = parseShip(next);
-        setMode('edit');
-        setImportBuffer('');
-        onLoad(def);
-      } catch {
-        // keep collecting until it parses
-      }
-      return;
-    }
-
     // Library shortcuts are available from edit mode.
     if (mode === 'edit' && key.ctrl && input === 's') {
       setSaveName(name);
@@ -454,10 +428,10 @@ export function ShipBuilderScreen({
       setMode('export');
       return;
     }
-    if (mode === 'edit' && key.ctrl && input === 'i') {
-      setImportBuffer('');
-      setMessage('');
-      setMode('import');
+    // Import: Ctrl+O ('o' — Ctrl+I is byte-identical to Tab). On the web a
+    // native file picker opens immediately; on the CLI we prompt for a path.
+    if (mode === 'edit' && key.ctrl && input === 'o') {
+      startImport();
       return;
     }
 
@@ -484,6 +458,45 @@ export function ShipBuilderScreen({
     setName(finalName);
     setMode('edit');
     setMessage(`Saved “${finalName}”.`);
+  };
+
+  // Parse imported JSON text and load it (or report why it failed).
+  const loadFromText = (text: string | null) => {
+    if (text == null) {
+      setMessage('Import cancelled.');
+      return;
+    }
+    try {
+      onLoad(parseShip(text));
+    } catch (e) {
+      setMessage(`Import failed: ${(e as Error).message}`);
+    }
+  };
+  // Start an import: a native file dialog on the web, or a path prompt on the
+  // CLI. With no file capability at all, there's nothing to do.
+  const startImport = () => {
+    setMessage('');
+    if (files.pickFile) {
+      files
+        .pickFile()
+        .then(loadFromText)
+        .catch(() => setMessage('Import failed.'));
+    } else if (files.readFile) {
+      setImportBuffer('');
+      setMode('import');
+    } else {
+      setMessage('Import is not available here.');
+    }
+  };
+  // CLI path prompt submitted: read the file and load it.
+  const doImport = () => {
+    const path = importBuffer.trim();
+    setMode('edit');
+    setImportBuffer('');
+    if (!path) return;
+    const text = files.readFile ? files.readFile(path) : null;
+    if (text == null) setMessage(`Couldn't read “${path}”.`);
+    else loadFromText(text);
   };
 
   const effectiveAddWeapon = MOUNT_LABELS.includes(addWeapon)
@@ -657,14 +670,15 @@ export function ShipBuilderScreen({
         <Text bold color="yellow">
           Import Ship
         </Text>
-        <Box marginTop={1}>
-          <Text>Paste exported ship JSON; it loads once complete.</Text>
-        </Box>
-        <Box marginTop={1}>
-          <Text dimColor>{importBuffer.length} characters received…</Text>
-        </Box>
-        <Box marginTop={1}>
-          <Text dimColor>Esc to cancel</Text>
+        <Box marginTop={1} flexDirection="column">
+          <Field
+            label="File path"
+            value={importBuffer}
+            isActive
+            onChange={setImportBuffer}
+            onSubmit={doImport}
+          />
+          <Text dimColor>Enter to load · Esc to cancel</Text>
         </Box>
       </Box>
     );
@@ -906,7 +920,7 @@ export function ShipBuilderScreen({
 
       <Box marginTop={1}>
         <Text dimColor>
-          ↑/↓ field · Tab/⇧Tab section · Enter next · ^S save · ^E export · ^I
+          ↑/↓ field · Tab/⇧Tab section · Enter next · ^S save · ^E export · ^O
           import · Esc menu
         </Text>
       </Box>
