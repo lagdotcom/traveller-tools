@@ -9,6 +9,7 @@ import { Box, Text, useInput } from 'ink';
 import React from 'react';
 
 import { BudgetBar } from '../components/BudgetBar.js';
+import { ChoiceField } from '../components/ChoiceField.js';
 import { Field } from '../components/Field.js';
 import { IssueList } from '../components/IssueList.js';
 import { ShipSheet } from '../components/ShipSheet.js';
@@ -71,13 +72,21 @@ export function ShipBuilderScreen({
   const usage = SHIP_RESOURCES.map((r) => summary.resources[r.key]!);
   const { thrust, jump, hullPoints } = summary.stats;
 
-  const fields: Array<{ key: keyof typeof form.values; label: string }> = [
+  const fields: Array<{
+    key: keyof typeof form.values;
+    label: string;
+    options?: string[];
+  }> = [
     { key: 'hull', label: 'Hull tonnage' },
     { key: 'tl', label: 'Tech level' },
-    { key: 'config', label: 'Hull config' },
+    {
+      key: 'config',
+      label: 'Hull config',
+      options: ['standard', 'streamlined', 'dispersed'],
+    },
     { key: 'thrust', label: 'Thrust (M-drive)' },
     { key: 'jump', label: 'Jump (J-drive)' },
-    { key: 'plant', label: 'Plant (TL8/12/15)' },
+    { key: 'plant', label: 'Power plant', options: ['TL8', 'TL12', 'TL15'] },
     { key: 'power', label: 'Power plant (tons)' },
     { key: 'fuel', label: 'Fuel (tons)' },
     { key: 'staterooms', label: 'Staterooms' },
@@ -96,16 +105,28 @@ export function ShipBuilderScreen({
       </Box>
 
       <Box flexDirection="column" marginTop={1}>
-        {fields.map((f, index) => (
-          <Field
-            key={f.key}
-            label={f.label}
-            value={form.values[f.key]}
-            isActive={form.activeIndex === index}
-            onChange={form.setters[f.key]}
-            onSubmit={form.next}
-          />
-        ))}
+        {fields.map((f, index) =>
+          f.options ? (
+            <ChoiceField
+              key={f.key}
+              label={f.label}
+              options={f.options}
+              value={form.values[f.key]}
+              isActive={form.activeIndex === index}
+              onChange={form.setters[f.key]}
+              onSubmit={form.next}
+            />
+          ) : (
+            <Field
+              key={f.key}
+              label={f.label}
+              value={form.values[f.key]}
+              isActive={form.activeIndex === index}
+              onChange={form.setters[f.key]}
+              onSubmit={form.next}
+            />
+          ),
+        )}
       </Box>
 
       <Box marginTop={1}>

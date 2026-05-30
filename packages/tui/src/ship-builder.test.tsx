@@ -34,6 +34,22 @@ describe('Ship builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('selects a hull configuration by closest-match completion', async () => {
+    const ui = await openBuilder();
+    // Move to the Hull config choice field (hull, tl, config = 3rd field).
+    await ui.type(ENTER); // -> tech level
+    await ui.type(ENTER); // -> hull config
+    // Clear the default "standard" then type a prefix and submit; it should
+    // snap to the canonical "streamlined" option.
+    for (let i = 0; i < 'standard'.length; i++) await ui.type(BACKSPACE);
+    await ui.type('stream');
+    await ui.type(ENTER);
+    // Streamlined hull on 100t costs 6 MCr (100 × 0.05 × 1.2).
+    await ui.waitFor('Streamlined');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('does not crash when the hull field is cleared', async () => {
     const ui = await openBuilder();
     // Hull is the first field, pre-filled "100"; clear it entirely.
