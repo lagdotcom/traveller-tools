@@ -70,6 +70,21 @@ export function ChoiceField(props: ChoiceFieldProps): React.JSX.Element {
   }, []);
   useInput(handle, { isActive });
 
+  // Show a short, vertical, scrolling window of options around the current one
+  // (a single horizontal row wraps badly with many or long-named choices).
+  const WINDOW = 6;
+  const currentIndex = Math.max(0, options.indexOf(value));
+  const start = Math.max(
+    0,
+    Math.min(
+      currentIndex - Math.floor(WINDOW / 2),
+      Math.max(0, options.length - WINDOW),
+    ),
+  );
+  const visible = options.slice(start, start + WINDOW);
+  const hiddenAbove = start;
+  const hiddenBelow = options.length - (start + visible.length);
+
   return (
     <Box flexDirection="column">
       <Box>
@@ -87,18 +102,22 @@ export function ChoiceField(props: ChoiceFieldProps): React.JSX.Element {
         </Box>
       </Box>
       {isActive && (
-        <Box marginLeft={24}>
-          {options.map((option) => (
-            <Box key={option} marginRight={2}>
+        <Box marginLeft={24} flexDirection="column">
+          {hiddenAbove > 0 && <Text dimColor>↑ {hiddenAbove} more</Text>}
+          {visible.map((option) => (
+            <Box key={option} width={40}>
               <Text
                 color={option === value ? 'cyan' : undefined}
                 dimColor={option !== value}
+                wrap="truncate-end"
               >
+                {option === value ? '› ' : '  '}
                 {option}
               </Text>
             </Box>
           ))}
-          <Text dimColor>←/→</Text>
+          {hiddenBelow > 0 && <Text dimColor>↓ {hiddenBelow} more</Text>}
+          <Text dimColor>←/→ cycle · type to filter</Text>
         </Box>
       )}
     </Box>
