@@ -169,6 +169,7 @@ function formValues(p: WeaponParams) {
     calibre: CALIBRE.toLabel(f.calibre),
     mechanism: MECHANISM.toLabel(f.mechanism),
     autoIncrease: String(f.autoIncrease),
+    additionalBarrels: String(f.additionalBarrels),
     feed: FEED.toLabel(f.feed),
     capacityPct: String(f.capacityPct),
     ammo: AMMO.toLabel(f.ammo),
@@ -367,6 +368,7 @@ export function WeaponBuilderScreen({
       fields: [
         { key: 'barrel', label: 'Barrel', options: BARREL.labels },
         { key: 'heavyBarrel', label: 'Heavy barrel', options: YN },
+        { key: 'additionalBarrels', label: 'Extra barrels' },
       ],
     },
     {
@@ -593,6 +595,7 @@ export function WeaponBuilderScreen({
                 features,
                 barrel: BARREL.toId(form.values.barrel),
                 heavyBarrel: form.values.heavyBarrel === 'yes',
+                additionalBarrels: num(form.values.additionalBarrels, 0),
                 stock: STOCK.toId(form.values.stock),
                 furniture,
                 feed: FEED.toId(form.values.feed),

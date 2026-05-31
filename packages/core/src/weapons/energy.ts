@@ -193,7 +193,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
 
   for (const id of params.accessories) {
     const a = ACCESSORIES[id];
-    if (!a || id === 'additionalBarrel') continue;
+    if (!a) continue;
     const c = a.cost ?? baselineCost * (a.costPct ?? 0);
     const w =
       a.weightPct !== undefined ? baselineWeight * a.weightPct : a.weight;

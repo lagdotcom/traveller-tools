@@ -138,8 +138,7 @@ export type AccessoryId =
   | 'flashlight'
   | 'gunCamera'
   | 'secureWeapon'
-  | 'stabilisation'
-  | 'additionalBarrel';
+  | 'stabilisation';
 
 /** Loaded ammunition type, which alters the derived profile (not the cost). */
 export type AmmoTypeId =
@@ -286,6 +285,12 @@ export interface FirearmParams {
   barrel: BarrelId;
   /** Heavy-profile barrel (doubles barrel weight & cost). */
   heavyBarrel: boolean;
+  /**
+   * Extra barrels beyond the first (multi-barrel weapons). Each is bought at the
+   * barrel's cost and adds half its weight + Quickdraw −1; without the
+   * `partialMultiBarrel` feature each also adds 10% of the receiver cost/weight.
+   */
+  additionalBarrels: number;
   stock: StockId;
   furniture: FurnitureId[];
   feed: FeedId;

@@ -331,19 +331,25 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     if (f) add(f.label, baselineCost * f.costPct, baselineWeight * f.weightPct);
   }
 
+  // Extra barrels (multi-barrel weapons). Each is bought at the barrel's cost and
+  // adds half its weight; a *complete* multi-barrel (no partialMultiBarrel
+  // feature) also adds 10% of the receiver baseline per extra barrel.
+  const extraBarrels = Math.max(0, Math.floor(params.additionalBarrels));
+  if (extraBarrels > 0) {
+    const partial = params.features.includes('partialMultiBarrel');
+    const recCost = partial ? 0 : baselineCost * 0.1 * extraBarrels;
+    const recWeight = partial ? 0 : baselineWeight * 0.1 * extraBarrels;
+    add(
+      `Extra barrels: ${barrel.label} ×${extraBarrels}${partial ? ' (partial)' : ''}`,
+      recCost + barrelCost * extraBarrels,
+      recWeight + (barrelWeight / 2) * extraBarrels,
+      `Quickdraw −${extraBarrels}`,
+    );
+  }
+
   for (const id of params.accessories) {
     const a = ACCESSORIES[id];
     if (!a) continue;
-    if (id === 'additionalBarrel') {
-      // An extra barrel: full barrel cost, half its weight, Quickdraw −1.
-      add(
-        `${a.label} (${barrel.label})`,
-        barrelCost,
-        barrelWeight / 2,
-        'Quickdraw −1',
-      );
-      continue;
-    }
     const c = a.cost ?? baselineCost * (a.costPct ?? 0);
     const w =
       a.weightPct !== undefined ? baselineWeight * a.weightPct : a.weight;
@@ -390,7 +396,8 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   let sigIndex = SIGNATURE_LEVELS.indexOf(calibre.signature);
   sigIndex += barrel.signatureShift;
 
-  let quickdraw = receiver.quickdraw + barrel.quickdraw + feed.quickdraw;
+  let quickdraw =
+    receiver.quickdraw + barrel.quickdraw + feed.quickdraw - extraBarrels;
   for (const f of features) {
     quickdraw += f.quickdraw;
     if (f.signatureShift) sigIndex += f.signatureShift;

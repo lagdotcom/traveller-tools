@@ -115,6 +115,38 @@ describe('penetration / Lo-Pen', () => {
   });
 });
 
+describe('multi-barrel weapons', () => {
+  it('a partial multi-barrel adds each barrel without a receiver surcharge', () => {
+    // Hangul-style: handgun · heavy handgun · repeater · partial · minimal ·
+    // 3 extra barrels. Cost = 175 ×1.2 ×0.5 = 105 (minimal barrels are free).
+    const r = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      tl: 6,
+      receiver: 'handgun',
+      calibre: 'heavyHandgun',
+      mechanism: 'repeater',
+      features: ['partialMultiBarrel'],
+      barrel: 'minimal',
+      additionalBarrels: 3,
+      stock: 'none',
+    });
+    expect(r.totals.costCr).toBeCloseTo(105, 3);
+    // Quickdraw: +4 handgun, +8 minimal barrel, −3 for the extra barrels.
+    expect(r.profile.quickdraw).toBe(9);
+  });
+
+  it('a complete multi-barrel adds 10% of the receiver per extra barrel', () => {
+    const base = evaluateWeapon({ ...DEFAULT_WEAPON_PARAMS });
+    const twin = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      additionalBarrels: 1,
+    });
+    // One extra rifle barrel: +10% receiver + a full barrel + Quickdraw −1.
+    expect(twin.totals.costCr).toBeGreaterThan(base.totals.costCr);
+    expect(twin.profile.quickdraw).toBe(base.profile.quickdraw - 1);
+  });
+});
+
 describe('validation rules', () => {
   it('flags a gauss round in a non-gauss receiver', () => {
     const issues = evaluateWeapon({

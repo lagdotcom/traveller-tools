@@ -1012,8 +1012,6 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     quickdraw: 0,
     minTL: 9,
   },
-  // Special: an extra barrel costs the chosen barrel's price + half its weight.
-  additionalBarrel: { label: 'Additional Barrel', weight: 0, quickdraw: -1 },
 };
 
 // --- Special (loaded) ammunition --------------------------------------------
