@@ -115,6 +115,20 @@ describe('penetration / Lo-Pen', () => {
   });
 });
 
+describe('breakdown presentation', () => {
+  it('shows percentage mods and a Receiver Totals subtotal', () => {
+    const r = evalNamed('GA-100');
+    const gauss = r.breakdown.find((l) => l.label === 'Gauss')!;
+    expect(gauss.costMod).toBe('+100%'); // ×2 cost
+    expect(gauss.weightMod).toBe('+25%'); // ×1.25 weight
+    const totals = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
+    expect(totals.costCr).toBeCloseTo(1684.8, 3); // raw subtotal, not a %
+    expect(totals.costMod).toBeUndefined();
+    const barrel = r.breakdown.find((l) => l.label.startsWith('Barrel'))!;
+    expect(barrel.costMod).toBe('+20%'); // % of the receiver baseline
+  });
+});
+
 describe('multi-barrel weapons', () => {
   it('a partial multi-barrel adds each barrel without a receiver surcharge', () => {
     // Hangul-style: handgun · heavy handgun · repeater · partial · minimal ·

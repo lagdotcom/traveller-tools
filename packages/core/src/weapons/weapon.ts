@@ -77,6 +77,17 @@ function reduceDice(dmg: Damage, n: number): Damage {
 
 // --- Validation -------------------------------------------------------------
 
+/** Format a multiplier as a signed percentage modifier (×1.25 → "+25%"). */
+const modPct = (mult: number): string => {
+  const p = Math.round((mult - 1) * 100);
+  return p === 0 ? '—' : `${p > 0 ? '+' : '−'}${Math.abs(p)}%`;
+};
+/** Format a fraction-of-baseline as a "+N%" addition (0.15 → "+15%"). */
+const pctOf = (frac: number): string => {
+  const p = Math.round(frac * 100);
+  return p === 0 ? '—' : `+${p}%`;
+};
+
 const RECEIVER_ORDER = [
   'handgun',
   'assault',
@@ -262,14 +273,14 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const baselineCost = round2(cost);
   const baselineWeight = round2(weight);
 
-  // Itemise the receiver the way the worked worksheets do: a base line plus one
-  // line per modifier showing its marginal cost/weight (reductions are negative).
+  // Itemise the receiver the way the worked worksheets do: a base line, one line
+  // per modifier showing its *percentage* mod (not the raw Credit change), then a
+  // "Receiver Totals" subtotal that every later component is a percentage of.
   const breakdown: WeaponLineItem[] = [
     {
       label: `Receiver: ${receiver.label}`,
       costCr: round2(receiver.baseCost),
       weightKg: round2(receiver.baseWeight),
-      notes: `Capacity ${capacity}`,
     },
   ];
   let rc = receiver.baseCost;
@@ -282,6 +293,8 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
         label,
         costCr: round2(nc - rc),
         weightKg: round2(nw - rw),
+        costMod: modPct(cm),
+        weightMod: modPct(wm),
       });
     rc = nc;
     rw = nw;
@@ -298,37 +311,53 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   if (capPct !== 100)
     stepRec(`Capacity ${capPct}%`, costCapMult, weightCapMult);
 
+  breakdown.push({
+    label: 'Receiver Totals',
+    costCr: baselineCost,
+    weightKg: baselineWeight,
+    notes: `Capacity ${capacity}`,
+  });
+
   // --- Phase B: percentages of the receiver baseline ---
   let totalCost = baselineCost;
   let totalWeight = baselineWeight;
-  const add = (label: string, c: number, w: number, notes?: string) => {
-    const costCr = round2(c);
-    const weightKg = round2(w);
-    totalCost += costCr;
-    totalWeight += weightKg;
-    breakdown.push({ label, costCr, weightKg, notes });
+  const push = (item: WeaponLineItem) => {
+    totalCost += item.costCr;
+    totalWeight += item.weightKg;
+    breakdown.push(item);
   };
+  // A component that adds a fraction of the receiver baseline shows that %.
+  const addPct = (
+    label: string,
+    costFrac: number,
+    weightFrac: number,
+    notes?: string,
+  ) =>
+    push({
+      label,
+      costCr: round2(baselineCost * costFrac),
+      weightKg: round2(baselineWeight * weightFrac),
+      costMod: pctOf(costFrac),
+      weightMod: pctOf(weightFrac),
+      notes,
+    });
 
   const heavyMult = params.heavyBarrel ? 2 : 1;
   const barrelCost = baselineCost * barrel.costPct * heavyMult;
   const barrelWeight = baselineWeight * barrel.weightPct * heavyMult;
   if (params.barrel !== 'rifle' || barrelCost > 0 || params.heavyBarrel)
-    add(
+    addPct(
       `Barrel: ${barrel.label}${params.heavyBarrel ? ' (Heavy)' : ''}`,
-      barrelCost,
-      barrelWeight,
+      barrel.costPct * heavyMult,
+      barrel.weightPct * heavyMult,
     );
 
   if (params.stock !== 'none')
-    add(
-      `Stock: ${stock.label}`,
-      baselineCost * stock.costPct,
-      baselineWeight * stock.weightPct,
-    );
+    addPct(`Stock: ${stock.label}`, stock.costPct, stock.weightPct);
 
   for (const id of params.furniture) {
     const f = FURNITURE[id];
-    if (f) add(f.label, baselineCost * f.costPct, baselineWeight * f.weightPct);
+    if (f) addPct(f.label, f.costPct, f.weightPct);
   }
 
   // Extra barrels (multi-barrel weapons). Each is bought at the barrel's cost and
@@ -339,21 +368,28 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     const partial = params.features.includes('partialMultiBarrel');
     const recCost = partial ? 0 : baselineCost * 0.1 * extraBarrels;
     const recWeight = partial ? 0 : baselineWeight * 0.1 * extraBarrels;
-    add(
-      `Extra barrels: ${barrel.label} ×${extraBarrels}${partial ? ' (partial)' : ''}`,
-      recCost + barrelCost * extraBarrels,
-      recWeight + (barrelWeight / 2) * extraBarrels,
-      `Quickdraw −${extraBarrels}`,
-    );
+    push({
+      label: `Extra barrels: ${barrel.label} ×${extraBarrels}${partial ? ' (partial)' : ''}`,
+      costCr: round2(recCost + barrelCost * extraBarrels),
+      weightKg: round2(recWeight + (barrelWeight / 2) * extraBarrels),
+      notes: `Quickdraw −${extraBarrels}`,
+    });
   }
 
   for (const id of params.accessories) {
     const a = ACCESSORIES[id];
     if (!a) continue;
-    const c = a.cost ?? baselineCost * (a.costPct ?? 0);
-    const w =
-      a.weightPct !== undefined ? baselineWeight * a.weightPct : a.weight;
-    add(a.label, c, w);
+    // Cost may be a flat Credit amount or a % of the receiver; weight likewise.
+    const flatCost = a.cost !== undefined;
+    push({
+      label: a.label,
+      costCr: round2(a.cost ?? baselineCost * (a.costPct ?? 0)),
+      weightKg: round2(
+        a.weightPct !== undefined ? baselineWeight * a.weightPct : a.weight,
+      ),
+      costMod: flatCost ? undefined : pctOf(a.costPct ?? 0),
+      weightMod: a.weightPct !== undefined ? pctOf(a.weightPct) : undefined,
+    });
   }
 
   // --- Derive the profile ---

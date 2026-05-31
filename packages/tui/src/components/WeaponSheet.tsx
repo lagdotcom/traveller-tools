@@ -89,10 +89,10 @@ export function WeaponSheet({
               <Text wrap="truncate-end">{line.label}</Text>
             </Box>
             <Box width={COST_W} justifyContent="flex-end">
-              <Text>{cr(line.costCr)}</Text>
+              <Text>{line.costMod ?? cr(line.costCr)}</Text>
             </Box>
             <Box width={WEIGHT_W} justifyContent="flex-end">
-              <Text>{kg(line.weightKg)}</Text>
+              <Text>{line.weightMod ?? kg(line.weightKg)}</Text>
             </Box>
             <Box width={NOTES_W} paddingLeft={1}>
               <Text dimColor wrap="truncate-end">

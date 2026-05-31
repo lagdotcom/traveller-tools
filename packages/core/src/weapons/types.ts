@@ -424,6 +424,14 @@ export interface WeaponLineItem {
   costCr: number;
   /** Weight contribution in kilograms. */
   weightKg: number;
+  /**
+   * Display override for the cost column — e.g. a percentage modifier ("+25%")
+   * for a component that scales the receiver rather than adding a flat Credit
+   * amount. The sheet shows this instead of the raw `costCr` when present.
+   */
+  costMod?: string;
+  /** Display override for the weight column (see `costMod`). */
+  weightMod?: string;
   /** Free-text notes for the "Other Factors" column. */
   notes?: string;
 }
