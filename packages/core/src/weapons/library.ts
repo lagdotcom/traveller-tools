@@ -21,6 +21,7 @@ import {
   ENERGY_RECEIVERS,
   ENERGY_WEAPON_TYPE_LABEL,
 } from './energyData.js';
+import { LAUNCHER_RECEIVERS, WARHEADS } from './launcherData.js';
 import {
   PROJECTOR_FUELS,
   PROJECTOR_PROPELLANTS,
@@ -40,6 +41,8 @@ import type {
   FeedId,
   FirearmParams,
   FurnitureId,
+  LauncherParams,
+  LauncherReceiverId,
   MechanismId,
   ProjectorFuelId,
   ProjectorParams,
@@ -48,6 +51,7 @@ import type {
   ReceiverFeatureId,
   ReceiverTypeId,
   StockId,
+  WarheadId,
   WeaponParams,
 } from './types.js';
 
@@ -117,6 +121,16 @@ export const DEFAULT_PROJECTOR_PARAMS: ProjectorParams = {
   fuel: 'jellied',
   fuelKg: 4,
   propellantKg: 2,
+};
+
+/** A valid starting launcher: a TL6 single-shot light tube grenade launcher. */
+export const DEFAULT_LAUNCHER_PARAMS: LauncherParams = {
+  kind: 'launcher',
+  tl: 6,
+  receiver: 'tubeSingleLight',
+  guidance: false,
+  magazineSize: 6,
+  warhead: 'fragmentation',
 };
 
 // --- Validation helpers (shape-matched to ships/library.ts) -----------------
@@ -236,6 +250,23 @@ function normalizeProjectorParams(p: Record<string, unknown>): ProjectorParams {
   };
 }
 
+/** Coerce arbitrary parsed JSON into a complete, valid LauncherParams. */
+function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
+  const d = DEFAULT_LAUNCHER_PARAMS;
+  return {
+    kind: 'launcher',
+    tl: num(p.tl, d.tl),
+    receiver: pick<LauncherReceiverId>(
+      p.receiver,
+      LAUNCHER_RECEIVERS,
+      d.receiver,
+    ),
+    guidance: bool(p.guidance, d.guidance),
+    magazineSize: num(p.magazineSize, d.magazineSize),
+    warhead: pick<WarheadId>(p.warhead, WARHEADS, d.warhead),
+  };
+}
+
 /** Coerce arbitrary parsed JSON into a complete, valid WeaponParams. Never throws. */
 export function normalizeWeaponParams(input: unknown): WeaponParams {
   const p = isObject(input) ? input : {};
@@ -245,6 +276,8 @@ export function normalizeWeaponParams(input: unknown): WeaponParams {
       return normalizeEnergyParams(p);
     case 'projector':
       return normalizeProjectorParams(p);
+    case 'launcher':
+      return normalizeLauncherParams(p);
     default:
       return normalizeFirearmParams(p);
   }
@@ -325,6 +358,18 @@ function projector(
     name,
     description,
     params: { ...DEFAULT_PROJECTOR_PARAMS, ...overrides },
+  };
+}
+
+function launcher(
+  name: string,
+  description: string,
+  overrides: Partial<LauncherParams>,
+): WeaponDefinition {
+  return {
+    name,
+    description,
+    params: { ...DEFAULT_LAUNCHER_PARAMS, ...overrides },
   };
 }
 
@@ -480,6 +525,24 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       fuel: 'jellied',
       fuelKg: 4,
       propellantKg: 2,
+    },
+  ),
+  launcher(
+    'Grenade Launcher',
+    'TL6 single-shot light tube grenade launcher (Field Catalogue launcher).',
+    {
+      tl: 6,
+      receiver: 'tubeSingleLight',
+      warhead: 'fragmentation',
+    },
+  ),
+  launcher(
+    'Rocket Launcher',
+    'TL6 reusable heavy anti-armour rocket launcher (Field Catalogue launcher).',
+    {
+      tl: 6,
+      receiver: 'reuseSingleHeavy',
+      warhead: 'antiArmour',
     },
   ),
 ];

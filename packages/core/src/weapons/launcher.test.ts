@@ -1,0 +1,98 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  BUILTIN_WEAPONS,
+  DEFAULT_LAUNCHER_PARAMS,
+  evaluateWeapon,
+  type LauncherParams,
+  normalizeWeaponParams,
+  parseWeapon,
+  serializeWeapon,
+} from './index.js';
+
+const launcher = (overrides: Partial<LauncherParams>): LauncherParams => ({
+  ...DEFAULT_LAUNCHER_PARAMS,
+  ...overrides,
+});
+
+describe('launcher — receiver + warhead', () => {
+  it('TL6 single-shot light tube launcher with a frag warhead', () => {
+    const r = evaluateWeapon(
+      launcher({ receiver: 'tubeSingleLight', warhead: 'fragmentation' }),
+    );
+    expect(r.totals.costCr).toBeCloseTo(200, 3);
+    // 1.5kg receiver + 1 round × 0.5kg = 2.0kg loaded.
+    expect(r.totals.weightKg).toBeCloseTo(2, 3);
+    expect(r.totals.magazineCr).toBeCloseTo(30, 3);
+    expect(r.profile.damage.dice).toBe(5);
+    expect(r.profile.range).toBe(200);
+    expect(r.profile.capacity).toBe(1);
+    expect(r.profile.traits['Blast']).toBe(9);
+    expect(r.profile.traits['Bulky']).toBe(true);
+    expect(r.profile.recoil).toBe(0);
+  });
+
+  it('a guidance system adds 50% cost and the Smart trait', () => {
+    const r = evaluateWeapon(launcher({ guidance: true }));
+    expect(r.totals.costCr).toBeCloseTo(300, 3); // 200 × 1.5
+    expect(r.profile.traits['Smart']).toBe(true);
+  });
+
+  it('a support launcher takes a variable magazine', () => {
+    const r = evaluateWeapon(
+      launcher({
+        receiver: 'tubeSupportStandard',
+        magazineSize: 5,
+        warhead: 'fragmentation',
+      }),
+    );
+    expect(r.profile.capacity).toBe(5);
+    // 15kg receiver + 5 × 0.5kg rounds = 17.5kg.
+    expect(r.totals.weightKg).toBeCloseTo(17.5, 3);
+    expect(r.totals.magazineCr).toBeCloseTo(150, 3);
+  });
+
+  it('an effect-only warhead (smoke) has no damage dice', () => {
+    const r = evaluateWeapon(launcher({ warhead: 'smoke' }));
+    expect(r.profile.damage.dice).toBe(0);
+    expect(r.profile.traits['Blast']).toBe(9);
+  });
+});
+
+describe('launcher — validation', () => {
+  it('gates the receiver and the warhead by tech level', () => {
+    const r = evaluateWeapon(
+      launcher({ tl: 5, receiver: 'tubeSingleLight', warhead: 'plasma' }),
+    );
+    expect(
+      r.issues.some((i) => /Single Shot, Light requires TL6/.test(i.message)),
+    ).toBe(true);
+    expect(
+      r.issues.some((i) => /Plasma warhead requires TL12/.test(i.message)),
+    ).toBe(true);
+  });
+
+  it('flags the warhead/profile as unverified', () => {
+    const r = evaluateWeapon(launcher({}));
+    expect(r.issues.some((i) => /unverified/.test(i.message))).toBe(true);
+  });
+});
+
+describe('launcher — serialization', () => {
+  it('round-trips the built-in grenade launcher', () => {
+    const def = BUILTIN_WEAPONS.find((w) => w.name === 'Grenade Launcher')!;
+    const parsed = parseWeapon(serializeWeapon(def));
+    expect(parsed.params).toEqual(def.params);
+  });
+
+  it('normalizes a kind:launcher document and tolerates garbage', () => {
+    const params = normalizeWeaponParams({
+      kind: 'launcher',
+      receiver: 'nonsense',
+      magazineSize: 'x',
+    });
+    expect(params.kind).toBe('launcher');
+    expect(params.receiver).toBe(DEFAULT_LAUNCHER_PARAMS.receiver);
+    expect(() => evaluateWeapon(params)).not.toThrow();
+  });
+});

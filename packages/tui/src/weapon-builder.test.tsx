@@ -68,6 +68,15 @@ describe('Weapon builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('switches to the launcher class and shows launcher fields', async () => {
+    const ui = await openBuilder();
+    await ui.type('Launcher');
+    await ui.waitFor('Warhead');
+    expect(ui.frame()).toContain('Guidance system');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('loads a built-in weapon from the library', async () => {
     const ui = renderInk();
     await ui.waitFor('Traveller Tools');

@@ -193,10 +193,46 @@ export type ProjectorFuelId =
   | 'advanced'
   | 'cryogenic';
 
+// --- Launcher selectable ids (grenade / rocket / missile launchers) ---------
+
+/** Launcher receiver (tube, reusable or field), from the FC receiver tables. */
+export type LauncherReceiverId =
+  | 'tubeSingleLight'
+  | 'tubeSingleStandard'
+  | 'tubeSemiLight'
+  | 'tubeSemiStandard'
+  | 'tubeSupportLight'
+  | 'tubeSupportStandard'
+  | 'reuseSingleLight'
+  | 'reuseSingleHeavy'
+  | 'reuseMagLight'
+  | 'reuseMagHeavy'
+  | 'fieldLight2'
+  | 'fieldLight4'
+  | 'fieldHeavy2'
+  | 'fieldHeavy4';
+
+/** Loaded warhead/munition (sets the fired profile; bought separately). */
+export type WarheadId =
+  | 'fragmentation'
+  | 'antiArmour'
+  | 'breacher'
+  | 'smoke'
+  | 'stun'
+  | 'gasIncapacitant'
+  | 'gasToxin'
+  | 'incendiary'
+  | 'plasma'
+  | 'plasmaAntiArmour'
+  | 'microgrenade'
+  | 'multipleProjectile'
+  | 'cryogenic'
+  | 'emp';
+
 // --- User-facing parameters -------------------------------------------------
 
 /** Discriminates the weapon class so `WeaponParams` is a tagged union. */
-export type WeaponClass = 'firearm' | 'energy' | 'projector';
+export type WeaponClass = 'firearm' | 'energy' | 'projector' | 'launcher';
 
 export interface FirearmParams {
   /** Conventional slug-thrower (the original/default class). */
@@ -278,8 +314,29 @@ export interface ProjectorParams {
   propellantKg: number;
 }
 
+/**
+ * A Launcher (grenade / rocket / missile). The weapon itself is essentially the
+ * receiver (+ optional guidance and magazine); its effect comes from the loaded
+ * warhead, which is bought separately and only shapes the displayed profile.
+ */
+export interface LauncherParams {
+  kind: 'launcher';
+  tl: number;
+  receiver: LauncherReceiverId;
+  /** Adds a guidance system (+50% receiver cost) for guided munitions. */
+  guidance: boolean;
+  /** Magazine size for "varies"-capacity (support) launchers. */
+  magazineSize: number;
+  /** Loaded warhead used for the displayed profile. */
+  warhead: WarheadId;
+}
+
 /** A weapon design of any class (discriminated by `kind`). */
-export type WeaponParams = FirearmParams | EnergyParams | ProjectorParams;
+export type WeaponParams =
+  | FirearmParams
+  | EnergyParams
+  | ProjectorParams
+  | LauncherParams;
 
 // --- The derived weapon profile ---------------------------------------------
 

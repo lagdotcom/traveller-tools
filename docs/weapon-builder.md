@@ -1,16 +1,17 @@
 # Weapon builder
 
-Design notes for the MgT2 **weapon builder**. It builds two weapon classes from
-the _Field Catalogue_ weapon-design rules — conventional firearms (slug throwers)
-and Directed Energy Weapons (lasers/microwave) — selected by a **Class** field at
-the top of the builder. It lives beside the ship builder and reuses the same TUI
-building blocks, but its rules engine is deliberately **not** the generic `design`
-engine — see below.
+Design notes for the MgT2 **weapon builder**. It builds four weapon classes from
+the _Field Catalogue_ weapon-design rules — conventional firearms (slug throwers),
+Directed Energy Weapons (lasers/microwave), projectors (flame/cryo) and launchers
+(grenade/rocket/missile) — selected by a **Class** field at the top of the builder.
+It lives beside the ship builder and reuses the same TUI building blocks, but its
+rules engine is deliberately **not** the generic `design` engine — see below.
 
-`WeaponParams` is a discriminated union (`kind: 'firearm' | 'energy'`) and
-`evaluateWeapon(params)` dispatches to `evaluateFirearm` or `evaluateEnergyWeapon`,
-both returning the same `WeaponEvaluation` shape. Legacy documents with no `kind`
-normalise to firearms, so older saved/built-in weapons keep working.
+`WeaponParams` is a discriminated union
+(`kind: 'firearm' | 'energy' | 'projector' | 'launcher'`) and `evaluateWeapon`
+dispatches to the matching evaluator, all returning the same `WeaponEvaluation`
+shape. Legacy documents with no `kind` normalise to firearms, so older
+saved/built-in weapons keep working.
 
 ## Why a bespoke pipeline (not `summarize`)
 
@@ -141,8 +142,30 @@ prose says 3D / Cr25, which keeps the TL damage progression, so the prose value 
 seeded. **Signature** is again not given, so it is shown Physical but flagged
 unverified. Built-in: `Flamethrower`; `projector.test.ts` checks the maths.
 
+## Launchers (`launcher.ts` / `launcherData.ts`)
+
+Grenade, rocket and missile launchers (`kind: 'launcher'`). The FC is explicit
+that "warheads and payloads are not considered part of the weapon itself", so the
+weapon is essentially its **receiver** (+ optional guidance + magazine) and the
+loaded **warhead** only shapes the displayed profile (like a firearm's loaded
+ammo) — its price is the reload cost, not part of the build.
+
+- **Receiver** — one of 14 from the FC tube/reusable/field tables, each fixing
+  cost, weight, base range, capacity and Bulky/Very Bulky. Support launchers have
+  a "varies" capacity, so the builder exposes a magazine size for them.
+- **Guidance system** — +50% receiver cost; adds the Smart trait.
+- **Loaded weight** includes a full load of munitions (`receiver + capacity ×
+warhead weight`), per the FC missile-launcher note.
+- **Warhead** — Fragmentation, Anti-Armour, Breacher, Plasma, Smoke, Gas, etc.,
+  supplying the profile's damage, Blast and traits (AP / Lo-Pen / Incendiary…).
+
+`reconcile:` the warhead figures are the FC _thrown_ Hand-grenade values; the
+launcher-calibre munition table ("see page 126") isn't in the supplied text, so
+`evaluateLauncher` flags the profile as unverified. Signature isn't given either.
+Built-ins: `Grenade Launcher`, `Rocket Launcher`; tests in `launcher.test.ts`.
+
 ## Out of scope (future phases)
 
-Launchers & support weapons (FC "Launchers"), and the grenade / warhead /
-explosive catalogue. Each slots in as an additional weapon class + catalogue
-tables, reusing this pipeline and the builder UI.
+The full thrown-grenade / explosive / demolition catalogue as a standalone class
+(the warhead data here is a launcher-munition subset). Slots in the same way: a
+new weapon class + catalogue tables, reusing this pipeline and the builder UI.
