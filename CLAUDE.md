@@ -130,7 +130,9 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   conflicts carry `reconcile:` notes in `data.ts` — do not silently override; the
   user is the authority.** Known conflicts: base receiver values, light-handgun
   cost/weight, small-smoothbore weight, pistol-calibre base penetration (−1),
-  smoothbore capacity, laser-pointer price.
+  smoothbore capacity, laser-pointer price (kept at the rules' Cr200 over the
+  Bodyguard worksheet's Cr50), heavy-handgun weight (+15% per the catalogue, not
+  the prose's −15%).
 - **Adding a component:** add the id to the union + a row in the relevant
   `data.ts` (firearm) / `energyData.ts` / `projectorData.ts` / `launcherData.ts` /
   `grenadeData.ts` record; update the relevant

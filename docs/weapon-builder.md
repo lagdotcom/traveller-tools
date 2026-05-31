@@ -137,6 +137,11 @@ designer choosing how many kg of fuel and propellant to carry as payload.
 - **Attacks** (the "magazine") = whichever runs out first, fuel (1 kg = 1 attack)
   or propellant (kg × attacks-per-kg). Fuel + propellant are consumables, priced as
   the reload cost. All projectors carry **Hazardous −6** and the structure's Blast.
+- **Hardening** — the Armoured (+10% cost/+5% weight per Protection point) and
+  Bulwarked (+20% cost/+10% weight per point) capability features multiply the
+  build cost and loaded weight. The `MF-61` built-in (compact, advanced fuel,
+  generated gas, Armour 2, Bulwarked 3) reproduces the worksheet exactly:
+  Cr1397.76 / 7.5504 kg.
 
 `reconcile:` the fuel table lists Liquid as 4D / Cr75 (identical to Jellied); the
 prose says 3D / Cr25, which keeps the TL damage progression, so the prose value is
