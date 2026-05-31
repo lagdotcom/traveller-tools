@@ -3,3 +3,4 @@ export * from './jump.js';
 export * from './ships/index.js';
 export * from './travel.js';
 export * from './units.js';
+export * from './weapons/index.js';
