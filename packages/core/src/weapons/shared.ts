@@ -33,6 +33,20 @@ export const pushIf = (issues: Issue[], issue: Issue | null): void => {
   if (issue) issues.push(issue);
 };
 
+// --- Percentage-modifier formatting (for the itemised breakdown) ------------
+
+/** Format a multiplier as a signed percentage modifier (×1.25 → "+25%"). */
+export const modPct = (mult: number): string => {
+  const p = Math.round((mult - 1) * 100);
+  return p === 0 ? '—' : `${p > 0 ? '+' : '−'}${Math.abs(p)}%`;
+};
+
+/** Format a fraction-of-baseline as a "+N%" addition (0.15 → "+15%"). */
+export const pctOf = (frac: number): string => {
+  const p = Math.round(frac * 100);
+  return p === 0 ? '—' : `+${p}%`;
+};
+
 // --- Traits -----------------------------------------------------------------
 
 /** Add a numeric trait level, stacking with any existing numeric value. */

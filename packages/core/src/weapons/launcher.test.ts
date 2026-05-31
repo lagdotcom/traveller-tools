@@ -74,6 +74,33 @@ describe('launcher — receiver + warhead', () => {
     expect(r.profile.damage.dice).toBe(0);
     expect(r.profile.traits['Blast']).toBe(9);
   });
+
+  it('builds the receiver firearm-style: features modify the baseline, then barrel + stock', () => {
+    // Whaite Light Munition Launcher: Semi-Auto Light tube (Cr400/2.5kg) made
+    // Lightweight (×1.5 cost / ×0.8 wt) + Bullpup (×1.25 cost) → Cr750/2.0kg
+    // baseline, + Assault barrel (20%/30%) + full stock (10%/10%).
+    const r = evaluateWeapon(
+      launcher({
+        receiver: 'tubeSemiLight',
+        features: ['lightweight', 'bullpup'],
+        barrel: 'assault',
+        stock: 'full',
+        warhead: 'fragmentation',
+      }),
+    );
+    const totals = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
+    expect(totals.costCr).toBeCloseTo(750, 3);
+    expect(totals.weightKg).toBeCloseTo(2, 3);
+    // Empty (unloaded) weapon weight: 2.0 + 0.6 (barrel) + 0.2 (stock) = 2.8kg.
+    const loaded = r.totals.weightKg;
+    const munition = r.breakdown.find((l) =>
+      /Munition/.test(l.label),
+    )!.weightKg;
+    expect(loaded - munition).toBeCloseTo(2.8, 3);
+    // Barrel/stock are cost/weight only — the profile is the warhead's.
+    expect(r.profile.damage.dice).toBe(5);
+    expect(r.profile.range).toBe(200);
+  });
 });
 
 describe('launcher — validation', () => {

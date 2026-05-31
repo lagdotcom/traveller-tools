@@ -33,6 +33,8 @@ import {
   clampLevel,
   error,
   mergeTraits,
+  modPct,
+  pctOf,
   pushIf,
   round2,
   tlGate,
@@ -86,17 +88,6 @@ function reduceDice(dmg: Damage, n: number): Damage {
 }
 
 // --- Validation -------------------------------------------------------------
-
-/** Format a multiplier as a signed percentage modifier (×1.25 → "+25%"). */
-const modPct = (mult: number): string => {
-  const p = Math.round((mult - 1) * 100);
-  return p === 0 ? '—' : `${p > 0 ? '+' : '−'}${Math.abs(p)}%`;
-};
-/** Format a fraction-of-baseline as a "+N%" addition (0.15 → "+15%"). */
-const pctOf = (frac: number): string => {
-  const p = Math.round(frac * 100);
-  return p === 0 ? '—' : `+${p}%`;
-};
 
 const RECEIVER_ORDER = [
   'handgun',

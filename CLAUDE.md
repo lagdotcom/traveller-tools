@@ -106,11 +106,12 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   (`energy.ts`), `evaluateProjector` (`projector.ts`), `evaluateLauncher`
   (`launcher.ts`) or `evaluateGrenade` (`grenade.ts`), all returning the same
   shape. Legacy docs with no `kind` normalise to firearms. Energy weapons reuse
-  the firearm barrel/stock/furniture/accessory tables; projectors, launchers and
-  grenades share nothing structural. Class-only tables live in `energyData.ts` /
-  `projectorData.ts` / `launcherData.ts` / `grenadeData.ts`. Shared helpers
-  (`round2`, `clampLevel`) are in `shared.ts` to avoid an import cycle with
-  `weapon.ts`.
+  the firearm barrel/stock/furniture/accessory tables; launchers reuse the firearm
+  `RECEIVER_FEATURES`/`BARRELS`/`STOCKS` to build their receiver (see below);
+  projectors and grenades share nothing structural. Class-only tables live in
+  `energyData.ts` / `projectorData.ts` / `launcherData.ts` / `grenadeData.ts`.
+  Shared helpers (`round2`, `clampLevel`, `modPct`, `pctOf`, issue/trait helpers)
+  are in `shared.ts` to avoid an import cycle with `weapon.ts`.
 - **Deliberately NOT the generic engine.** The Field Catalogue cost/weight model
   is **sequential-multiplicative off a "modified receiver" baseline**, not the
   additive resource model `summarize` uses. So the evaluators
@@ -152,6 +153,16 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   projectors = Emissions (extreme) (from the MF-61 flame example — only flame is
   attested, cryo may differ); launchers = Physical (normal). Grenades have no
   attested signature (left flagged) and no thrown range (a thrower stat, set 0).
+- **Launcher receivers are built firearm-style.** `LauncherParams` carries
+  `features`/`barrel`/`stock`: `evaluateLauncher` starts from a base launcher
+  receiver, applies a multiplicative feature chain (reusing `RECEIVER_FEATURES`) +
+  optional guidance (+50%) to fix the modified-receiver baseline, then adds a
+  barrel + stock as a % of it (reusing `BARRELS`/`STOCKS`). Unlike a firearm the
+  barrel/stock are **cost/weight only** — the profile comes from the warhead +
+  delivery, so no damage/range reshaping. Default `barrel:'minimal'` (0-cost,
+  integral tube) + `stock:'none'`. The `Light Munition Launcher` built-in
+  reproduces this (Cr750/2.0kg receiver baseline → 2.8kg); reconcile: barrel/stock
+  %s match the worksheet weight exactly but over-count cost by ~Cr35 (flagged).
 - **Launcher munitions** are a **payload × delivery** pair: the warhead supplies
   damage/blast/traits (the hand-grenade payload — "equivalent in effect" per the
   FC), and the delivery system (`DELIVERY_SYSTEMS`: cartridge / RAM / RPG) sets the

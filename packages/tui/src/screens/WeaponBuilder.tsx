@@ -196,6 +196,8 @@ const projectorValues = (pr: ProjectorParams) => ({
 
 const launcherValues = (l: LauncherParams) => ({
   lReceiver: LRECEIVER.toLabel(l.receiver),
+  lBarrel: BARREL.toLabel(l.barrel),
+  lStock: STOCK.toLabel(l.stock),
   warhead: WARHEAD.toLabel(l.warhead),
   delivery: DELIVERY.toLabel(l.delivery),
   guidance: l.guidance ? 'yes' : 'no',
@@ -321,11 +323,14 @@ function buildProjector(v: FormValues): ProjectorParams {
   };
 }
 
-function buildLauncher(v: FormValues): LauncherParams {
+function buildLauncher(v: FormValues, lists: Lists): LauncherParams {
   return {
     kind: 'launcher',
     tl: num(v.tl, 0),
     receiver: LRECEIVER.toId(v.lReceiver),
+    features: lists.features,
+    barrel: BARREL.toId(v.lBarrel),
+    stock: STOCK.toId(v.lStock),
     guidance: v.guidance === 'yes',
     magazineSize: num(v.magazineSize, 1),
     warhead: WARHEAD.toId(v.warhead),
@@ -358,14 +363,14 @@ export function WeaponBuilderScreen({
   type FormKey = keyof typeof form.values;
 
   const [name, setName] = useState(initial?.name ?? 'Untitled Weapon');
-  // Features/furniture/accessories are shared by firearm + energy; projectors
-  // and launchers have none, so seed empty for them.
+  // Features are shared by firearm + energy + launcher (all reuse RECEIVER_FEATURES);
+  // furniture/accessories are firearm/energy only. Seed each from the start params.
   const listSeed: FirearmParams | EnergyParams =
     startParams.kind === 'firearm' || startParams.kind === 'energy'
       ? startParams
       : DEFAULT_WEAPON_PARAMS;
   const [features, setFeatures] = useState<ReceiverFeatureId[]>(
-    listSeed.features,
+    startParams.kind === 'launcher' ? startParams.features : listSeed.features,
   );
   const [furniture, setFurniture] = useState<FurnitureId[]>(listSeed.furniture);
   const [accessories, setAccessories] = useState<AccessoryId[]>(
@@ -648,6 +653,16 @@ export function WeaponBuilderScreen({
         { key: 'guidance', label: 'Guidance system', options: YN },
       ],
     },
+    // The receiver is built like a firearm: features modify the baseline, then a
+    // barrel + stock are added as a % of it (cost/weight only).
+    { label: 'Features', list: 'features' },
+    {
+      label: 'Barrel & Stock',
+      fields: [
+        { key: 'lBarrel', label: 'Barrel', options: BARREL.labels },
+        { key: 'lStock', label: 'Stock', options: STOCK.labels },
+      ],
+    },
     {
       label: 'Magazine',
       fields: [{ key: 'magazineSize', label: 'Magazine (support launchers)' }],
@@ -709,7 +724,7 @@ export function WeaponBuilderScreen({
       : weaponClass === 'projector'
         ? buildProjector(form.values)
         : weaponClass === 'launcher'
-          ? buildLauncher(form.values)
+          ? buildLauncher(form.values, selected)
           : weaponClass === 'grenade'
             ? buildGrenade(form.values)
             : buildFirearm(form.values, selected);

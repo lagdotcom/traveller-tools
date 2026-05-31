@@ -381,6 +381,15 @@ export interface LauncherParams {
   kind: 'launcher';
   tl: number;
   receiver: LauncherReceiverId;
+  /**
+   * Receiver features (Lightweight, Bullpup, …), applied as a multiplicative
+   * chain off the base receiver — exactly as on a firearm.
+   */
+  features: ReceiverFeatureId[];
+  /** Barrel fitted to the launcher (a % of the modified-receiver baseline). */
+  barrel: BarrelId;
+  /** Stock fitted to the launcher (a % of the modified-receiver baseline). */
+  stock: StockId;
   /** Adds a guidance system (+50% receiver cost) for guided munitions. */
   guidance: boolean;
   /** Magazine size for "varies"-capacity (support) launchers. */

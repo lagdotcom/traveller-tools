@@ -152,23 +152,38 @@ unverified. Built-in: `Flamethrower`; `projector.test.ts` checks the maths.
 
 Grenade, rocket and missile launchers (`kind: 'launcher'`). The FC is explicit
 that "warheads and payloads are not considered part of the weapon itself", so the
-weapon is essentially its **receiver** (+ optional guidance + magazine) and the
-loaded **warhead** only shapes the displayed profile (like a firearm's loaded
-ammo) — its price is the reload cost, not part of the build.
+weapon is its **receiver** (built like a firearm) and the loaded **warhead** only
+shapes the displayed profile (like a firearm's loaded ammo) — its price is the
+reload cost, not part of the build.
 
-- **Receiver** — one of 14 from the FC tube/reusable/field tables, each fixing
-  cost, weight, base range, capacity and Bulky/Very Bulky. Support launchers have
-  a "varies" capacity, so the builder exposes a magazine size for them.
-- **Guidance system** — +50% receiver cost; adds the Smart trait.
-- **Loaded weight** includes a full load of munitions (`receiver + capacity ×
-warhead weight`), per the FC missile-launcher note.
-- **Warhead** — Fragmentation, Anti-Armour, Breacher, Plasma, Smoke, Gas, etc.,
-  supplying the profile's damage, Blast and traits (AP / Lo-Pen / Incendiary…).
+- **Receiver, firearm-style** — start from one of 14 base tube/reusable/field
+  receivers (each fixing cost, weight, base range, capacity and Bulky/Very Bulky),
+  then apply a **multiplicative chain of receiver features** (Lightweight, Bullpup,
+  …, reusing the firearm `RECEIVER_FEATURES` table) plus an optional **guidance
+  system** (+50% cost). That fixes the **modified-receiver baseline**, off which a
+  **barrel** and **stock** are added as a percentage — exactly as on a firearm. The
+  Whaite Light Munition Launcher reproduces this way: Semi-Auto Light tube
+  (Cr400/2.5kg) → Lightweight → Bullpup → Cr750/2.0kg baseline, + Assault barrel +
+  full stock → 2.8kg. Support launchers have a "varies" capacity, so the builder
+  exposes a magazine size for them.
+- **Barrel/stock are cost/weight only.** A launcher's profile comes from its
+  warhead (damage/traits) and delivery system (range), so — unlike a firearm — the
+  barrel does not reshape damage/range/penetration. A bare tube's tube is integral,
+  so the default barrel is the zero-cost `minimal` and the default stock is `none`.
+- **Loaded weight** includes a full load of munitions (`launcher + capacity ×
+warhead weight × delivery weight`), per the FC missile-launcher note.
+- **Warhead × delivery** — the warhead (Fragmentation, Anti-Armour, Breacher,
+  Plasma, Smoke, Gas, …) supplies the profile's damage, Blast and traits; the
+  delivery system (cartridge / RAM / RPG) sets the range and multiplies the round's
+  cost/weight.
 
 `reconcile:` the warhead figures are the FC _thrown_ Hand-grenade values; the
-launcher-calibre munition table ("see page 126") isn't in the supplied text, so
-`evaluateLauncher` flags the profile as unverified. Signature isn't given either.
-Built-ins: `Grenade Launcher`, `Rocket Launcher`; tests in `launcher.test.ts`.
+launcher-calibre munition table ("see page 126") isn't in the supplied text. The
+firearm-style barrel/stock percentages reproduce the worked launcher's **weight**
+exactly but over-count its **cost** by ~Cr35 (Cr975 vs the worksheet's Cr940) — a
+variance kept flagged in the `Light Munition Launcher` built-in rather than fudged.
+Built-ins: `Grenade Launcher`, `Rocket Launcher`, `Light Munition Launcher`; tests
+in `launcher.test.ts`.
 
 ## Grenades (`grenade.ts` / `grenadeData.ts`)
 

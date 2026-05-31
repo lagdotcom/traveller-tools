@@ -141,6 +141,10 @@ export const DEFAULT_LAUNCHER_PARAMS: LauncherParams = {
   kind: 'launcher',
   tl: 6,
   receiver: 'tubeSingleLight',
+  features: [],
+  // A bare tube launcher's tube is integral — no separate barrel/stock by default.
+  barrel: 'minimal',
+  stock: 'none',
   guidance: false,
   magazineSize: 6,
   warhead: 'fragmentation',
@@ -315,6 +319,9 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
       LAUNCHER_RECEIVERS,
       d.receiver,
     ),
+    features: pickList<ReceiverFeatureId>(p.features, RECEIVER_FEATURES),
+    barrel: pick<BarrelId>(p.barrel, BARRELS, d.barrel),
+    stock: pick<StockId>(p.stock, STOCKS, d.stock),
     guidance: bool(p.guidance, d.guidance),
     magazineSize: num(p.magazineSize, d.magazineSize),
     warhead: pick<WarheadId>(p.warhead, WARHEADS, d.warhead),
@@ -644,6 +651,24 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       receiver: 'reuseSingleHeavy',
       warhead: 'antiArmour',
       delivery: 'rpg',
+    },
+  ),
+  launcher(
+    'Light Munition Launcher',
+    // Whaite Industries worked example: a semi-auto light tube made Lightweight +
+    // Bullpup with an Assault barrel and full stock. Receiver Cr750/2.0kg, +Assault
+    // barrel +full stock → 2.8kg. reconcile: the worksheet totals Cr940; the
+    // firearm-style barrel/stock percentages give Cr975 (a ~Cr35 over-count we keep
+    // flagged rather than fudge — the user is the authority on the exact figure).
+    'Whaite Industries Light Munition Launcher (Field Catalogue worked example).',
+    {
+      tl: 8,
+      receiver: 'tubeSemiLight',
+      features: ['lightweight', 'bullpup'],
+      barrel: 'assault',
+      stock: 'full',
+      warhead: 'fragmentation',
+      delivery: 'cartridge',
     },
   ),
   grenade(
