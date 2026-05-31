@@ -181,7 +181,7 @@ export interface CalibreDef {
  */
 export const CALIBRES: Record<CalibreId, CalibreDef> = {
   archaicPistol: {
-    label: 'Archaic Pistol',
+    label: 'Archaic Pistol (Black Powder)',
     damage: d(2, -3),
     ammoCostPer100: 10,
     range: 20,
@@ -195,7 +195,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     highVelocity: false,
   },
   archaicSmoothbore: {
-    label: 'Archaic Smoothbore',
+    label: 'Archaic Smoothbore (Black Powder)',
     damage: d(3, -3),
     ammoCostPer100: 25,
     range: 40,
@@ -211,7 +211,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     smoothbore: true,
   },
   archaicRifle: {
-    label: 'Archaic Rifle',
+    label: 'Archaic Rifle (Black Powder)',
     damage: d(3, -3),
     ammoCostPer100: 25,
     range: 150,

@@ -31,10 +31,12 @@ describe('formatDamage', () => {
 
 // The six worked worksheets that use the rules-text base values reproduce
 // exactly (receiver subtotal + grand total in Cr and kg, plus headline stats).
-describe('worked examples — receiver subtotal & grand totals', () => {
+// The breakdown now itemises the receiver (a base line + one line per modifier),
+// so breakdown[0] is the *base* receiver; the grand totals remain the oracle.
+describe('worked examples — base receiver & grand totals', () => {
   it('Adjudicator (handgun · small smoothbore · repeater)', () => {
     const r = evalNamed('Adjudicator');
-    expect(r.breakdown[0].costCr).toBeCloseTo(65.625, 3);
+    expect(r.breakdown[0].costCr).toBeCloseTo(175, 3); // base handgun
     expect(r.breakdown[0].weightKg).toBeCloseTo(0.8, 3);
     expect(r.totals.costCr).toBeCloseTo(75.46875, 3);
     expect(r.profile.quickdraw).toBe(8);
@@ -46,7 +48,7 @@ describe('worked examples — receiver subtotal & grand totals', () => {
 
   it('Bodyguard Shotgun (longarm · standard smoothbore · repeater)', () => {
     const r = evalNamed('Bodyguard Shotgun');
-    expect(r.breakdown[0].costCr).toBeCloseTo(150, 3);
+    expect(r.breakdown[0].costCr).toBeCloseTo(400, 3); // base longarm
     expect(r.breakdown[0].weightKg).toBeCloseTo(2.5, 3);
     // Weight matches the worksheet exactly; the cost total differs only because
     // the worksheet prices the laser pointer at Cr50 where the rules say Cr200.
@@ -59,8 +61,8 @@ describe('worked examples — receiver subtotal & grand totals', () => {
 
   it('13mm Crunch Gun (LSW · anti-materiel · repeater · very long)', () => {
     const r = evalNamed('13mm Crunch Gun');
-    expect(r.breakdown[0].costCr).toBeCloseTo(1406.25, 3);
-    expect(r.breakdown[0].weightKg).toBeCloseTo(5.625, 3);
+    expect(r.breakdown[0].costCr).toBeCloseTo(1500, 3); // base LSW
+    expect(r.breakdown[0].weightKg).toBeCloseTo(5, 3);
     expect(r.totals.costCr).toBeCloseTo(3143.75, 3);
     expect(r.totals.weightKg).toBeCloseTo(13.1375, 3);
     expect(r.profile.quickdraw).toBe(-8);
@@ -70,8 +72,8 @@ describe('worked examples — receiver subtotal & grand totals', () => {
 
   it('GA-100 (gauss assault · gauss shotgun · bullpup)', () => {
     const r = evalNamed('GA-100');
-    expect(r.breakdown[0].costCr).toBeCloseTo(1684.8, 3);
-    expect(r.breakdown[0].weightKg).toBeCloseTo(3.1625, 4);
+    expect(r.breakdown[0].costCr).toBeCloseTo(300, 3); // base assault (pre-gauss)
+    expect(r.breakdown[0].weightKg).toBeCloseTo(2, 4);
     expect(r.totals.costCr).toBeCloseTo(2190.24, 2);
     expect(r.totals.weightKg).toBeCloseTo(4.4275, 4);
     expect(r.profile.quickdraw).toBe(8);
@@ -84,8 +86,8 @@ describe('worked examples — receiver subtotal & grand totals', () => {
 
   it('Stowaway (handgun · light handgun · extreme stealth)', () => {
     const r = evalNamed('Stowaway');
-    expect(r.breakdown[0].costCr).toBeCloseTo(1234.8, 3);
-    expect(r.breakdown[0].weightKg).toBeCloseTo(0.576, 4);
+    expect(r.breakdown[0].costCr).toBeCloseTo(175, 3); // base handgun
+    expect(r.breakdown[0].weightKg).toBeCloseTo(0.8, 4);
     expect(r.totals.costCr).toBeCloseTo(1358.28, 3);
     expect(r.totals.weightKg).toBeCloseTo(0.6336, 4);
     expect(r.profile.quickdraw).toBe(10);
@@ -98,7 +100,7 @@ describe('worked examples — receiver subtotal & grand totals', () => {
 
   it('Civilian Shotgun (single-shot double-barrel light smoothbore)', () => {
     const r = evalNamed('Civilian Shotgun');
-    expect(r.breakdown[0].costCr).toBeCloseTo(75, 3);
+    expect(r.breakdown[0].costCr).toBeCloseTo(400, 3); // base longarm
     expect(r.totals.costCr).toBeCloseTo(127.5, 3);
     expect(r.profile.quickdraw).toBe(-1);
     expect(r.profile.capacity).toBe(1);

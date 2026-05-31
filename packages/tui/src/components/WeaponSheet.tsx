@@ -3,7 +3,7 @@ import {
   type WeaponEvaluation,
   type WeaponProfile,
 } from '@traveller-tools/core';
-import { Box, Text } from 'ink';
+import { Box, Text, useStdout } from 'ink';
 import React from 'react';
 
 /** Format the trait map the way the book lists them: `Auto 3, Lo-Pen 2`. */
@@ -15,10 +15,9 @@ function formatTraits(profile: WeaponProfile): string {
   return parts.length ? parts.join(', ') : '—';
 }
 
+// Credit values: integers above 1000 (no thousands separators), 2 d.p. below.
 const cr = (n: number): string =>
-  n >= 1000
-    ? `Cr${Math.round(n).toLocaleString()}`
-    : `Cr${Math.round(n * 100) / 100}`;
+  n >= 1000 ? `Cr${Math.round(n)}` : `Cr${Math.round(n * 100) / 100}`;
 const kg = (n: number): string => `${Math.round(n * 1000) / 1000}kg`;
 
 /** A book-style weapon profile + cost/weight breakdown panel. */
@@ -30,12 +29,25 @@ export function WeaponSheet({
   const { profile, breakdown, totals, sources } = evaluation;
   const sig = `${profile.signatureKind === 'emissions' ? 'Emissions' : 'Physical'} (${profile.signature})`;
 
+  // Fill the terminal width: the cost/weight/notes columns are fixed, the label
+  // column takes the rest (accounting for the round border + padding).
+  const { stdout } = useStdout();
+  const columns = stdout?.columns ?? 80;
+  const COST_W = 11;
+  const WEIGHT_W = 10;
+  const NOTES_W = 18;
+  const labelWidth = Math.max(
+    20,
+    columns - 4 - COST_W - WEIGHT_W - NOTES_W, // 4 = border (2) + paddingX (2)
+  );
+
   return (
     <Box
       flexDirection="column"
       borderStyle="round"
       borderColor="gray"
       paddingX={1}
+      width={columns}
     >
       <Text bold color="yellow">
         Profile — TL{profile.tl}
@@ -73,29 +85,35 @@ export function WeaponSheet({
         <Text bold>Components</Text>
         {breakdown.map((line, i) => (
           <Box key={i}>
-            <Box width={34}>
+            <Box width={labelWidth}>
               <Text wrap="truncate-end">{line.label}</Text>
             </Box>
-            <Box width={11}>
+            <Box width={COST_W} justifyContent="flex-end">
               <Text>{cr(line.costCr)}</Text>
             </Box>
-            <Box width={9}>
+            <Box width={WEIGHT_W} justifyContent="flex-end">
               <Text>{kg(line.weightKg)}</Text>
             </Box>
-            {line.notes ? <Text dimColor>{line.notes}</Text> : null}
+            <Box width={NOTES_W} paddingLeft={1}>
+              <Text dimColor wrap="truncate-end">
+                {line.notes ?? ''}
+              </Text>
+            </Box>
           </Box>
         ))}
         <Box marginTop={1}>
-          <Box width={34}>
+          <Box width={labelWidth}>
             <Text bold>TOTAL</Text>
           </Box>
-          <Box width={11}>
+          <Box width={COST_W} justifyContent="flex-end">
             <Text bold>{cr(totals.costCr)}</Text>
           </Box>
-          <Box width={9}>
+          <Box width={WEIGHT_W} justifyContent="flex-end">
             <Text bold>{kg(totals.weightKg)}</Text>
           </Box>
-          <Text dimColor>magazine {cr(totals.magazineCr)}</Text>
+          <Box width={NOTES_W} paddingLeft={1}>
+            <Text dimColor>magazine {cr(totals.magazineCr)}</Text>
+          </Box>
         </Box>
       </Box>
 

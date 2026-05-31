@@ -262,14 +262,41 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const baselineCost = round2(cost);
   const baselineWeight = round2(weight);
 
+  // Itemise the receiver the way the worked worksheets do: a base line plus one
+  // line per modifier showing its marginal cost/weight (reductions are negative).
   const breakdown: WeaponLineItem[] = [
     {
-      label: `Receiver: ${receiver.label}${params.gauss ? ' (gauss)' : ''} · ${calibre.label} · ${mechanism.label}`,
-      costCr: baselineCost,
-      weightKg: baselineWeight,
+      label: `Receiver: ${receiver.label}`,
+      costCr: round2(receiver.baseCost),
+      weightKg: round2(receiver.baseWeight),
       notes: `Capacity ${capacity}`,
     },
   ];
+  let rc = receiver.baseCost;
+  let rw = receiver.baseWeight;
+  const stepRec = (label: string, cm: number, wm: number) => {
+    const nc = rc * cm;
+    const nw = rw * wm;
+    if (cm !== 1 || wm !== 1)
+      breakdown.push({
+        label,
+        costCr: round2(nc - rc),
+        weightKg: round2(nw - rw),
+      });
+    rc = nc;
+    rw = nw;
+  };
+  if (params.gauss) stepRec('Gauss', GAUSS_COST_MULT, GAUSS_WEIGHT_MULT);
+  stepRec(mechanism.label, mechanism.costMult, 1);
+  stepRec(calibre.label, calibre.receiverCostMult, calibre.receiverWeightMult);
+  for (const id of params.features) {
+    const f = RECEIVER_FEATURES[id];
+    if (f) stepRec(f.label, f.costMult, f.weightMult);
+  }
+  if (autoSteps > 0)
+    stepRec(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight);
+  if (capPct !== 100)
+    stepRec(`Capacity ${capPct}%`, costCapMult, weightCapMult);
 
   // --- Phase B: percentages of the receiver baseline ---
   let totalCost = baselineCost;
