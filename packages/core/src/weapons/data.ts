@@ -426,10 +426,13 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     highVelocity: true,
     minReceiver: 'heavy',
   },
+  // reconcile: the Conventional Firearms table prints Cr150/100 for snub, but the
+  // prose ("Cr200 per 100 rounds") and the Ten-Six worked example (Mag 6 = Cr12,
+  // i.e. Cr2/round) both give Cr200; seeded at 200.
   snub: {
     label: 'Snub (Low-Recoil)',
     damage: d(3, -3),
-    ammoCostPer100: 150,
+    ammoCostPer100: 200,
     range: 40,
     receiverCostMult: 1,
     receiverWeightMult: 1,
@@ -728,6 +731,8 @@ export interface ReceiverFeatureDef {
   quickdraw: number;
   minTL?: number;
   signatureShift?: number;
+  /** Range multiplier (Advanced Projectile is +25% → 1.25). */
+  rangeMult?: number;
   /** Multiplier applied to ammunition cost (extreme stealth ×20). */
   ammoCostMult?: number;
   traits?: Traits;
@@ -745,6 +750,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       quickdraw: 0,
       minTL: 9,
       signatureShift: -1,
+      rangeMult: 1.25, // "range is 25% further"
     },
     accurised: {
       label: 'Accurised',

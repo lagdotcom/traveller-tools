@@ -420,10 +420,12 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const auto = mechanism.auto > 0 ? mechanism.auto + autoSteps : 0;
   if (auto > 0) traits.Auto = auto;
 
-  // Range: ball range × barrel multiplier (minimal overrides to a flat 5 m).
+  // Range: ball range × any feature range bonus (e.g. Advanced Projectile +25%)
+  // × barrel multiplier (minimal overrides to a flat 5 m).
+  const featureRangeMult = features.reduce((m, f) => m * (f.rangeMult ?? 1), 1);
   let range = barrel.allDiceToD3
     ? 5
-    : Math.round(calibre.range * barrel.rangeMult);
+    : Math.round(calibre.range * featureRangeMult * barrel.rangeMult);
 
   // Penetration.
   let penetration = calibre.penetration + barrel.penetration;
