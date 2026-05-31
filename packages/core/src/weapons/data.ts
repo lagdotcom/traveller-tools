@@ -272,6 +272,10 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
   },
   // reconcile: the rules say small ammunition reduces weight 40%, but the
   // Adjudicator worksheet shows no receiver-weight change for small smoothbore.
+  // reconcile: the Conventional Firearms trait table lists smoothbores at
+  // Inaccurate (-2), but every smoothbore worked example shows Inaccurate (-1)
+  // — only the low-recoil (snub) special-purpose round keeps -2 — so the
+  // smoothbore calibres are seeded at -1.
   smallSmoothbore: {
     label: 'Small Smoothbore',
     damage: d(3, -2),
@@ -284,7 +288,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     penetration: -1,
     signatureKind: 'physical',
     signature: 'high',
-    traits: { Inaccurate: -2 },
+    traits: { Inaccurate: -1 },
     highVelocity: false,
     smoothbore: true,
   },
@@ -300,7 +304,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     penetration: -1,
     signatureKind: 'physical',
     signature: 'high',
-    traits: { Inaccurate: -2 },
+    traits: { Inaccurate: -1 },
     highVelocity: false,
     smoothbore: true,
   },
@@ -316,7 +320,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     penetration: -1,
     signatureKind: 'physical',
     signature: 'high',
-    traits: { Inaccurate: -2 },
+    traits: { Inaccurate: -1 },
     highVelocity: false,
     smoothbore: true,
   },
@@ -332,7 +336,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     penetration: -1,
     signatureKind: 'physical',
     signature: 'high',
-    traits: { Inaccurate: -2 },
+    traits: { Inaccurate: -1 },
     highVelocity: false,
     smoothbore: true,
   },

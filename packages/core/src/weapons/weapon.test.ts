@@ -115,6 +115,22 @@ describe('penetration / Lo-Pen', () => {
   });
 });
 
+describe('Inaccurate trait', () => {
+  it('smoothbores read Inaccurate −1, but snub (low-recoil) reads −2', () => {
+    // Adjudicator is a small-smoothbore revolver.
+    expect(evalNamed('Adjudicator').profile.traits['Inaccurate']).toBe(-1);
+    const snub = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      receiver: 'handgun',
+      calibre: 'snub',
+      mechanism: 'semiAuto',
+      barrel: 'handgun',
+      stock: 'none',
+    });
+    expect(snub.profile.traits['Inaccurate']).toBe(-2);
+  });
+});
+
 describe('breakdown presentation', () => {
   it('shows percentage mods and a Receiver Totals subtotal', () => {
     const r = evalNamed('GA-100');
