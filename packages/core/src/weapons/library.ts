@@ -126,6 +126,8 @@ export const DEFAULT_PROJECTOR_PARAMS: ProjectorParams = {
   fuel: 'jellied',
   fuelKg: 4,
   propellantKg: 2,
+  armour: 0,
+  bulwark: 0,
 };
 
 /** A valid starting launcher: a TL6 single-shot light tube grenade launcher. */
@@ -261,6 +263,8 @@ function normalizeProjectorParams(p: Record<string, unknown>): ProjectorParams {
     fuel: pick<ProjectorFuelId>(p.fuel, PROJECTOR_FUELS, d.fuel),
     fuelKg: num(p.fuelKg, d.fuelKg),
     propellantKg: num(p.propellantKg, d.propellantKg),
+    armour: num(p.armour, d.armour),
+    bulwark: num(p.bulwark, d.bulwark),
   };
 }
 
@@ -564,6 +568,20 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       fuel: 'jellied',
       fuelKg: 4,
       propellantKg: 2,
+    },
+  ),
+  projector(
+    'MF-61',
+    'Krabbine Heavy Industries MF-61 individual flame weapon (Field Catalogue).',
+    {
+      tl: 10,
+      structure: 'compact',
+      propellant: 'generated',
+      fuel: 'advanced',
+      fuelKg: 4,
+      propellantKg: 0.4,
+      armour: 2,
+      bulwark: 3,
     },
   ),
   launcher(

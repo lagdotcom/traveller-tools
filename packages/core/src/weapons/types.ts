@@ -353,6 +353,10 @@ export interface ProjectorParams {
   fuelKg: number;
   /** Kilograms of propellant carried (attacks = kg × attacks-per-kg). */
   propellantKg: number;
+  /** Armoured capability: Protection points (+10% cost / +5% weight each). */
+  armour: number;
+  /** Bulwarked capability: points (+20% cost / +10% weight each). */
+  bulwark: number;
 }
 
 /**

@@ -131,6 +131,8 @@ describe('multi-barrel weapons', () => {
       stock: 'none',
     });
     expect(r.totals.costCr).toBeCloseTo(105, 3);
+    // Weight: 0.8 handgun × 1.15 (heavy handgun +15%); minimal barrels weigh 0.
+    expect(r.totals.weightKg).toBeCloseTo(0.92, 3);
     // Quickdraw: +4 handgun, +8 minimal barrel, −3 for the extra barrels.
     expect(r.profile.quickdraw).toBe(9);
   });

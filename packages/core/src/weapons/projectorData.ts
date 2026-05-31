@@ -185,3 +185,12 @@ export const PROJECTOR_FUELS: Record<ProjectorFuelId, ProjectorFuelDef> = {
 
 /** All projectors carry the Hazardous trait, typically at this level. */
 export const PROJECTOR_HAZARDOUS = -6;
+
+// --- Capability features (shared with firearms; FC "Capability Features") ---
+
+/** Armoured: +10% cost and +5% weight per point of Protection. */
+export const ARMOURED_COST_PER_PT = 0.1;
+export const ARMOURED_WEIGHT_PER_PT = 0.05;
+/** Bulwarked: +20% cost and +10% weight per point. */
+export const BULWARKED_COST_PER_PT = 0.2;
+export const BULWARKED_WEIGHT_PER_PT = 0.1;

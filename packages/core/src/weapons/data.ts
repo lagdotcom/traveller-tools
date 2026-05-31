@@ -252,13 +252,17 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     traits: {},
     highVelocity: false,
   },
+  // reconcile: the handgun-calibre prose says heavy ammo "reduces weight by
+  // 15%", but every heavy-handgun in the catalogue (and the Hangul Liberator
+  // worksheet) shows +15% weight — and a reduction would put it below medium
+  // handgun, which has no modifier. Seeded as +15%.
   heavyHandgun: {
     label: 'Heavy Handgun',
     damage: d(3, -1),
     ammoCostPer100: 100,
     range: 60,
     receiverCostMult: 1.2,
-    receiverWeightMult: 0.85,
+    receiverWeightMult: 1.15,
     capacityMult: 0.8,
     penetration: -1,
     signatureKind: 'physical',

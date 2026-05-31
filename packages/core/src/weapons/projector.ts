@@ -11,6 +11,10 @@
 import type { Issue } from '../design/index.js';
 import { SOURCE } from './data.js';
 import {
+  ARMOURED_COST_PER_PT,
+  ARMOURED_WEIGHT_PER_PT,
+  BULWARKED_COST_PER_PT,
+  BULWARKED_WEIGHT_PER_PT,
   PROJECTOR_FUELS,
   PROJECTOR_HAZARDOUS,
   PROJECTOR_PROPELLANTS,
@@ -99,7 +103,32 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     },
   ];
 
-  const totalCost = round2(frameCost + machinery);
+  // Base build cost (frame + any machinery) and loaded weight, before the
+  // Armoured/Bulwarked capability features multiply them.
+  const baseCost = frameCost + machinery;
+  const baseWeight = totalWeight;
+  const armour = Math.max(0, Math.floor(params.armour));
+  const bulwark = Math.max(0, Math.floor(params.bulwark));
+  const costMult =
+    (1 + ARMOURED_COST_PER_PT * armour) * (1 + BULWARKED_COST_PER_PT * bulwark);
+  const weightMult =
+    (1 + ARMOURED_WEIGHT_PER_PT * armour) *
+    (1 + BULWARKED_WEIGHT_PER_PT * bulwark);
+  if (armour > 0)
+    breakdown.push({
+      label: `Armoured (Armour +${armour})`,
+      costCr: round2(baseCost * ARMOURED_COST_PER_PT * armour),
+      weightKg: round2(baseWeight * ARMOURED_WEIGHT_PER_PT * armour),
+    });
+  if (bulwark > 0)
+    breakdown.push({
+      label: `Bulwarked (${bulwark})`,
+      costCr: round2(baseCost * BULWARKED_COST_PER_PT * bulwark),
+      weightKg: round2(baseWeight * BULWARKED_WEIGHT_PER_PT * bulwark),
+    });
+
+  const totalCost = round2(baseCost * costMult);
+  const finalWeight = round2(baseWeight * weightMult);
   const magazineCr = round2(fuelCost + propConsumable);
 
   // --- Profile ---
@@ -113,6 +142,8 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     Blast: structure.blast,
     ...fuel.traits,
   };
+  if (armour > 0) traits.Armour = armour;
+  if (bulwark > 0) traits.Bulwarked = bulwark;
 
   const profile: WeaponProfile = {
     tl: params.tl,
@@ -139,7 +170,7 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     profile,
     breakdown,
     issues,
-    totals: { costCr: totalCost, weightKg: totalWeight, magazineCr },
+    totals: { costCr: totalCost, weightKg: finalWeight, magazineCr },
     sources: [...sources],
   };
 }

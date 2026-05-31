@@ -40,6 +40,17 @@ describe('projector — frame, fuel & propellant maths', () => {
     expect(r.profile.recoil).toBe(0);
   });
 
+  it('MF-61 — Armoured + Bulwarked compact flame weapon (the built-in)', () => {
+    const def = BUILTIN_WEAPONS.find((w) => w.name === 'MF-61')!;
+    const r = evaluateWeapon(def.params);
+    // Frame Cr528/5.28kg + generated machinery Cr200; Armoured 2 (×1.2/×1.1)
+    // and Bulwarked 3 (×1.6/×1.3): 728×1.92 = 1397.76, 5.28×1.43 = 7.5504.
+    expect(r.totals.costCr).toBeCloseTo(1397.76, 2);
+    expect(r.totals.weightKg).toBeCloseTo(7.5504, 4);
+    expect(r.profile.traits['Armour']).toBe(2);
+    expect(r.profile.traits['Bulwarked']).toBe(3);
+  });
+
   it('generated gas adds one-off machinery and reaches 30m', () => {
     const r = evaluateWeapon(
       proj({

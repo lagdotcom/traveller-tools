@@ -189,6 +189,8 @@ function formValues(p: WeaponParams) {
     pFuel: PFUEL.toLabel(pr.fuel),
     fuelKg: String(pr.fuelKg),
     propellantKg: String(pr.propellantKg),
+    armour: String(pr.armour),
+    bulwark: String(pr.bulwark),
     // launcher
     lReceiver: LRECEIVER.toLabel(l.receiver),
     warhead: WARHEAD.toLabel(l.warhead),
@@ -465,6 +467,13 @@ export function WeaponBuilderScreen({
         { key: 'propellantKg', label: 'Propellant (kg)' },
       ],
     },
+    {
+      label: 'Hardening',
+      fields: [
+        { key: 'armour', label: 'Armoured (Protection pts)' },
+        { key: 'bulwark', label: 'Bulwarked (pts)' },
+      ],
+    },
   ];
 
   const launcherSections: {
@@ -567,6 +576,8 @@ export function WeaponBuilderScreen({
             fuel: PFUEL.toId(form.values.pFuel),
             fuelKg: num(form.values.fuelKg, 0),
             propellantKg: num(form.values.propellantKg, 0),
+            armour: num(form.values.armour, 0),
+            bulwark: num(form.values.bulwark, 0),
           }
         : weaponClass === 'launcher'
           ? {
