@@ -6,7 +6,7 @@ import {
 import { Box, Text, useInput } from 'ink';
 import React, { useMemo, useState } from 'react';
 
-import { useStore } from '../storage.js';
+import { useShipStore } from '../storage.js';
 
 interface Entry {
   def: ShipDefinition;
@@ -20,7 +20,7 @@ export function ShipLibraryScreen({
   onBack: () => void;
   onLoad: (def: ShipDefinition) => void;
 }): React.JSX.Element {
-  const store = useStore();
+  const store = useShipStore();
   const [savedVersion, setSavedVersion] = useState(0); // bump to re-read store
   const [active, setActive] = useState(0);
   const [mode, setMode] = useState<'list' | 'import'>('list');

@@ -5,7 +5,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
 import chalk from 'chalk';
 
-import { localStore } from './localStore';
+import { shipLocalStore, weaponLocalStore } from './localStore';
 import { createStreams } from './ptyAdapter';
 import { installTouchControls } from './touchControls';
 
@@ -80,7 +80,8 @@ try {
     stderr: stdout,
     exitOnCtrlC: false,
     patchConsole: false,
-    store: localStore(),
+    store: shipLocalStore(),
+    weaponStore: weaponLocalStore(),
     files: { pickFile },
   });
   // On touch devices, add an on-screen control bar (arrows / Esc / Tab / …).

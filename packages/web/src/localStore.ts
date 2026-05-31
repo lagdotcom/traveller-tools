@@ -1,22 +1,21 @@
-import type { ShipDefinition } from '@traveller-tools/core';
-import type { ShipStore } from '@traveller-tools/tui';
+import type { NamedStore, ShipStore, WeaponStore } from '@traveller-tools/tui';
 
-const KEY = 'traveller-tools/ships';
-
-/** A ShipStore backed by localStorage so saved ships survive page reloads. */
-export function localStore(): ShipStore {
-  const read = (): ShipDefinition[] => {
+/** A {@link NamedStore} backed by localStorage so saved designs survive reloads. */
+export function localStore<T extends { name: string }>(
+  key: string,
+): NamedStore<T> {
+  const read = (): T[] => {
     try {
-      const raw = window.localStorage.getItem(KEY);
+      const raw = window.localStorage.getItem(key);
       const data = raw ? JSON.parse(raw) : [];
-      return Array.isArray(data) ? (data as ShipDefinition[]) : [];
+      return Array.isArray(data) ? (data as T[]) : [];
     } catch {
       return [];
     }
   };
-  const write = (ships: ShipDefinition[]): void => {
+  const write = (items: T[]): void => {
     try {
-      window.localStorage.setItem(KEY, JSON.stringify(ships));
+      window.localStorage.setItem(key, JSON.stringify(items));
     } catch {
       // storage unavailable (private mode / quota) — saving is best-effort
     }
@@ -27,3 +26,11 @@ export function localStore(): ShipStore {
     remove: (name) => write(read().filter((s) => s.name !== name)),
   };
 }
+
+/** localStorage-backed ship library. */
+export const shipLocalStore = (): ShipStore =>
+  localStore('traveller-tools/ships');
+
+/** localStorage-backed weapon library. */
+export const weaponLocalStore = (): WeaponStore =>
+  localStore('traveller-tools/weapons');

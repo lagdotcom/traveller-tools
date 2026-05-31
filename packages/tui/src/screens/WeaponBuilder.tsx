@@ -35,6 +35,7 @@ import { IssueList } from '../components/IssueList.js';
 import { useForm } from '../components/useForm.js';
 import { WeaponSheet } from '../components/WeaponSheet.js';
 import { useFiles } from '../files.js';
+import { useWeaponStore } from '../storage.js';
 
 const num = (value: string, fallback = 0) => {
   const n = Number.parseFloat(value);
@@ -93,11 +94,12 @@ export function WeaponBuilderScreen({
   onLoad: (def: WeaponDefinition) => void;
 }): React.JSX.Element {
   const files = useFiles();
+  const store = useWeaponStore();
   const startParams = initial?.params ?? DEFAULT_WEAPON_PARAMS;
   const form = useForm(formValues(startParams));
   type FormKey = keyof typeof form.values;
 
-  const name = initial?.name ?? 'Untitled Weapon';
+  const [name, setName] = useState(initial?.name ?? 'Untitled Weapon');
   const [features, setFeatures] = useState<ReceiverFeatureId[]>(
     startParams.features,
   );
@@ -111,7 +113,10 @@ export function WeaponBuilderScreen({
   const [addFurniture, setAddFurniture] = useState('');
   const [addAccessory, setAddAccessory] = useState('');
   const [active, setActive] = useState(0);
-  const [mode, setMode] = useState<'edit' | 'export' | 'import'>('edit');
+  const [mode, setMode] = useState<'edit' | 'save' | 'export' | 'import'>(
+    'edit',
+  );
+  const [saveName, setSaveName] = useState(name);
   const [importBuffer, setImportBuffer] = useState('');
   const [message, setMessage] = useState('');
 
@@ -311,7 +316,21 @@ export function WeaponBuilderScreen({
     else loadFromText(text);
   };
 
+  const doSave = () => {
+    const finalName = saveName.trim() || 'Untitled Weapon';
+    store.save({ name: finalName, params });
+    setName(finalName);
+    setMode('edit');
+    setMessage(`Saved “${finalName}”.`);
+  };
+
   useInput((input, key) => {
+    if (mode === 'edit' && key.ctrl && input === 's') {
+      setSaveName(name);
+      setMessage('');
+      setMode('save');
+      return;
+    }
     if (mode === 'edit' && key.ctrl && input === 'e') {
       setMode('export');
       return;
@@ -333,6 +352,26 @@ export function WeaponBuilderScreen({
       );
     else if (key.tab) gotoSection((activeSection + 1) % sectionDefs.length);
   });
+
+  if (mode === 'save') {
+    return (
+      <Box flexDirection="column">
+        <Text bold color="yellow">
+          Save Weapon
+        </Text>
+        <Box marginTop={1} flexDirection="column">
+          <Field
+            label="Name"
+            value={saveName}
+            isActive
+            onChange={setSaveName}
+            onSubmit={doSave}
+          />
+          <Text dimColor>Enter to save to the library · Esc to cancel</Text>
+        </Box>
+      </Box>
+    );
+  }
 
   if (mode === 'export') {
     return (
@@ -470,8 +509,8 @@ export function WeaponBuilderScreen({
 
       <Box marginTop={1}>
         <Text dimColor>
-          ↑/↓ field · Tab/⇧Tab section · Enter next · ^E export · ^O import ·
-          Esc menu
+          ↑/↓ field · Tab/⇧Tab section · Enter next · ^S save · ^E export · ^O
+          import · Esc menu
         </Text>
       </Box>
     </Box>

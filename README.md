@@ -24,10 +24,12 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
   _Field Catalogue_ rules: receiver, mechanism, calibre, barrel, furniture, feed
   device, receiver features, accessories/sights and loaded ammunition. Shows the
   full derived profile (damage, range, Auto, recoil, quickdraw, penetration,
-  signature, traits, magazine) plus a book-style cost/weight breakdown. `Ctrl+E`
-  export, `Ctrl+O` import. See [`docs/weapon-builder.md`](docs/weapon-builder.md).
+  signature, traits, magazine) plus a book-style cost/weight breakdown. `Ctrl+S`
+  save, `Ctrl+E` export, `Ctrl+O` import.
+  See [`docs/weapon-builder.md`](docs/weapon-builder.md).
 - **Weapon library** — load any of the worked _Field Catalogue_ example weapons
-  into the builder, or import one from a JSON file.
+  or your saved designs into the builder, import one from a JSON file, or delete
+  a saved design.
 - **Vehicle catalogue** — the Core Rulebook vehicles, with stat blocks, also
   selectable as carried craft.
 - **Jump & Fuel** — jump fuel by hull tonnage and jump number, jump validity

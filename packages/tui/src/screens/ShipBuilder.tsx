@@ -42,7 +42,7 @@ import { IssueList } from '../components/IssueList.js';
 import { ShipSheet } from '../components/ShipSheet.js';
 import { useForm } from '../components/useForm.js';
 import { useFiles } from '../files.js';
-import { useStore } from '../storage.js';
+import { useShipStore } from '../storage.js';
 
 const num = (value: string, fallback = 0) => {
   const n = Number.parseFloat(value);
@@ -142,7 +142,7 @@ export function ShipBuilderScreen({
   initial?: ShipDefinition;
   onLoad: (def: ShipDefinition) => void;
 }): React.JSX.Element {
-  const store = useStore();
+  const store = useShipStore();
   const files = useFiles();
   const startParams = initial?.params ?? DEFAULT_SHIP_PARAMS;
   const form = useForm(formValues(startParams));
