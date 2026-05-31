@@ -21,6 +21,7 @@ import {
   ENERGY_RECEIVERS,
   ENERGY_WEAPON_TYPE_LABEL,
 } from './energyData.js';
+import { GRENADES } from './grenadeData.js';
 import { LAUNCHER_RECEIVERS, WARHEADS } from './launcherData.js';
 import {
   PROJECTOR_FUELS,
@@ -41,6 +42,9 @@ import type {
   FeedId,
   FirearmParams,
   FurnitureId,
+  GrenadeParams,
+  GrenadeSizeId,
+  GrenadeTypeId,
   LauncherParams,
   LauncherReceiverId,
   MechanismId,
@@ -131,6 +135,14 @@ export const DEFAULT_LAUNCHER_PARAMS: LauncherParams = {
   guidance: false,
   magazineSize: 6,
   warhead: 'fragmentation',
+};
+
+/** A valid starting grenade: a TL6 Hand fragmentation grenade. */
+export const DEFAULT_GRENADE_PARAMS: GrenadeParams = {
+  kind: 'grenade',
+  tl: 6,
+  type: 'fragmentation',
+  size: 'hand',
 };
 
 // --- Validation helpers (shape-matched to ships/library.ts) -----------------
@@ -267,6 +279,17 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
   };
 }
 
+/** Coerce arbitrary parsed JSON into a complete, valid GrenadeParams. */
+function normalizeGrenadeParams(p: Record<string, unknown>): GrenadeParams {
+  const d = DEFAULT_GRENADE_PARAMS;
+  return {
+    kind: 'grenade',
+    tl: num(p.tl, d.tl),
+    type: pick<GrenadeTypeId>(p.type, GRENADES, d.type),
+    size: pick<GrenadeSizeId>(p.size, { mini: 0, hand: 0 }, d.size),
+  };
+}
+
 /** Coerce arbitrary parsed JSON into a complete, valid WeaponParams. Never throws. */
 export function normalizeWeaponParams(input: unknown): WeaponParams {
   const p = isObject(input) ? input : {};
@@ -278,6 +301,8 @@ export function normalizeWeaponParams(input: unknown): WeaponParams {
       return normalizeProjectorParams(p);
     case 'launcher':
       return normalizeLauncherParams(p);
+    case 'grenade':
+      return normalizeGrenadeParams(p);
     default:
       return normalizeFirearmParams(p);
   }
@@ -370,6 +395,18 @@ function launcher(
     name,
     description,
     params: { ...DEFAULT_LAUNCHER_PARAMS, ...overrides },
+  };
+}
+
+function grenade(
+  name: string,
+  description: string,
+  overrides: Partial<GrenadeParams>,
+): WeaponDefinition {
+  return {
+    name,
+    description,
+    params: { ...DEFAULT_GRENADE_PARAMS, ...overrides },
   };
 }
 
@@ -545,4 +582,14 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       warhead: 'antiArmour',
     },
   ),
+  grenade(
+    'Fragmentation Grenade',
+    'TL6 hand fragmentation grenade (Field Catalogue).',
+    { tl: 6, type: 'fragmentation', size: 'hand' },
+  ),
+  grenade('Smoke Grenade', 'TL6 hand smoke grenade (Field Catalogue).', {
+    tl: 6,
+    type: 'smoke',
+    size: 'hand',
+  }),
 ];

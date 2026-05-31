@@ -26,11 +26,12 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
   loaded ammunition), **Directed Energy Weapons** (laser/microwave receiver by
   power class, chosen damage dice, powerpack/cartridge power source, and the energy
   beam modifications), **Projectors** (flame/cryo/chemical — frame, propellant and
-  fuel by payload), and **Launchers** (grenade/rocket/missile receiver, guidance
-  and a loaded warhead). Shows the full derived profile (damage, range, Auto,
-  recoil, quickdraw, penetration, signature, traits, magazine/shots) plus a
-  book-style cost/weight breakdown. `Ctrl+S` save, `Ctrl+E` export, `Ctrl+O`
-  import. See [`docs/weapon-builder.md`](docs/weapon-builder.md).
+  fuel by payload), **Launchers** (grenade/rocket/missile receiver, guidance and a
+  loaded warhead), and **Grenades** (the thrown-grenade catalogue by payload and
+  size). Shows the full derived profile (damage, range, Auto, recoil, quickdraw,
+  penetration, signature, traits, magazine/shots) plus a book-style cost/weight
+  breakdown. `Ctrl+S` save, `Ctrl+E` export, `Ctrl+O` import.
+  See [`docs/weapon-builder.md`](docs/weapon-builder.md).
 - **Weapon library** — load any of the worked _Field Catalogue_ example weapons
   or your saved designs into the builder, import one from a JSON file, or delete
   a saved design.
@@ -44,8 +45,8 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
 Ship construction follows the **Core Rulebook (2022)**; non-Core (High Guard)
 options are flagged, and the ship sheet lists which rulebooks a design needs.
 Weapon construction follows the **Field Catalogue** (conventional firearms,
-directed-energy weapons, projectors and launchers so far; the full thrown-grenade
-catalogue is planned). A robot builder
+directed-energy weapons, projectors, launchers and thrown grenades). A robot
+builder
 is also planned; the rules engine is structured so new builders slot in as new
 modules + screens.
 

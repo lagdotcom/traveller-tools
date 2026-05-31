@@ -229,10 +229,46 @@ export type WarheadId =
   | 'cryogenic'
   | 'emp';
 
+// --- Grenade selectable ids (thrown grenades) -------------------------------
+
+/** Thrown-grenade payload type, from the FC "Grenade Weapons" table. */
+export type GrenadeTypeId =
+  | 'aerosolAntilaser'
+  | 'aerosolCorrosive'
+  | 'antiArmour'
+  | 'battlechem'
+  | 'baton'
+  | 'breacher'
+  | 'corrosive'
+  | 'cryogenic'
+  | 'distraction'
+  | 'emp'
+  | 'empAdvanced'
+  | 'fireSuppression'
+  | 'fragmentation'
+  | 'gasIncapacitant'
+  | 'gasToxin'
+  | 'incendiaryAntipersonnel'
+  | 'incendiaryDemolition'
+  | 'microgrenade'
+  | 'multipleProjectile'
+  | 'plasma'
+  | 'plasmaAntiArmour'
+  | 'smoke'
+  | 'stun';
+
+/** Grenade body size (some payloads aren't made as mini-grenades). */
+export type GrenadeSizeId = 'mini' | 'hand';
+
 // --- User-facing parameters -------------------------------------------------
 
 /** Discriminates the weapon class so `WeaponParams` is a tagged union. */
-export type WeaponClass = 'firearm' | 'energy' | 'projector' | 'launcher';
+export type WeaponClass =
+  | 'firearm'
+  | 'energy'
+  | 'projector'
+  | 'launcher'
+  | 'grenade';
 
 export interface FirearmParams {
   /** Conventional slug-thrower (the original/default class). */
@@ -331,12 +367,24 @@ export interface LauncherParams {
   warhead: WarheadId;
 }
 
+/**
+ * A thrown Grenade. There's no construction to do — a grenade is a catalogue
+ * item — so the "design" is simply a payload type and a body size.
+ */
+export interface GrenadeParams {
+  kind: 'grenade';
+  tl: number;
+  type: GrenadeTypeId;
+  size: GrenadeSizeId;
+}
+
 /** A weapon design of any class (discriminated by `kind`). */
 export type WeaponParams =
   | FirearmParams
   | EnergyParams
   | ProjectorParams
-  | LauncherParams;
+  | LauncherParams
+  | GrenadeParams;
 
 // --- The derived weapon profile ---------------------------------------------
 

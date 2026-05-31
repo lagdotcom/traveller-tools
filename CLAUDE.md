@@ -95,18 +95,20 @@ Conventions that matter:
 
 ## The weapon domain (`packages/core/src/weapons/`)
 
-Field Catalogue weapons in four classes — conventional firearms (slug throwers),
-directed-energy weapons (lasers/microwave), projectors (flame/cryo) and launchers
-(grenade/rocket/missile) — design write-up in `docs/weapon-builder.md`.
+Field Catalogue weapons in five classes — conventional firearms (slug throwers),
+directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
+(grenade/rocket/missile) and thrown grenades — design write-up in
+`docs/weapon-builder.md`.
 
-- **Four classes.** `WeaponParams` is a discriminated union on `kind: 'firearm' |
-'energy' | 'projector' | 'launcher'`. `evaluateWeapon(params)` (`weapon.ts`)
-  dispatches to `evaluateFirearm`, `evaluateEnergyWeapon` (`energy.ts`),
-  `evaluateProjector` (`projector.ts`) or `evaluateLauncher` (`launcher.ts`), all
-  returning the same shape. Legacy docs with no `kind` normalise to firearms.
-  Energy weapons reuse the firearm barrel/stock/furniture/accessory tables;
-  projectors and launchers share nothing structural. Class-only tables live in
-  `energyData.ts` / `projectorData.ts` / `launcherData.ts`. Shared helpers
+- **Five classes.** `WeaponParams` is a discriminated union on `kind: 'firearm' |
+'energy' | 'projector' | 'launcher' | 'grenade'`. `evaluateWeapon(params)`
+  (`weapon.ts`) dispatches to `evaluateFirearm`, `evaluateEnergyWeapon`
+  (`energy.ts`), `evaluateProjector` (`projector.ts`), `evaluateLauncher`
+  (`launcher.ts`) or `evaluateGrenade` (`grenade.ts`), all returning the same
+  shape. Legacy docs with no `kind` normalise to firearms. Energy weapons reuse
+  the firearm barrel/stock/furniture/accessory tables; projectors, launchers and
+  grenades share nothing structural. Class-only tables live in `energyData.ts` /
+  `projectorData.ts` / `launcherData.ts` / `grenadeData.ts`. Shared helpers
   (`round2`, `clampLevel`) are in `shared.ts` to avoid an import cycle with
   `weapon.ts`.
 - **Deliberately NOT the generic engine.** The Field Catalogue cost/weight model
@@ -130,17 +132,19 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo) and launcher
   cost/weight, small-smoothbore weight, pistol-calibre base penetration (−1),
   smoothbore capacity, laser-pointer price.
 - **Adding a component:** add the id to the union + a row in the relevant
-  `data.ts` (firearm) / `energyData.ts` / `projectorData.ts` / `launcherData.ts`
-  record; update the relevant `DEFAULT_*_PARAMS`/`normalizeWeaponParams` branch +
-  the TUI (`labelMap`/`choiceMap`, a field or one of the add/remove lists in
+  `data.ts` (firearm) / `energyData.ts` / `projectorData.ts` / `launcherData.ts` /
+  `grenadeData.ts` record; update the relevant
+  `DEFAULT_*_PARAMS`/`normalizeWeaponParams` branch + the TUI
+  (`labelMap`/`choiceMap`, a field or one of the add/remove lists in
   `WeaponBuilder.tsx`).
 - **Unverified caveats:** the supplied FC text gives **no base Signature** for
-  energy weapons or projectors (shown but flagged), and the launcher warhead values
-  are the _thrown_ Hand-grenade figures (the launcher-calibre munition table isn't
-  in the text), so `evaluateLauncher` flags the profile unverified. Don't replace
-  these with invented numbers — flag, don't guess.
-- The full thrown-grenade / explosive catalogue (as its own class) is the main
-  remaining FC weapon section; it slots in the same way.
+  energy weapons, projectors or grenades (shown but flagged); the launcher warhead
+  values are the _thrown_ Hand-grenade figures (the launcher-calibre munition table
+  isn't in the text, so `evaluateLauncher` flags the profile unverified); grenade
+  thrown range isn't a weapon stat (set 0). Don't replace these with invented
+  numbers — flag, don't guess.
+- The whole FC weapon-design chapter (firearms, energy, projectors, launchers,
+  grenades) is now implemented; remaining FC content is non-weapon (armour, gear).
 
 ## TUI notes (`packages/tui`)
 

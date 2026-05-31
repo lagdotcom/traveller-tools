@@ -77,6 +77,15 @@ describe('Weapon builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('switches to the grenade class and shows grenade fields', async () => {
+    const ui = await openBuilder();
+    await ui.type('Grenade');
+    await ui.waitFor('Payload');
+    expect(ui.frame()).toContain('Size');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('loads a built-in weapon from the library', async () => {
     const ui = renderInk();
     await ui.waitFor('Traveller Tools');

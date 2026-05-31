@@ -26,6 +26,7 @@ import {
   STOCKS,
 } from './data.js';
 import { evaluateEnergyWeapon } from './energy.js';
+import { evaluateGrenade } from './grenade.js';
 import { evaluateLauncher } from './launcher.js';
 import { evaluateProjector } from './projector.js';
 import { clampLevel, round2 } from './shared.js';
@@ -187,6 +188,8 @@ export function evaluateWeapon(params: WeaponParams): WeaponEvaluation {
       return evaluateProjector(params);
     case 'launcher':
       return evaluateLauncher(params);
+    case 'grenade':
+      return evaluateGrenade(params);
     default:
       return evaluateFirearm(params);
   }

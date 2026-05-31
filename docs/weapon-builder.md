@@ -1,17 +1,18 @@
 # Weapon builder
 
-Design notes for the MgT2 **weapon builder**. It builds four weapon classes from
+Design notes for the MgT2 **weapon builder**. It builds five weapon classes from
 the _Field Catalogue_ weapon-design rules — conventional firearms (slug throwers),
-Directed Energy Weapons (lasers/microwave), projectors (flame/cryo) and launchers
-(grenade/rocket/missile) — selected by a **Class** field at the top of the builder.
-It lives beside the ship builder and reuses the same TUI building blocks, but its
-rules engine is deliberately **not** the generic `design` engine — see below.
+Directed Energy Weapons (lasers/microwave), projectors (flame/cryo), launchers
+(grenade/rocket/missile) and thrown grenades — selected by a **Class** field at the
+top of the builder. It lives beside the ship builder and reuses the same TUI
+building blocks, but its rules engine is deliberately **not** the generic `design`
+engine — see below.
 
 `WeaponParams` is a discriminated union
-(`kind: 'firearm' | 'energy' | 'projector' | 'launcher'`) and `evaluateWeapon`
-dispatches to the matching evaluator, all returning the same `WeaponEvaluation`
-shape. Legacy documents with no `kind` normalise to firearms, so older
-saved/built-in weapons keep working.
+(`kind: 'firearm' | 'energy' | 'projector' | 'launcher' | 'grenade'`) and
+`evaluateWeapon` dispatches to the matching evaluator, all returning the same
+`WeaponEvaluation` shape. Legacy documents with no `kind` normalise to firearms, so
+older saved/built-in weapons keep working.
 
 ## Why a bespoke pipeline (not `summarize`)
 
@@ -164,8 +165,24 @@ launcher-calibre munition table ("see page 126") isn't in the supplied text, so
 `evaluateLauncher` flags the profile as unverified. Signature isn't given either.
 Built-ins: `Grenade Launcher`, `Rocket Launcher`; tests in `launcher.test.ts`.
 
+## Grenades (`grenade.ts` / `grenadeData.ts`)
+
+Thrown grenades (`kind: 'grenade'`). There's no construction — a grenade is a
+catalogue item — so the "design" is just a **payload type** and a **size** (Mini
+or Hand), and `evaluateGrenade` resolves the lookup to the standard profile.
+
+- 23 payloads from the FC "Grenade Weapons" table (Fragmentation, Anti-Armour,
+  Breacher, Plasma, Smoke, Gas, EMP, Cryogenic, Incendiary, Distraction, …), each
+  with both size columns where the book provides them.
+- A "—" Mini entry means that payload isn't made as a mini-grenade (`mini: null`);
+  choosing Mini for one raises an error and falls back to the Hand stats.
+- Cost/weight/damage and the Blast / AP / Lo-Pen / Incendiary / Burn / Stun traits
+  come straight from the table. Thrown range isn't a weapon stat (it depends on the
+  thrower) so it's 0, and Signature isn't given — both flagged. Built-ins:
+  `Fragmentation Grenade`, `Smoke Grenade`; `grenade.test.ts` covers the lookup.
+
 ## Out of scope (future phases)
 
-The full thrown-grenade / explosive / demolition catalogue as a standalone class
-(the warhead data here is a launcher-munition subset). Slots in the same way: a
-new weapon class + catalogue tables, reusing this pipeline and the builder UI.
+The remaining FC content is mostly non-weapon (armour, equipment). The weapon
+design chapter — firearms, energy weapons, projectors, launchers and grenades — is
+now fully implemented.
