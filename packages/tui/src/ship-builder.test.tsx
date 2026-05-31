@@ -154,6 +154,8 @@ describe('Ship builder (real Ink)', () => {
     await ui.type(ARROW_DOWN); // Travel
     await ui.type(ARROW_DOWN); // Ship builder
     await ui.type(ARROW_DOWN); // Ship library
+    await ui.type(ARROW_DOWN); // Weapon builder
+    await ui.type(ARROW_DOWN); // Weapon library
     await ui.type(ARROW_DOWN); // Vehicle catalogue
     await ui.type(ENTER);
     await ui.waitFor('Vehicle Catalogue');
