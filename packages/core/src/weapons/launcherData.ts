@@ -194,7 +194,7 @@ export const WARHEADS: Record<WarheadId, WarheadDef> = {
     minTL: 6,
     damage: d(4),
     cost: 50,
-    weight: 0.1,
+    weight: 0.5, // worked example: Anti-Armour Hand Grenade is 0.5kg (table's 0.1 is a typo)
     traits: { AP: 8, Blast: 1 },
   },
   breacher: {

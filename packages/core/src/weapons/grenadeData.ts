@@ -49,7 +49,9 @@ export const GRENADES: Record<GrenadeTypeId, GrenadeDef> = {
     label: 'Anti-Armour',
     minTL: 6,
     mini: null,
-    hand: { cost: 50, weight: 0.1, damage: d(4), traits: { AP: 8, Blast: 1 } },
+    // reconcile: the grenade table prints 0.1kg, but the worked Anti-Armour Hand
+    // Grenade is 0.5kg (every other hand grenade is 0.5kg); 0.1 is a typo.
+    hand: { cost: 50, weight: 0.5, damage: d(4), traits: { AP: 8, Blast: 1 } },
   },
   battlechem: {
     label: 'Battlechem',
