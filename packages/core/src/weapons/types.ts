@@ -299,7 +299,17 @@ export interface FirearmParams {
   accessories: AccessoryId[];
   /** Loaded ammunition type used for the displayed profile. */
   ammo: AmmoTypeId;
+  /**
+   * An optional secondary weapon (e.g. an under-barrel shotgun). It is designed
+   * as its own weapon and fires independently; mounting it costs and weighs 10%
+   * of the secondary's values, added to this weapon's totals. The secondary gets
+   * its own profile line.
+   */
+  secondary?: SecondaryWeaponParams;
 }
+
+/** A secondary weapon: a firearm spec without its own class tag or secondary. */
+export type SecondaryWeaponParams = Omit<FirearmParams, 'kind' | 'secondary'>;
 
 /**
  * A Directed Energy Weapon (laser / microwave). Shares barrels, stocks,

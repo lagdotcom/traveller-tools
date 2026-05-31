@@ -132,7 +132,15 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   cost/weight, small-smoothbore weight, pistol-calibre base penetration (−1),
   smoothbore capacity, laser-pointer price (kept at the rules' Cr200 over the
   Bodyguard worksheet's Cr50), heavy-handgun weight (+15% per the catalogue, not
-  the prose's −15%).
+  the prose's −15%), smoothbore Inaccurate (−1 per the examples, not the table's
+  −2; snub keeps −2), snub ammo (Cr200 prose, not the table's Cr150) and snub
+  capacity (no −20%, per the examples). Advanced Projectile adds +25% range. The
+  Ten-Six worked example can't match on weight because the book inconsistently
+  bases the handgun receiver at 0.75kg there vs the table's 0.8kg.
+- **Secondary weapons.** `FirearmParams.secondary` is an under-barrel weapon
+  (`SecondaryWeaponParams` = a firearm minus `kind`/`secondary`). Mounting it adds
+  10% of its cost/weight to the host; it keeps its own profile, surfaced as
+  `WeaponEvaluation.secondary` (a second data line on the sheet). One level deep.
 - **Adding a component:** add the id to the union + a row in the relevant
   `data.ts` (firearm) / `energyData.ts` / `projectorData.ts` / `launcherData.ts` /
   `grenadeData.ts` record; update the relevant

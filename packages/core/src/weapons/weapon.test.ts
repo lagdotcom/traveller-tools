@@ -179,6 +179,55 @@ describe('multi-barrel weapons', () => {
   });
 });
 
+describe('secondary weapon', () => {
+  // A full FirearmParams doubles as a secondary spec (its `kind` is ignored).
+  const sec = {
+    ...DEFAULT_WEAPON_PARAMS,
+    receiver: 'handgun' as const,
+    calibre: 'lightSmoothbore' as const,
+    mechanism: 'singleShot' as const,
+    barrel: 'short' as const,
+    stock: 'none' as const,
+    ammo: 'pellet' as const,
+  };
+
+  it('mounts at 10% of the secondary and exposes its own profile', () => {
+    const standalone = evaluateWeapon(sec);
+    const primary = evaluateWeapon({ ...DEFAULT_WEAPON_PARAMS });
+    const withSec = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      secondary: sec,
+    });
+    // The mount adds 10% of the secondary's cost/weight to the primary.
+    expect(withSec.totals.costCr).toBeCloseTo(
+      primary.totals.costCr + standalone.totals.costCr * 0.1,
+      3,
+    );
+    expect(withSec.totals.weightKg).toBeCloseTo(
+      primary.totals.weightKg + standalone.totals.weightKg * 0.1,
+      3,
+    );
+    // The secondary keeps its own profile (a separate data line).
+    expect(withSec.secondary?.profile.damage).toEqual(
+      standalone.profile.damage,
+    );
+    expect(withSec.secondary?.magazineCr).toBe(standalone.totals.magazineCr);
+  });
+
+  it('round-trips a secondary through serialize/parse', () => {
+    const def = {
+      name: 'Twin',
+      params: { ...DEFAULT_WEAPON_PARAMS, secondary: sec },
+    };
+    const parsed = parseWeapon(serializeWeapon(def));
+    // The canonical form strips the secondary's redundant `kind`.
+    expect(parsed.params).toEqual(normalizeWeaponParams(def.params));
+    expect(
+      (parsed.params as typeof DEFAULT_WEAPON_PARAMS).secondary?.calibre,
+    ).toBe('lightSmoothbore');
+  });
+});
+
 describe('validation rules', () => {
   it('flags a gauss round in a non-gauss receiver', () => {
     const issues = evaluateWeapon({

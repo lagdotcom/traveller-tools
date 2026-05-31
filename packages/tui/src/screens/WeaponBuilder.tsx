@@ -173,6 +173,13 @@ function formValues(p: WeaponParams) {
     feed: FEED.toLabel(f.feed),
     capacityPct: String(f.capacityPct),
     ammo: AMMO.toLabel(f.ammo),
+    // secondary weapon (an under-barrel weapon, fired independently)
+    secEnabled: f.secondary ? 'yes' : 'no',
+    secReceiver: RECEIVER.toLabel(f.secondary?.receiver ?? 'handgun'),
+    secCalibre: CALIBRE.toLabel(f.secondary?.calibre ?? 'lightSmoothbore'),
+    secMechanism: MECHANISM.toLabel(f.secondary?.mechanism ?? 'singleShot'),
+    secBarrel: BARREL.toLabel(f.secondary?.barrel ?? 'short'),
+    secAmmo: AMMO.toLabel(f.secondary?.ammo ?? 'pellet'),
     // energy
     eWeaponType: EWTYPE.toLabel(e.weaponType),
     eReceiver: ERECEIVER.toLabel(e.receiver),
@@ -391,6 +398,21 @@ export function WeaponBuilderScreen({
     {
       label: 'Ammo',
       fields: [{ key: 'ammo', label: 'Loaded ammo', options: AMMO.labels }],
+    },
+    {
+      label: 'Secondary',
+      fields: [
+        { key: 'secEnabled', label: 'Secondary weapon', options: YN },
+        { key: 'secReceiver', label: '· Receiver', options: RECEIVER.labels },
+        { key: 'secCalibre', label: '· Calibre', options: CALIBRE.labels },
+        {
+          key: 'secMechanism',
+          label: '· Mechanism',
+          options: MECHANISM.labels,
+        },
+        { key: 'secBarrel', label: '· Barrel', options: BARREL.labels },
+        { key: 'secAmmo', label: '· Loaded ammo', options: AMMO.labels },
+      ],
     },
   ];
 
@@ -613,6 +635,28 @@ export function WeaponBuilderScreen({
                 capacityPct: num(form.values.capacityPct, 100),
                 accessories,
                 ammo: AMMO.toId(form.values.ammo),
+                ...(form.values.secEnabled === 'yes'
+                  ? {
+                      secondary: {
+                        tl: num(form.values.tl, 0),
+                        receiver: RECEIVER.toId(form.values.secReceiver),
+                        gauss: false,
+                        calibre: CALIBRE.toId(form.values.secCalibre),
+                        mechanism: MECHANISM.toId(form.values.secMechanism),
+                        autoIncrease: 0,
+                        features: [],
+                        barrel: BARREL.toId(form.values.secBarrel),
+                        heavyBarrel: false,
+                        additionalBarrels: 0,
+                        stock: 'none',
+                        furniture: [],
+                        feed: 'standard',
+                        capacityPct: 100,
+                        accessories: [],
+                        ammo: AMMO.toId(form.values.secAmmo),
+                      },
+                    }
+                  : {}),
               };
   const currentDef: WeaponDefinition = { name, params };
   const evaluation = evaluateWeapon(params);

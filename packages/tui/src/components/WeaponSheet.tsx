@@ -20,38 +20,15 @@ const cr = (n: number): string =>
   n >= 1000 ? `Cr${Math.round(n)}` : `Cr${Math.round(n * 100) / 100}`;
 const kg = (n: number): string => `${Math.round(n * 1000) / 1000}kg`;
 
-/** A book-style weapon profile + cost/weight breakdown panel. */
-export function WeaponSheet({
-  evaluation,
+/** The headline stat lines for one weapon profile (primary or secondary). */
+function ProfileBlock({
+  profile,
 }: {
-  evaluation: WeaponEvaluation;
+  profile: WeaponProfile;
 }): React.JSX.Element {
-  const { profile, breakdown, totals, sources } = evaluation;
   const sig = `${profile.signatureKind === 'emissions' ? 'Emissions' : 'Physical'} (${profile.signature})`;
-
-  // Fill the terminal width: the cost/weight/notes columns are fixed, the label
-  // column takes the rest (accounting for the round border + padding).
-  const { stdout } = useStdout();
-  const columns = stdout?.columns ?? 80;
-  const COST_W = 11;
-  const WEIGHT_W = 10;
-  const NOTES_W = 18;
-  const labelWidth = Math.max(
-    20,
-    columns - 4 - COST_W - WEIGHT_W - NOTES_W, // 4 = border (2) + paddingX (2)
-  );
-
   return (
-    <Box
-      flexDirection="column"
-      borderStyle="round"
-      borderColor="gray"
-      paddingX={1}
-      width={columns}
-    >
-      <Text bold color="yellow">
-        Profile — TL{profile.tl}
-      </Text>
+    <>
       <Box flexWrap="wrap">
         <Text>Damage {formatDamage(profile.damage)} </Text>
         <Text dimColor>· </Text>
@@ -80,6 +57,51 @@ export function WeaponSheet({
         <Text dimColor>Traits: </Text>
         {formatTraits(profile)}
       </Text>
+    </>
+  );
+}
+
+/** A book-style weapon profile + cost/weight breakdown panel. */
+export function WeaponSheet({
+  evaluation,
+}: {
+  evaluation: WeaponEvaluation;
+}): React.JSX.Element {
+  const { profile, breakdown, totals, sources } = evaluation;
+
+  // Fill the terminal width: the cost/weight/notes columns are fixed, the label
+  // column takes the rest (accounting for the round border + padding).
+  const { stdout } = useStdout();
+  const columns = stdout?.columns ?? 80;
+  const COST_W = 11;
+  const WEIGHT_W = 10;
+  const NOTES_W = 18;
+  const labelWidth = Math.max(
+    20,
+    columns - 4 - COST_W - WEIGHT_W - NOTES_W, // 4 = border (2) + paddingX (2)
+  );
+
+  return (
+    <Box
+      flexDirection="column"
+      borderStyle="round"
+      borderColor="gray"
+      paddingX={1}
+      width={columns}
+    >
+      <Text bold color="yellow">
+        Profile — TL{profile.tl}
+      </Text>
+      <ProfileBlock profile={profile} />
+
+      {evaluation.secondary ? (
+        <Box flexDirection="column" marginTop={1}>
+          <Text bold color="yellow">
+            Secondary — {evaluation.secondary.label}
+          </Text>
+          <ProfileBlock profile={evaluation.secondary.profile} />
+        </Box>
+      ) : null}
 
       <Box marginTop={1} flexDirection="column">
         <Text bold>Components</Text>

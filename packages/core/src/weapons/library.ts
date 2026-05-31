@@ -54,6 +54,7 @@ import type {
   ProjectorStructureId,
   ReceiverFeatureId,
   ReceiverTypeId,
+  SecondaryWeaponParams,
   StockId,
   WarheadId,
   WeaponParams,
@@ -200,6 +201,35 @@ function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
     capacityPct: num(p.capacityPct, d.capacityPct),
     accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
     ammo: pick<AmmoTypeId>(p.ammo, AMMO_TYPES, d.ammo),
+    // A secondary weapon (one level deep — its own `secondary` is dropped).
+    ...(isObject(p.secondary)
+      ? { secondary: normalizeSecondaryParams(p.secondary) }
+      : {}),
+  };
+}
+
+/** Normalize a nested secondary weapon (a firearm without kind/secondary). */
+function normalizeSecondaryParams(
+  p: Record<string, unknown>,
+): SecondaryWeaponParams {
+  const f = normalizeFirearmParams(p);
+  return {
+    tl: f.tl,
+    receiver: f.receiver,
+    gauss: f.gauss,
+    calibre: f.calibre,
+    mechanism: f.mechanism,
+    autoIncrease: f.autoIncrease,
+    features: f.features,
+    barrel: f.barrel,
+    heavyBarrel: f.heavyBarrel,
+    additionalBarrels: f.additionalBarrels,
+    stock: f.stock,
+    furniture: f.furniture,
+    feed: f.feed,
+    capacityPct: f.capacityPct,
+    accessories: f.accessories,
+    ammo: f.ammo,
   };
 }
 

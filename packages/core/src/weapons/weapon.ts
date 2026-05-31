@@ -33,6 +33,7 @@ import { clampLevel, round2 } from './shared.js';
 import {
   type Damage,
   type FirearmParams,
+  type SecondaryWeaponParams,
   SIGNATURE_LEVELS,
   type Traits,
   type WeaponLineItem,
@@ -46,6 +47,8 @@ export interface WeaponEvaluation {
   issues: Issue[];
   totals: { costCr: number; weightKg: number; magazineCr: number };
   sources: string[];
+  /** A mounted secondary weapon's own profile, shown as a second data line. */
+  secondary?: { label: string; profile: WeaponProfile; magazineCr: number };
 }
 
 // --- Small helpers ----------------------------------------------------------
@@ -502,6 +505,27 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     traits,
   };
 
+  // A mounted secondary weapon (e.g. under-barrel shotgun): designed as its own
+  // weapon, but mounting it costs/weighs 10% of its values. It keeps its own
+  // profile (a separate data line); its full build is not added to this weapon.
+  let secondary: WeaponEvaluation['secondary'];
+  if (params.secondary) {
+    const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary });
+    const sc = secondaryLabel(params.secondary);
+    push({
+      label: `Secondary mount: ${sc}`,
+      costCr: round2(sub.totals.costCr * 0.1),
+      weightKg: round2(sub.totals.weightKg * 0.1),
+      notes: '10% of the secondary',
+    });
+    for (const s of sub.sources) sources.add(s);
+    secondary = {
+      label: sc,
+      profile: sub.profile,
+      magazineCr: sub.totals.magazineCr,
+    };
+  }
+
   return {
     profile,
     breakdown,
@@ -512,5 +536,13 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
       magazineCr,
     },
     sources: [...sources],
+    ...(secondary ? { secondary } : {}),
   };
+}
+
+/** Short descriptive label for a secondary weapon (calibre + mechanism). */
+function secondaryLabel(p: SecondaryWeaponParams): string {
+  const c = CALIBRES[p.calibre]?.label ?? p.calibre;
+  const m = MECHANISMS[p.mechanism]?.label ?? p.mechanism;
+  return `${c} · ${m}`;
 }

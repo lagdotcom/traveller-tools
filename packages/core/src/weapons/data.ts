@@ -429,6 +429,8 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
   // reconcile: the Conventional Firearms table prints Cr150/100 for snub, but the
   // prose ("Cr200 per 100 rounds") and the Ten-Six worked example (Mag 6 = Cr12,
   // i.e. Cr2/round) both give Cr200; seeded at 200.
+  // reconcile: the table also prints a −20% Base Capacity Variation for snub, but
+  // no worked example applies it, so the capacity multiplier is seeded at 1.
   snub: {
     label: 'Snub (Low-Recoil)',
     damage: d(3, -3),
@@ -436,7 +438,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     range: 40,
     receiverCostMult: 1,
     receiverWeightMult: 1,
-    capacityMult: 0.8,
+    capacityMult: 1,
     penetration: -1,
     signatureKind: 'physical',
     signature: 'normal',
