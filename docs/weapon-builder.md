@@ -1,9 +1,16 @@
-# Weapon builder (conventional firearms)
+# Weapon builder
 
-Design notes for the MgT2 **weapon builder**, which builds conventional firearms
-(slug throwers) from the _Field Catalogue_ weapon-design rules. It lives beside
-the ship builder and reuses the same TUI building blocks, but its rules engine is
-deliberately **not** the generic `design` engine — see below.
+Design notes for the MgT2 **weapon builder**. It builds two weapon classes from
+the _Field Catalogue_ weapon-design rules — conventional firearms (slug throwers)
+and Directed Energy Weapons (lasers/microwave) — selected by a **Class** field at
+the top of the builder. It lives beside the ship builder and reuses the same TUI
+building blocks, but its rules engine is deliberately **not** the generic `design`
+engine — see below.
+
+`WeaponParams` is a discriminated union (`kind: 'firearm' | 'energy'`) and
+`evaluateWeapon(params)` dispatches to `evaluateFirearm` or `evaluateEnergyWeapon`,
+both returning the same `WeaponEvaluation` shape. Legacy documents with no `kind`
+normalise to firearms, so older saved/built-in weapons keep working.
 
 ## Why a bespoke pipeline (not `summarize`)
 
@@ -79,9 +86,39 @@ smoothbores) appears to use additional Core Rulebook shotgun rules not present i
 the supplied text; those are computed per the documented Field Catalogue modifiers
 and not asserted where the book's own example rows diverge.
 
+## Directed Energy Weapons (`energy.ts` / `energyData.ts`)
+
+Lasers and microwave guns. The FC says these share "receiver, barrel and stock"
+with firearms, so the energy pipeline **reuses** the firearm barrel / stock /
+furniture / accessory tables and the same "% of the modified receiver baseline"
+cost model; only the energy-specific tables live in `energyData.ts`.
+
+Key differences from a slug thrower:
+
+- **Receiver** sets the power class (`Minimal`→Weak 2D, `Small`→Light 3D,
+  `Medium`→Standard 5D, `Large`→Heavy 8D) and base range. The designer **buys
+  damage in whole dice** up to that class; a short barrel caps it further (Rifle+
+  uncapped, Carbine/Assault 4D, Handgun/Short 3D, Minimal 2D) — excess power is
+  wasted (a warning, not an error).
+- **Power source** — a powerpack (capacity = power-per-kg by TL ÷ damage dice, the
+  pack costs Cr500–2500/kg by class) or disposable cartridges. An under-rated
+  powerpack draws too hard → `Unreliable`; an over-powered cartridge stresses the
+  weapon → `Unreliable`; an under-powered cartridge simply delivers fewer dice; a
+  non-ejecting cartridge holder is `Hazardous -2`.
+- **Modifications** (energy-exclusive, TL-gated): Efficient Beam Generation,
+  Improved Beam Focus (+3 to a ≥2D laser), Intensified Pulse (Pen +1), Variable
+  Intensity.
+- All energy receivers grant **Zero-G** and base **Penetration −1**; recoil is 0.
+
+**Unverified value.** The supplied FC text gives **no base Signature** for
+directed-energy weapons, so `evaluateEnergyWeapon` shows an Emissions signature but
+attaches a _warning_ that the level is unverified (the repo's standard "derived,
+not in the book" convention) rather than inventing a confirmed number. Two
+built-ins (`Laser Carbine`, `Laser Rifle`) seed `BUILTIN_WEAPONS`; `energy.test.ts`
+checks the totals/caps/power-mismatch maths against the rules-text examples.
+
 ## Out of scope (future phases)
 
-Directed-energy weapons (laser/microwave receivers, powerpacks/cartridges, beam
-mods), projectors (flame/cryo), launchers & support weapons, and the
+Projectors (flame/cryo), launchers & support weapons, and the
 grenade/warhead/explosive catalogue. Each slots in as additional weapon classes +
 catalogue tables, reusing this pipeline and the builder UI.

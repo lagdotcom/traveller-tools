@@ -42,6 +42,21 @@ describe('Weapon builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('switches to the energy weapon class and shows energy fields', async () => {
+    const ui = await openBuilder();
+    // The Class choice is the first field; type to pick Energy.
+    await ui.type('Energy');
+    await ui.waitFor('Beam type');
+    // Energy-specific sections replace the firearm ones.
+    expect(ui.frame()).toContain('Damage dice');
+    await ui.type(TAB); // Type -> Barrel
+    await ui.type(TAB); // Barrel -> Furniture
+    await ui.type(TAB); // Furniture -> Power
+    expect(ui.frame()).toContain('Power source');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('loads a built-in weapon from the library', async () => {
     const ui = renderInk();
     await ui.waitFor('Traveller Tools');

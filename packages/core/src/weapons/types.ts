@@ -157,9 +157,31 @@ export type AmmoTypeId =
   | 'smart'
   | 'distraction';
 
+// --- Energy-weapon selectable ids (Directed Energy Weapons) -----------------
+
+/** Energy-weapon receiver classes (sets max power output + base range). */
+export type EnergyReceiverId = 'minimal' | 'small' | 'medium' | 'large';
+/** Power output classes; each caps the deliverable damage dice. */
+export type EnergyPowerClass = 'weak' | 'light' | 'standard' | 'heavy';
+/** Beam type — mechanically identical in the FC, differs only cosmetically. */
+export type EnergyWeaponTypeId = 'laser' | 'microwave';
+/** How the weapon is powered. */
+export type EnergyPowerSourceId = 'powerpack' | 'cartridge';
+/** Energy-weapon-exclusive receiver modifications. */
+export type EnergyModId =
+  | 'efficientBeam'
+  | 'improvedFocus'
+  | 'intensifiedPulse'
+  | 'variableIntensity';
+
 // --- User-facing parameters -------------------------------------------------
 
-export interface WeaponParams {
+/** Discriminates the weapon class so `WeaponParams` is a tagged union. */
+export type WeaponClass = 'firearm' | 'energy';
+
+export interface FirearmParams {
+  /** Conventional slug-thrower (the original/default class). */
+  kind: 'firearm';
   /** Tech level the weapon is built at (gates components, sets some traits). */
   tl: number;
   receiver: ReceiverTypeId;
@@ -182,6 +204,45 @@ export interface WeaponParams {
   /** Loaded ammunition type used for the displayed profile. */
   ammo: AmmoTypeId;
 }
+
+/**
+ * A Directed Energy Weapon (laser / microwave). Shares barrels, stocks,
+ * furniture and accessories with firearms, but is powered (powerpack or
+ * disposable cartridges) rather than fed ammunition, and the designer chooses
+ * the delivered damage in whole dice up to the receiver's power class.
+ */
+export interface EnergyParams {
+  kind: 'energy';
+  tl: number;
+  weaponType: EnergyWeaponTypeId;
+  receiver: EnergyReceiverId;
+  /** Delivered damage in whole D6 (capped by receiver power class + barrel). */
+  damageDice: number;
+  /** Reused firearm barrels (a collimator/wave-guide here). */
+  barrel: BarrelId;
+  heavyBarrel: boolean;
+  stock: StockId;
+  furniture: FurnitureId[];
+  /** Shared firearm receiver features (applied for cost/weight/quickdraw/sig). */
+  features: ReceiverFeatureId[];
+  /** Energy-weapon-exclusive modifications. */
+  mods: EnergyModId[];
+  accessories: AccessoryId[];
+  powerSource: EnergyPowerSourceId;
+  /** Powerpack mass in kg (capacity = power-per-kg × kg ÷ damage dice). */
+  powerpackKg: number;
+  /** Powerpack power class (≥ weapon output, else Unreliable). */
+  powerpackRating: EnergyPowerClass;
+  /** Cartridge power class (≥ weapon output, else Unreliable). */
+  cartridgeRating: EnergyPowerClass;
+  /** Cartridge magazine size in shots. */
+  cartridgeCount: number;
+  /** Cartridges eject after firing; non-ejecting holders gain Hazardous -2. */
+  cartridgeEjects: boolean;
+}
+
+/** A weapon design of any class (discriminated by `kind`). */
+export type WeaponParams = FirearmParams | EnergyParams;
 
 // --- The derived weapon profile ---------------------------------------------
 

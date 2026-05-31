@@ -15,12 +15,25 @@ import {
   RECEIVERS,
   STOCKS,
 } from './data.js';
+import {
+  ENERGY_MODS,
+  ENERGY_POWER_CLASS_DICE,
+  ENERGY_RECEIVERS,
+  ENERGY_WEAPON_TYPE_LABEL,
+} from './energyData.js';
 import type {
   AccessoryId,
   AmmoTypeId,
   BarrelId,
   CalibreId,
+  EnergyModId,
+  EnergyParams,
+  EnergyPowerClass,
+  EnergyPowerSourceId,
+  EnergyReceiverId,
+  EnergyWeaponTypeId,
   FeedId,
+  FirearmParams,
   FurnitureId,
   MechanismId,
   ReceiverFeatureId,
@@ -45,7 +58,8 @@ export interface WeaponDocument {
 }
 
 /** A valid starting design: a TL8 semi-automatic intermediate-rifle carbine. */
-export const DEFAULT_WEAPON_PARAMS: WeaponParams = {
+export const DEFAULT_WEAPON_PARAMS: FirearmParams = {
+  kind: 'firearm',
   tl: 8,
   receiver: 'longarm',
   gauss: false,
@@ -61,6 +75,28 @@ export const DEFAULT_WEAPON_PARAMS: WeaponParams = {
   capacityPct: 100,
   accessories: [],
   ammo: 'ball',
+};
+
+/** A valid starting energy design: a TL10 Small (Light) laser carbine. */
+export const DEFAULT_ENERGY_PARAMS: EnergyParams = {
+  kind: 'energy',
+  tl: 10,
+  weaponType: 'laser',
+  receiver: 'small',
+  damageDice: 3,
+  barrel: 'rifle',
+  heavyBarrel: false,
+  stock: 'full',
+  furniture: [],
+  features: [],
+  mods: [],
+  accessories: [],
+  powerSource: 'powerpack',
+  powerpackKg: 1,
+  powerpackRating: 'light',
+  cartridgeRating: 'light',
+  cartridgeCount: 20,
+  cartridgeEjects: true,
 };
 
 // --- Validation helpers (shape-matched to ships/library.ts) -----------------
@@ -91,11 +127,14 @@ function pickList<T extends string>(
   return v.filter((x): x is T => typeof x === 'string' && x in allowed);
 }
 
-/** Coerce arbitrary parsed JSON into a complete, valid WeaponParams. Never throws. */
-export function normalizeWeaponParams(input: unknown): WeaponParams {
-  const p = isObject(input) ? input : {};
+const POWER_CLASSES = ENERGY_POWER_CLASS_DICE;
+const POWER_SOURCES = { powerpack: 0, cartridge: 0 };
+
+/** Coerce arbitrary parsed JSON into a complete, valid FirearmParams. */
+function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
   const d = DEFAULT_WEAPON_PARAMS;
   return {
+    kind: 'firearm',
     tl: num(p.tl, d.tl),
     receiver: pick<ReceiverTypeId>(p.receiver, RECEIVERS, d.receiver),
     gauss: bool(p.gauss, d.gauss),
@@ -112,6 +151,56 @@ export function normalizeWeaponParams(input: unknown): WeaponParams {
     accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
     ammo: pick<AmmoTypeId>(p.ammo, AMMO_TYPES, d.ammo),
   };
+}
+
+/** Coerce arbitrary parsed JSON into a complete, valid EnergyParams. */
+function normalizeEnergyParams(p: Record<string, unknown>): EnergyParams {
+  const d = DEFAULT_ENERGY_PARAMS;
+  return {
+    kind: 'energy',
+    tl: num(p.tl, d.tl),
+    weaponType: pick<EnergyWeaponTypeId>(
+      p.weaponType,
+      ENERGY_WEAPON_TYPE_LABEL,
+      d.weaponType,
+    ),
+    receiver: pick<EnergyReceiverId>(p.receiver, ENERGY_RECEIVERS, d.receiver),
+    damageDice: num(p.damageDice, d.damageDice),
+    barrel: pick<BarrelId>(p.barrel, BARRELS, d.barrel),
+    heavyBarrel: bool(p.heavyBarrel, d.heavyBarrel),
+    stock: pick<StockId>(p.stock, STOCKS, d.stock),
+    furniture: pickList<FurnitureId>(p.furniture, FURNITURE),
+    features: pickList<ReceiverFeatureId>(p.features, RECEIVER_FEATURES),
+    mods: pickList<EnergyModId>(p.mods, ENERGY_MODS),
+    accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
+    powerSource: pick<EnergyPowerSourceId>(
+      p.powerSource,
+      POWER_SOURCES,
+      d.powerSource,
+    ),
+    powerpackKg: num(p.powerpackKg, d.powerpackKg),
+    powerpackRating: pick<EnergyPowerClass>(
+      p.powerpackRating,
+      POWER_CLASSES,
+      d.powerpackRating,
+    ),
+    cartridgeRating: pick<EnergyPowerClass>(
+      p.cartridgeRating,
+      POWER_CLASSES,
+      d.cartridgeRating,
+    ),
+    cartridgeCount: num(p.cartridgeCount, d.cartridgeCount),
+    cartridgeEjects: bool(p.cartridgeEjects, d.cartridgeEjects),
+  };
+}
+
+/** Coerce arbitrary parsed JSON into a complete, valid WeaponParams. Never throws. */
+export function normalizeWeaponParams(input: unknown): WeaponParams {
+  const p = isObject(input) ? input : {};
+  // Legacy documents (no `kind`) are conventional firearms.
+  return p.kind === 'energy'
+    ? normalizeEnergyParams(p)
+    : normalizeFirearmParams(p);
 }
 
 // --- Serialize / parse ------------------------------------------------------
@@ -159,12 +248,24 @@ export function parseWeapon(text: string): WeaponDefinition {
 function weapon(
   name: string,
   description: string,
-  overrides: Partial<WeaponParams>,
+  overrides: Partial<FirearmParams>,
 ): WeaponDefinition {
   return {
     name,
     description,
     params: { ...DEFAULT_WEAPON_PARAMS, ...overrides },
+  };
+}
+
+function energyWeapon(
+  name: string,
+  description: string,
+  overrides: Partial<EnergyParams>,
+): WeaponDefinition {
+  return {
+    name,
+    description,
+    params: { ...DEFAULT_ENERGY_PARAMS, ...overrides },
   };
 }
 
@@ -279,6 +380,35 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'rifle',
       stock: 'full',
       accessories: ['laserPointer'],
+    },
+  ),
+  energyWeapon(
+    'Laser Carbine',
+    'TL10 Small (Light) laser carbine, powerpack-fed (Field Catalogue energy weapon).',
+    {
+      tl: 10,
+      receiver: 'small',
+      damageDice: 3,
+      barrel: 'carbine',
+      stock: 'full',
+      powerSource: 'powerpack',
+      powerpackKg: 1,
+      powerpackRating: 'light',
+    },
+  ),
+  energyWeapon(
+    'Laser Rifle',
+    'TL12 Medium (Standard) laser rifle with improved focus (Field Catalogue energy weapon).',
+    {
+      tl: 12,
+      receiver: 'medium',
+      damageDice: 5,
+      barrel: 'rifle',
+      stock: 'full',
+      mods: ['improvedFocus'],
+      powerSource: 'powerpack',
+      powerpackKg: 2,
+      powerpackRating: 'standard',
     },
   ),
 ];

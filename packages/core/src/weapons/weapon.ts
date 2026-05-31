@@ -25,10 +25,12 @@ import {
   SOURCE,
   STOCKS,
 } from './data.js';
+import { evaluateEnergyWeapon } from './energy.js';
+import { clampLevel, round2 } from './shared.js';
 import {
   type Damage,
+  type FirearmParams,
   SIGNATURE_LEVELS,
-  type SignatureLevel,
   type Traits,
   type WeaponLineItem,
   type WeaponParams,
@@ -70,8 +72,6 @@ function reduceDice(dmg: Damage, n: number): Damage {
   return { dice, die, mod: dmg.mod };
 }
 
-const round2 = (n: number): number => Math.round(n * 1e6) / 1e6;
-
 // --- Validation -------------------------------------------------------------
 
 const RECEIVER_ORDER = [
@@ -83,7 +83,7 @@ const RECEIVER_ORDER = [
 ] as const;
 
 /** Domain rules beyond the per-component TL gates, returning issues. */
-function validate(params: WeaponParams): Issue[] {
+function validate(params: FirearmParams): Issue[] {
   const issues: Issue[] = [];
   const tl = params.tl;
   const calibre = CALIBRES[params.calibre];
@@ -176,10 +176,14 @@ function validate(params: WeaponParams): Issue[] {
 
 // --- The pipeline -----------------------------------------------------------
 
-const clampLevel = (i: number): SignatureLevel =>
-  SIGNATURE_LEVELS[Math.max(0, Math.min(SIGNATURE_LEVELS.length - 1, i))];
-
+/** Evaluate any weapon, dispatching on its class. */
 export function evaluateWeapon(params: WeaponParams): WeaponEvaluation {
+  return params.kind === 'energy'
+    ? evaluateEnergyWeapon(params)
+    : evaluateFirearm(params);
+}
+
+export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const receiver = RECEIVERS[params.receiver] ?? RECEIVERS.handgun;
   const calibre = CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun;
   const mechanism = MECHANISMS[params.mechanism] ?? MECHANISMS.semiAuto;

@@ -95,13 +95,22 @@ Conventions that matter:
 
 ## The weapon domain (`packages/core/src/weapons/`)
 
-Conventional firearms (slug throwers) from the **Field Catalogue** — design
-write-up in `docs/weapon-builder.md`.
+Field Catalogue weapons in two classes — conventional firearms (slug throwers) and
+directed-energy weapons (lasers/microwave) — design write-up in
+`docs/weapon-builder.md`.
 
+- **Two classes.** `WeaponParams` is a discriminated union on `kind: 'firearm' |
+'energy'`. `evaluateWeapon(params)` (`weapon.ts`) dispatches to `evaluateFirearm`
+  or `evaluateEnergyWeapon` (`energy.ts`), both returning the same shape. Legacy
+  docs with no `kind` normalise to firearms. Energy weapons reuse the firearm
+  barrel/stock/furniture/accessory tables; energy-only tables live in
+  `energyData.ts` (receivers by power class, powerpack/cartridge ratings, beam
+  mods). Shared helpers (`round2`, `clampLevel`) are in `shared.ts` to avoid a
+  weapon↔energy import cycle.
 - **Deliberately NOT the generic engine.** The Field Catalogue cost/weight model
   is **sequential-multiplicative off a "modified receiver" baseline**, not the
-  additive resource model `summarize` uses. So `evaluateWeapon(params)`
-  (`weapon.ts`) walks an explicit pipeline returning the same _shape_ as
+  additive resource model `summarize` uses. So the evaluators
+  walk an explicit pipeline returning the same _shape_ as
   `evaluateShip` — `{ profile, breakdown, issues, totals, sources }` — reusing the
   engine's `Issue` type and the `source` provenance idea, but **not** `summarize`.
 - **Pipeline:** receiver baseline (gauss → mechanism → calibre → features →
@@ -119,10 +128,14 @@ write-up in `docs/weapon-builder.md`.
   cost/weight, small-smoothbore weight, pistol-calibre base penetration (−1),
   smoothbore capacity, laser-pointer price.
 - **Adding a component:** add the id to the union + a row in the relevant `data.ts`
-  record; update `DEFAULT_WEAPON_PARAMS`/`normalizeWeaponParams` + the TUI
-  (`labelMap`, a field or one of the add/remove lists in `WeaponBuilder.tsx`).
-- v1 is conventional firearms only. Energy weapons, projectors, launchers and
-  grenades are out of scope but slot in as new weapon classes + tables.
+  (firearm) or `energyData.ts` (energy) record; update the relevant
+  `DEFAULT_*_PARAMS`/`normalizeWeaponParams` branch + the TUI (`labelMap`/`choiceMap`,
+  a field or one of the add/remove lists in `WeaponBuilder.tsx`).
+- **Energy-weapon caveat:** the supplied FC text gives **no base Signature** for
+  directed-energy weapons, so `evaluateEnergyWeapon` flags the shown Emissions
+  level as _unverified_ (a warning) rather than inventing a number.
+- Projectors (flame/cryo), launchers and grenades remain out of scope but slot in
+  as new weapon classes + tables (the FC sections are in the supplied design text).
 
 ## TUI notes (`packages/tui`)
 
