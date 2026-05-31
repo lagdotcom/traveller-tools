@@ -489,9 +489,10 @@ export function WeaponBuilderScreen({
       fields: [
         classField,
         { key: 'tl', label: 'Tech level' },
+        // The FC picks the ammunition (calibre) before the receiver.
+        { key: 'calibre', label: 'Calibre / ammo', options: CALIBRE.labels },
         { key: 'receiver', label: 'Receiver', options: RECEIVER.labels },
         { key: 'gauss', label: 'Gauss', options: YN },
-        { key: 'calibre', label: 'Calibre / ammo', options: CALIBRE.labels },
       ],
     },
     {
@@ -501,6 +502,9 @@ export function WeaponBuilderScreen({
         { key: 'autoIncrease', label: 'Increase Auto (+)' },
       ],
     },
+    // Receiver features are added "once the receiver characteristics are known"
+    // (FC) — before the barrel — and set the baseline later % components scale off.
+    { label: 'Features', list: 'features' },
     {
       label: 'Barrel',
       fields: [
@@ -522,7 +526,6 @@ export function WeaponBuilderScreen({
         { key: 'capacityPct', label: 'Capacity (% of base)' },
       ],
     },
-    { label: 'Features', list: 'features' },
     { label: 'Accessories', list: 'accessories' },
     {
       label: 'Ammo',
