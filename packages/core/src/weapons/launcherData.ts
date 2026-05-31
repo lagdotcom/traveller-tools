@@ -7,9 +7,71 @@
  * are not considered part of the weapon itself" — so the warhead only shapes the
  * displayed profile and its price is the reload cost, not part of the build.
  */
-import type { Damage, LauncherReceiverId, Traits, WarheadId } from './types.js';
+import type {
+  Damage,
+  DeliveryId,
+  LauncherReceiverId,
+  Traits,
+  WarheadId,
+} from './types.js';
 
 const d = (dice: number, mod = 0): Damage => ({ dice, die: 6, mod });
+
+// --- Delivery systems -------------------------------------------------------
+
+/**
+ * How a launcher delivers a warhead. The warhead supplies the damage/blast/
+ * traits (the hand-grenade payload); the delivery system sets the **range** and
+ * multiplies the round's **cost/weight** off the payload.
+ *
+ * reconcile: the worked munition examples don't follow these text multipliers
+ * consistently (e.g. the plasma RAM round is priced at ×1, the anti-armour RPG at
+ * ×3 cost/×10 weight and is a *larger* warhead than the hand payload). So the
+ * profile (range + payload damage/traits) matches the book, but the round
+ * cost/weight here are the FC text multipliers and may differ from a specific
+ * worked munition — and RPG/missile "larger warhead" damage is flagged.
+ */
+export interface DeliveryDef {
+  label: string;
+  minTL: number;
+  /** Round cost as a multiple of the payload (hand-grenade) price. */
+  costMult: number;
+  /** Round weight as a multiple of the payload weight. */
+  weightMult: number;
+  /** Base range in metres. */
+  range: number;
+  traits: Traits;
+  /** RPG/missile carry a larger warhead than the hand payload (damage flagged). */
+  largerWarhead?: boolean;
+}
+
+export const DELIVERY_SYSTEMS: Record<DeliveryId, DeliveryDef> = {
+  cartridge: {
+    label: 'Cartridge',
+    minTL: 6,
+    costMult: 2.5,
+    weightMult: 1,
+    range: 200,
+    traits: {},
+  },
+  ram: {
+    label: 'RAM',
+    minTL: 8,
+    costMult: 3,
+    weightMult: 1,
+    range: 300,
+    traits: {},
+  },
+  rpg: {
+    label: 'RPG',
+    minTL: 5,
+    costMult: 5,
+    weightMult: 5,
+    range: 500,
+    traits: { Inaccurate: -2 },
+    largerWarhead: true,
+  },
+};
 
 // --- Launcher receivers -----------------------------------------------------
 

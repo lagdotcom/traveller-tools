@@ -12,6 +12,7 @@ import {
   DEFAULT_LAUNCHER_PARAMS,
   DEFAULT_PROJECTOR_PARAMS,
   DEFAULT_WEAPON_PARAMS,
+  type DeliveryId,
   ENERGY_MODS,
   ENERGY_POWER_CLASS_LABEL,
   ENERGY_RECEIVERS,
@@ -123,6 +124,11 @@ const GSIZE = choiceMap<GrenadeSizeId>([
   ['mini', 'Mini'],
   ['hand', 'Hand'],
 ]);
+const DELIVERY = choiceMap<DeliveryId>([
+  ['cartridge', 'Cartridge'],
+  ['ram', 'RAM'],
+  ['rpg', 'RPG'],
+]);
 const EWTYPE = choiceMap<EnergyWeaponTypeId>([
   ['laser', 'Laser'],
   ['microwave', 'Microwave'],
@@ -140,12 +146,6 @@ const PCLASS = choiceMap<EnergyPowerClass>([
 
 const YN = ['no', 'yes'];
 
-/**
- * Flatten any weapon's params into one string-valued form record holding both
- * firearm and energy fields. Whichever class `p` is seeds its own side; the
- * other side falls back to its defaults, so switching class mid-edit is lossless
- * for the side you started on.
- */
 /** Barrel/stock, shared by firearm + energy (projectors/launchers have neither). */
 const barrelStockValues = (p: FirearmParams | EnergyParams) => ({
   barrel: BARREL.toLabel(p.barrel),
@@ -197,6 +197,7 @@ const projectorValues = (pr: ProjectorParams) => ({
 const launcherValues = (l: LauncherParams) => ({
   lReceiver: LRECEIVER.toLabel(l.receiver),
   warhead: WARHEAD.toLabel(l.warhead),
+  delivery: DELIVERY.toLabel(l.delivery),
   guidance: l.guidance ? 'yes' : 'no',
   magazineSize: String(l.magazineSize),
 });
@@ -328,6 +329,7 @@ function buildLauncher(v: FormValues): LauncherParams {
     guidance: v.guidance === 'yes',
     magazineSize: num(v.magazineSize, 1),
     warhead: WARHEAD.toId(v.warhead),
+    delivery: DELIVERY.toId(v.delivery),
   };
 }
 
@@ -642,6 +644,7 @@ export function WeaponBuilderScreen({
         { key: 'tl', label: 'Tech level' },
         { key: 'lReceiver', label: 'Receiver', options: LRECEIVER.labels },
         { key: 'warhead', label: 'Warhead', options: WARHEAD.labels },
+        { key: 'delivery', label: 'Delivery', options: DELIVERY.labels },
         { key: 'guidance', label: 'Guidance system', options: YN },
       ],
     },

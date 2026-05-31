@@ -228,6 +228,9 @@ export type WarheadId =
   | 'cryogenic'
   | 'emp';
 
+/** How a launcher delivers its warhead (sets range + cost/weight of the round). */
+export type DeliveryId = 'cartridge' | 'ram' | 'rpg';
+
 // --- Grenade selectable ids (thrown grenades) -------------------------------
 
 /** Thrown-grenade payload type, from the FC "Grenade Weapons" table. */
@@ -382,8 +385,10 @@ export interface LauncherParams {
   guidance: boolean;
   /** Magazine size for "varies"-capacity (support) launchers. */
   magazineSize: number;
-  /** Loaded warhead used for the displayed profile. */
+  /** Loaded warhead payload (hand-grenade stats) shaping the displayed profile. */
   warhead: WarheadId;
+  /** How the warhead is delivered (cartridge / RAM / RPG) — sets range + round cost. */
+  delivery: DeliveryId;
 }
 
 /**

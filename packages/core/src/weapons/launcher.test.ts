@@ -16,20 +16,36 @@ const launcher = (overrides: Partial<LauncherParams>): LauncherParams => ({
 });
 
 describe('launcher — receiver + warhead', () => {
-  it('TL6 single-shot light tube launcher with a frag warhead', () => {
+  it('TL6 single-shot light tube launcher with a frag cartridge', () => {
     const r = evaluateWeapon(
       launcher({ receiver: 'tubeSingleLight', warhead: 'fragmentation' }),
     );
     expect(r.totals.costCr).toBeCloseTo(200, 3);
-    // 1.5kg receiver + 1 round × 0.5kg = 2.0kg loaded.
+    // 1.5kg receiver + 1 round × 0.5kg × 1 (cartridge) = 2.0kg loaded.
     expect(r.totals.weightKg).toBeCloseTo(2, 3);
-    expect(r.totals.magazineCr).toBeCloseTo(30, 3);
+    // Cartridge round = payload Cr30 × 2.5.
+    expect(r.totals.magazineCr).toBeCloseTo(75, 3);
     expect(r.profile.damage.dice).toBe(5);
-    expect(r.profile.range).toBe(200);
+    expect(r.profile.range).toBe(200); // cartridge delivery range
     expect(r.profile.capacity).toBe(1);
     expect(r.profile.traits['Blast']).toBe(9);
     expect(r.profile.traits['Bulky']).toBe(true);
     expect(r.profile.recoil).toBe(0);
+  });
+
+  it('an RPG delivers a longer range, Inaccurate, and flags its larger warhead', () => {
+    const r = evaluateWeapon(
+      launcher({
+        receiver: 'reuseSingleHeavy',
+        warhead: 'antiArmour',
+        delivery: 'rpg',
+      }),
+    );
+    expect(r.profile.range).toBe(500); // RPG delivery range
+    expect(r.profile.traits['Inaccurate']).toBe(-2);
+    // payload Cr50 ×5, weight 0.5 ×5 = 2.5kg per round.
+    expect(r.totals.magazineCr).toBeCloseTo(250, 3);
+    expect(r.issues.some((i) => /larger warhead/.test(i.message))).toBe(true);
   });
 
   it('a guidance system adds 50% cost and the Smart trait', () => {
@@ -47,9 +63,10 @@ describe('launcher — receiver + warhead', () => {
       }),
     );
     expect(r.profile.capacity).toBe(5);
-    // 15kg receiver + 5 × 0.5kg rounds = 17.5kg.
+    // 15kg receiver + 5 × 0.5kg × 1 (cartridge) rounds = 17.5kg.
     expect(r.totals.weightKg).toBeCloseTo(17.5, 3);
-    expect(r.totals.magazineCr).toBeCloseTo(150, 3);
+    // 5 × payload Cr30 × 2.5 (cartridge).
+    expect(r.totals.magazineCr).toBeCloseTo(375, 3);
   });
 
   it('an effect-only warhead (smoke) has no damage dice', () => {
@@ -72,13 +89,12 @@ describe('launcher — validation', () => {
     ).toBe(true);
   });
 
-  it('reads Physical (normal) and flags the warhead munition values', () => {
+  it('reads Physical (normal); a cartridge round is not flagged unverified', () => {
     const r = evaluateWeapon(launcher({}));
     expect(r.profile.signatureKind).toBe('physical');
     expect(r.profile.signature).toBe('normal');
-    expect(
-      r.issues.some((i) => /launcher-calibre munition stats/.test(i.message)),
-    ).toBe(true);
+    // Cartridge/RAM are "equivalent in effect" to the hand payload — no warning.
+    expect(r.issues.some((i) => /larger warhead/.test(i.message))).toBe(false);
   });
 });
 

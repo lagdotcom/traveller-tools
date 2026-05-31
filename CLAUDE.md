@@ -152,9 +152,15 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   projectors = Emissions (extreme) (from the MF-61 flame example — only flame is
   attested, cryo may differ); launchers = Physical (normal). Grenades have no
   attested signature (left flagged) and no thrown range (a thrower stat, set 0).
-- **Still unverified:** the launcher warhead damage/blast values are the _thrown_
-  Hand-grenade figures (the launcher-calibre munition table isn't in the supplied
-  text), so `evaluateLauncher` flags them. Don't replace with invented numbers.
+- **Launcher munitions** are a **payload × delivery** pair: the warhead supplies
+  damage/blast/traits (the hand-grenade payload — "equivalent in effect" per the
+  FC), and the delivery system (`DELIVERY_SYSTEMS`: cartridge / RAM / RPG) sets the
+  **range** (200/300/500) and multiplies the round's cost/weight (×2.5 / ×3 / ×5).
+  reconcile: the worked munition examples don't follow these multipliers uniformly
+  (plasma RAM is priced ×1, the anti-armour RPG is a _larger_ warhead than the hand
+  payload), so the profile matches the book but round cost/weight are the text
+  multipliers, and `evaluateLauncher` flags only RPG/missile "larger warhead"
+  damage as not-tabled. Don't invent the full munition table.
 - The whole FC weapon-design chapter (firearms, energy, projectors, launchers,
   grenades) is now implemented; remaining FC content is non-weapon (armour, gear).
 

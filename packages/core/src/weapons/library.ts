@@ -22,7 +22,11 @@ import {
   ENERGY_WEAPON_TYPE_LABEL,
 } from './energyData.js';
 import { GRENADES } from './grenadeData.js';
-import { LAUNCHER_RECEIVERS, WARHEADS } from './launcherData.js';
+import {
+  DELIVERY_SYSTEMS,
+  LAUNCHER_RECEIVERS,
+  WARHEADS,
+} from './launcherData.js';
 import {
   PROJECTOR_FUELS,
   PROJECTOR_PROPELLANTS,
@@ -33,6 +37,7 @@ import type {
   AmmoTypeId,
   BarrelId,
   CalibreId,
+  DeliveryId,
   EnergyModId,
   EnergyParams,
   EnergyPowerClass,
@@ -139,6 +144,7 @@ export const DEFAULT_LAUNCHER_PARAMS: LauncherParams = {
   guidance: false,
   magazineSize: 6,
   warhead: 'fragmentation',
+  delivery: 'cartridge',
 };
 
 /** A valid starting grenade: a TL6 Hand fragmentation grenade. */
@@ -312,6 +318,7 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
     guidance: bool(p.guidance, d.guidance),
     magazineSize: num(p.magazineSize, d.magazineSize),
     warhead: pick<WarheadId>(p.warhead, WARHEADS, d.warhead),
+    delivery: pick<DeliveryId>(p.delivery, DELIVERY_SYSTEMS, d.delivery),
   };
 }
 
@@ -626,6 +633,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       tl: 6,
       receiver: 'tubeSingleLight',
       warhead: 'fragmentation',
+      delivery: 'cartridge',
     },
   ),
   launcher(
@@ -635,6 +643,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       tl: 6,
       receiver: 'reuseSingleHeavy',
       warhead: 'antiArmour',
+      delivery: 'rpg',
     },
   ),
   grenade(

@@ -8,6 +8,7 @@
 import type { Issue } from '../design/index.js';
 import { SOURCE } from './data.js';
 import {
+  DELIVERY_SYSTEMS,
   GUIDANCE_COST_MULT,
   LAUNCHER_RECEIVERS,
   WARHEADS,
@@ -26,10 +27,15 @@ function validateLauncher(params: LauncherParams): Issue[] {
   const issues: Issue[] = [];
   const receiver = LAUNCHER_RECEIVERS[params.receiver];
   const warhead = WARHEADS[params.warhead];
+  const delivery = DELIVERY_SYSTEMS[params.delivery];
   pushIf(issues, tlGate(params.tl, receiver?.label ?? '', receiver?.minTL));
   pushIf(
     issues,
     tlGate(params.tl, `${warhead?.label} warhead`, warhead?.minTL),
+  );
+  pushIf(
+    issues,
+    tlGate(params.tl, `${delivery?.label} munition`, delivery?.minTL),
   );
   return issues;
 }
@@ -38,6 +44,8 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   const receiver =
     LAUNCHER_RECEIVERS[params.receiver] ?? LAUNCHER_RECEIVERS.tubeSingleLight;
   const warhead = WARHEADS[params.warhead] ?? WARHEADS.fragmentation;
+  const delivery =
+    DELIVERY_SYSTEMS[params.delivery] ?? DELIVERY_SYSTEMS.cartridge;
 
   const issues = validateLauncher(params);
   const sources = new Set<string>([SOURCE]);
@@ -51,10 +59,13 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   const receiverCost = round2(
     receiver.cost * (params.guidance ? GUIDANCE_COST_MULT : 1),
   );
-  // Loaded weight includes a full load of munitions (FC: missile launchers).
-  const munitionWeight = round2(capacity * warhead.weight);
+  // A round = the payload priced/weighed by its delivery system; loaded weight
+  // includes a full load (FC: missile launchers).
+  const munitionWeight = round2(
+    capacity * warhead.weight * delivery.weightMult,
+  );
   const totalWeight = round2(receiver.weight + munitionWeight);
-  const magazineCr = round2(capacity * warhead.cost);
+  const magazineCr = round2(capacity * warhead.cost * delivery.costMult);
 
   const breakdown: WeaponLineItem[] = [
     {
@@ -64,22 +75,26 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
       notes: `${capacity} round${capacity === 1 ? '' : 's'}`,
     },
     {
-      label: `Warhead: ${warhead.label} ×${capacity}`,
+      label: `Munition: ${warhead.label} (${delivery.label}) ×${capacity}`,
       costCr: 0,
       weightKg: munitionWeight,
       notes: `Cr${magazineCr} to load`,
     },
   ];
 
-  // --- Profile (from the loaded warhead) ---
+  // --- Profile: payload damage/traits, delivery range + delivery traits ---
   const damage: Damage = warhead.damage ?? { dice: 0, die: 6, mod: 0 };
-  const traits: Traits = { ...receiver.traits, ...warhead.traits };
+  const traits: Traits = {
+    ...receiver.traits,
+    ...warhead.traits,
+    ...delivery.traits,
+  };
   if (params.guidance) traits.Smart = true;
 
   const profile: WeaponProfile = {
     tl: params.tl,
     damage,
-    range: receiver.range,
+    range: delivery.range,
     auto: 0,
     recoil: 0,
     quickdraw: 0,
@@ -93,13 +108,15 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     traits,
   };
 
-  // The warhead damage/blast values are still the FC thrown Hand-grenade figures
-  // (the launcher-calibre munition table isn't in the supplied text).
-  issues.push(
-    warning(
-      'Warhead damage values are the Field Catalogue Hand-grenade figures; launcher-calibre munition stats are not in the supplied text.',
-    ),
-  );
+  // Cartridge/RAM rounds use the hand payload's profile (the FC says they're
+  // "equivalent in effect"); RPG/missile carry a larger warhead whose own damage
+  // isn't tabled in the supplied text, so flag those.
+  if (delivery.largerWarhead)
+    issues.push(
+      warning(
+        `${delivery.label} rounds carry a larger warhead than the hand-grenade payload; its damage/blast aren't in the supplied text and are shown as the payload's.`,
+      ),
+    );
 
   return {
     profile,
