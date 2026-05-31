@@ -208,58 +208,29 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const autoSteps = Math.max(0, Math.min(6, Math.floor(params.autoIncrease)));
   const incAuto = INCREASED_AUTO[autoSteps];
 
-  // --- Receiver baseline (sequential-multiplicative) ---
-  let cost = receiver.baseCost;
-  let weight = receiver.baseWeight;
-  if (params.gauss) {
-    cost *= GAUSS_COST_MULT;
-    weight *= GAUSS_WEIGHT_MULT;
-  }
-  cost *= mechanism.costMult;
-  cost *= calibre.receiverCostMult;
-  weight *= calibre.receiverWeightMult;
-
-  // Base ammunition capacity. Large-calibre smoothbores use fixed per-receiver
-  // values and ignore mechanism limits; everything else scales off the receiver.
-  let capacity: number;
-  if (calibre.smoothbore) {
-    capacity = SMOOTHBORE_CAPACITY[params.receiver];
-  } else {
-    capacity = receiver.baseCapacity;
-    if (params.gauss) capacity *= GAUSS_CAPACITY_MULT;
-    capacity *= calibre.capacityMult;
-    capacity *= mechanism.capacityMult;
-  }
-
-  let ammoCostMult = 1;
-  for (const f of features) {
-    cost *= f.costMult;
-    weight *= f.weightMult;
-    capacity *= f.capacityMult;
-    if (f.ammoCostMult) ammoCostMult *= f.ammoCostMult;
-  }
-  cost *= incAuto.cost;
-  weight *= incAuto.weight;
-  // Magazine-capacity adjustment (50–150% of base): cost +10%/−5% per 10 %,
-  // weight ±5% per 10 %.
+  // --- Receiver: one multiplicative modifier chain off the base cost/weight ---
+  // The same chain yields the baseline (its running product) and the itemised
+  // breakdown (one marginal line per step), so the two can never drift apart.
   const capPct = Number.isFinite(params.capacityPct) ? params.capacityPct : 100;
-  const steps = (capPct - 100) / 10;
-  const costCapMult = capPct >= 100 ? 1 + 0.1 * steps : 1 + 0.05 * steps;
-  const weightCapMult = 1 + 0.05 * steps;
-  cost *= costCapMult;
-  weight *= weightCapMult;
-  // Single-shot weapons hold one round per barrel.
-  capacity =
-    params.mechanism === 'singleShot'
-      ? 1
-      : Math.round(capacity * (capPct / 100));
+  const capPctSteps = (capPct - 100) / 10;
+  const costCapMult =
+    capPct >= 100 ? 1 + 0.1 * capPctSteps : 1 + 0.05 * capPctSteps;
+  const weightCapMult = 1 + 0.05 * capPctSteps;
 
-  const baselineCost = round2(cost);
-  const baselineWeight = round2(weight);
+  type Mod = { label: string; cost: number; weight: number };
+  const chain: Mod[] = [];
+  const step = (label: string, cost: number, weight = 1) => {
+    if (cost !== 1 || weight !== 1) chain.push({ label, cost, weight });
+  };
+  if (params.gauss) step('Gauss', GAUSS_COST_MULT, GAUSS_WEIGHT_MULT);
+  step(mechanism.label, mechanism.costMult);
+  step(calibre.label, calibre.receiverCostMult, calibre.receiverWeightMult);
+  for (const f of features) step(f.label, f.costMult, f.weightMult);
+  if (autoSteps > 0)
+    step(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight);
+  if (capPct !== 100) step(`Capacity ${capPct}%`, costCapMult, weightCapMult);
 
-  // Itemise the receiver the way the worked worksheets do: a base line, one line
-  // per modifier showing its *percentage* mod (not the raw Credit change), then a
-  // "Receiver Totals" subtotal that every later component is a percentage of.
+  // Fold the chain: a base line, then a percentage-mod line per step.
   const breakdown: WeaponLineItem[] = [
     {
       label: `Receiver: ${receiver.label}`,
@@ -269,31 +240,38 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   ];
   let rc = receiver.baseCost;
   let rw = receiver.baseWeight;
-  const stepRec = (label: string, cm: number, wm: number) => {
-    const nc = rc * cm;
-    const nw = rw * wm;
-    if (cm !== 1 || wm !== 1)
-      breakdown.push({
-        label,
-        costCr: round2(nc - rc),
-        weightKg: round2(nw - rw),
-        costMod: modPct(cm),
-        weightMod: modPct(wm),
-      });
-    rc = nc;
-    rw = nw;
-  };
-  if (params.gauss) stepRec('Gauss', GAUSS_COST_MULT, GAUSS_WEIGHT_MULT);
-  stepRec(mechanism.label, mechanism.costMult, 1);
-  stepRec(calibre.label, calibre.receiverCostMult, calibre.receiverWeightMult);
-  for (const id of params.features) {
-    const f = RECEIVER_FEATURES[id];
-    if (f) stepRec(f.label, f.costMult, f.weightMult);
+  for (const mod of chain) {
+    breakdown.push({
+      label: mod.label,
+      costCr: round2(rc * mod.cost - rc),
+      weightKg: round2(rw * mod.weight - rw),
+      costMod: modPct(mod.cost),
+      weightMod: modPct(mod.weight),
+    });
+    rc *= mod.cost;
+    rw *= mod.weight;
   }
-  if (autoSteps > 0)
-    stepRec(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight);
-  if (capPct !== 100)
-    stepRec(`Capacity ${capPct}%`, costCapMult, weightCapMult);
+  const baselineCost = round2(rc);
+  const baselineWeight = round2(rw);
+
+  // Base ammunition capacity (its own multiplicative chain) and the special
+  // extreme-stealth ammo-cost multiplier — both independent of cost/weight.
+  const ammoCostMult = features.reduce((m, f) => m * (f.ammoCostMult ?? 1), 1);
+  let capacity: number;
+  if (calibre.smoothbore) {
+    // Large-calibre smoothbores use fixed per-receiver values (no mechanism cap).
+    capacity = SMOOTHBORE_CAPACITY[params.receiver];
+  } else {
+    capacity =
+      receiver.baseCapacity * calibre.capacityMult * mechanism.capacityMult;
+    if (params.gauss) capacity *= GAUSS_CAPACITY_MULT;
+    for (const f of features) capacity *= f.capacityMult;
+  }
+  // Single-shot weapons hold one round per barrel; otherwise scale by capacity %.
+  capacity =
+    params.mechanism === 'singleShot'
+      ? 1
+      : Math.round(capacity * (capPct / 100));
 
   breakdown.push({
     label: 'Receiver Totals',
