@@ -12,7 +12,7 @@ import {
   LAUNCHER_RECEIVERS,
   WARHEADS,
 } from './launcherData.js';
-import { round2 } from './shared.js';
+import { pushIf, round2, tlGate, warning } from './shared.js';
 import type {
   Damage,
   LauncherParams,
@@ -26,16 +26,11 @@ function validateLauncher(params: LauncherParams): Issue[] {
   const issues: Issue[] = [];
   const receiver = LAUNCHER_RECEIVERS[params.receiver];
   const warhead = WARHEADS[params.warhead];
-  if (receiver && params.tl < receiver.minTL)
-    issues.push({
-      severity: 'error',
-      message: `${receiver.label} requires TL${receiver.minTL}`,
-    });
-  if (warhead && params.tl < warhead.minTL)
-    issues.push({
-      severity: 'error',
-      message: `${warhead.label} warhead requires TL${warhead.minTL}`,
-    });
+  pushIf(issues, tlGate(params.tl, receiver?.label ?? '', receiver?.minTL));
+  pushIf(
+    issues,
+    tlGate(params.tl, `${warhead?.label} warhead`, warhead?.minTL),
+  );
   return issues;
 }
 
@@ -96,11 +91,11 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     traits,
   };
 
-  issues.push({
-    severity: 'warning',
-    message:
+  issues.push(
+    warning(
       'Warhead values are the Field Catalogue Hand-grenade figures; launcher-calibre munition stats are not in the supplied text, so the profile is unverified.',
-  });
+    ),
+  );
 
   return {
     profile,

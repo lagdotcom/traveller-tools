@@ -29,7 +29,14 @@ import { evaluateEnergyWeapon } from './energy.js';
 import { evaluateGrenade } from './grenade.js';
 import { evaluateLauncher } from './launcher.js';
 import { evaluateProjector } from './projector.js';
-import { clampLevel, round2 } from './shared.js';
+import {
+  clampLevel,
+  error,
+  mergeTraits,
+  pushIf,
+  round2,
+  tlGate,
+} from './shared.js';
 import {
   type Damage,
   type FirearmParams,
@@ -107,31 +114,28 @@ function validate(params: FirearmParams): Issue[] {
 
   // Gauss rounds force a gauss receiver, and vice-versa is illegal.
   if (calibre.gauss && !params.gauss)
-    issues.push({
-      severity: 'error',
-      message: `${calibre.label} requires a gauss receiver`,
-    });
-  if (params.gauss && tl < 12)
-    issues.push({ severity: 'error', message: 'Gauss weapons require TL12' });
+    issues.push(error(`${calibre.label} requires a gauss receiver`));
+  if (params.gauss && tl < 12) issues.push(error('Gauss weapons require TL12'));
 
   // Calibre ↔ receiver minimums (anti-materiel needs an LSW; heavy AM a Heavy).
   if (calibre.minReceiver) {
     const need = RECEIVER_ORDER.indexOf(calibre.minReceiver);
     const have = RECEIVER_ORDER.indexOf(params.receiver);
     if (have < need)
-      issues.push({
-        severity: 'error',
-        message: `${calibre.label} requires at least a ${RECEIVERS[calibre.minReceiver].label}`,
-      });
+      issues.push(
+        error(
+          `${calibre.label} requires at least a ${RECEIVERS[calibre.minReceiver].label}`,
+        ),
+      );
   }
 
   // Increased Auto only on burst/full-auto receivers.
   if (params.autoIncrease > 0 && MECHANISMS[params.mechanism].auto === 0)
-    issues.push({
-      severity: 'error',
-      message:
+    issues.push(
+      error(
         'Increased Rate of Fire needs a burst-capable or fully-automatic mechanism',
-    });
+      ),
+    );
 
   // Mutually-exclusive feature groups (size, weight, cooling, stealth).
   const groups = new Map<string, string[]>();
@@ -141,52 +145,29 @@ function validate(params: FirearmParams): Issue[] {
       (groups.get(def.group) ?? groups.set(def.group, []).get(def.group)!).push(
         def.label,
       );
-    if (def.minTL && tl < def.minTL)
-      issues.push({
-        severity: 'error',
-        message: `${def.label} requires TL${def.minTL}`,
-      });
+    pushIf(issues, tlGate(tl, def.label, def.minTL));
   }
   for (const labels of groups.values())
     if (labels.length > 1)
-      issues.push({
-        severity: 'error',
-        message: `Incompatible features: ${labels.join(' + ')}`,
-      });
+      issues.push(error(`Incompatible features: ${labels.join(' + ')}`));
 
   // Bullpup requires a full stock; high-capacity is incompatible with compacting.
   if (params.features.includes('bullpup') && params.stock !== 'full')
-    issues.push({
-      severity: 'error',
-      message: 'A Bullpup weapon must have a full stock',
-    });
+    issues.push(error('A Bullpup weapon must have a full stock'));
   if (
     params.features.includes('highCapacity') &&
     (params.features.includes('compact') ||
       params.features.includes('veryCompact'))
   )
-    issues.push({
-      severity: 'error',
-      message: 'High Capacity is incompatible with Compact / Very Compact',
-    });
+    issues.push(
+      error('High Capacity is incompatible with Compact / Very Compact'),
+    );
 
-  // Accessory TL gates.
-  for (const id of params.accessories) {
-    const def = ACCESSORIES[id];
-    if (def.minTL && tl < def.minTL)
-      issues.push({
-        severity: 'error',
-        message: `${def.label} requires TL${def.minTL}`,
-      });
-  }
-
-  // Loaded ammunition TL gate.
+  // Accessory and loaded-ammunition TL gates.
+  for (const id of params.accessories)
+    pushIf(issues, tlGate(tl, ACCESSORIES[id].label, ACCESSORIES[id].minTL));
   const ammo = AMMO_TYPES[params.ammo];
-  if (ammo.minTL && tl < ammo.minTL)
-    issues.push({
-      severity: 'error',
-      message: `${ammo.label} ammunition requires TL${ammo.minTL}`,
-    });
+  pushIf(issues, tlGate(tl, `${ammo.label} ammunition`, ammo.minTL));
 
   return issues;
 }
@@ -398,16 +379,6 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   // --- Derive the profile ---
   let damage: Damage = { ...calibre.damage };
   const traits: Traits = { ...calibre.traits };
-  const mergeTraits = (t?: Traits) => {
-    if (!t) return;
-    for (const [k, v] of Object.entries(t)) {
-      const existing = traits[k];
-      traits[k] =
-        typeof existing === 'number' && typeof v === 'number'
-          ? existing + v
-          : v;
-    }
-  };
 
   // Barrel effects on damage.
   if (barrel.allDiceToD3) damage.die = 3;
@@ -442,10 +413,10 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   for (const f of features) {
     quickdraw += f.quickdraw;
     if (f.signatureShift) sigIndex += f.signatureShift;
-    mergeTraits(f.traits);
+    mergeTraits(traits, f.traits);
   }
   for (const id of params.furniture) quickdraw += FURNITURE[id]?.quickdraw ?? 0;
-  mergeTraits(feed.traits);
+  mergeTraits(traits, feed.traits);
 
   // Accessories affect the profile (suppressors shorten range / signature).
   for (const id of params.accessories) {
@@ -455,7 +426,7 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     if (a.rangeMult) range = Math.round(range * a.rangeMult);
     if (a.penetration) penetration += a.penetration;
     if (a.signatureShift) sigIndex += a.signatureShift;
-    mergeTraits(a.traits);
+    mergeTraits(traits, a.traits);
     if (a.minTL) sources.add(SOURCE);
   }
 
@@ -473,7 +444,7 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     traits.Spread = spread;
     penetration -= spread;
   }
-  mergeTraits(ammo.traits);
+  mergeTraits(traits, ammo.traits);
 
   // Negative penetration surfaces as a Lo-Pen trait.
   if (penetration < 0) traits['Lo-Pen'] = -penetration;

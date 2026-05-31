@@ -6,7 +6,7 @@
 import type { Issue } from '../design/index.js';
 import { SOURCE } from './data.js';
 import { GRENADES, type GrenadeSizeStats } from './grenadeData.js';
-import { round2 } from './shared.js';
+import { error, pushIf, round2, tlGate, warning } from './shared.js';
 import type {
   Damage,
   GrenadeParams,
@@ -25,21 +25,14 @@ export function evaluateGrenade(params: GrenadeParams): WeaponEvaluation {
   let size = params.size;
   let stats: GrenadeSizeStats;
   if (size === 'mini' && !def.mini) {
-    issues.push({
-      severity: 'error',
-      message: `${def.label} is not available as a mini-grenade`,
-    });
+    issues.push(error(`${def.label} is not available as a mini-grenade`));
     size = 'hand';
     stats = def.hand;
   } else {
     stats = (size === 'mini' ? def.mini : def.hand) ?? def.hand;
   }
 
-  if (params.tl < def.minTL)
-    issues.push({
-      severity: 'error',
-      message: `${def.label} requires TL${def.minTL}`,
-    });
+  pushIf(issues, tlGate(params.tl, def.label, def.minTL));
 
   const sizeLabel = size === 'mini' ? 'Mini' : 'Hand';
   const breakdown: WeaponLineItem[] = [
@@ -68,11 +61,11 @@ export function evaluateGrenade(params: GrenadeParams): WeaponEvaluation {
     traits,
   };
 
-  issues.push({
-    severity: 'warning',
-    message:
+  issues.push(
+    warning(
       'Thrown range and Signature are not weapon stats in the Field Catalogue — range depends on the thrower; the Signature shown is unverified.',
-  });
+    ),
+  );
 
   return {
     profile,

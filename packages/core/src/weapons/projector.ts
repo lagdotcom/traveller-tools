@@ -20,7 +20,7 @@ import {
   PROJECTOR_PROPELLANTS,
   PROJECTOR_STRUCTURES,
 } from './projectorData.js';
-import { round2 } from './shared.js';
+import { pushIf, round2, tlGate, warning } from './shared.js';
 import type {
   Damage,
   ProjectorParams,
@@ -34,16 +34,8 @@ function validateProjector(params: ProjectorParams): Issue[] {
   const issues: Issue[] = [];
   const fuel = PROJECTOR_FUELS[params.fuel];
   const prop = PROJECTOR_PROPELLANTS[params.propellant];
-  if (fuel && params.tl < fuel.minTL)
-    issues.push({
-      severity: 'error',
-      message: `${fuel.label} fuel requires TL${fuel.minTL}`,
-    });
-  if (prop && params.tl < prop.minTL)
-    issues.push({
-      severity: 'error',
-      message: `${prop.label} requires TL${prop.minTL}`,
-    });
+  pushIf(issues, tlGate(params.tl, `${fuel?.label} fuel`, fuel?.minTL));
+  pushIf(issues, tlGate(params.tl, prop?.label ?? '', prop?.minTL));
   return issues;
 }
 
@@ -62,10 +54,11 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
   const propKg = Math.max(0, params.propellantKg);
   const payload = fuelKg + propKg;
   if (payload > structure.maxPayload)
-    issues.push({
-      severity: 'warning',
-      message: `Payload ${payload}kg exceeds the ${structure.label} frame's ${structure.maxPayload}kg — the user suffers DM-2 per extra multiple of the maximum`,
-    });
+    issues.push(
+      warning(
+        `Payload ${payload}kg exceeds the ${structure.label} frame's ${structure.maxPayload}kg — the user suffers DM-2 per extra multiple of the maximum`,
+      ),
+    );
 
   // Attacks: limited by fuel (1kg = 1 attack) or propellant (kg × attacks/kg).
   const attacks = Math.floor(Math.min(fuelKg, propKg * prop.attacksPerKg));
@@ -160,11 +153,11 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     traits,
   };
 
-  issues.push({
-    severity: 'warning',
-    message:
+  issues.push(
+    warning(
       'Base Signature for projectors is not given in the supplied Field Catalogue text — the value shown is unverified.',
-  });
+    ),
+  );
 
   return {
     profile,

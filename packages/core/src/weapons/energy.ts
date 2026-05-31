@@ -27,7 +27,16 @@ import {
   POWERPACK_RATINGS,
   powerPerKg,
 } from './energyData.js';
-import { clampLevel, round2 } from './shared.js';
+import {
+  addTrait,
+  clampLevel,
+  error,
+  mergeTraits,
+  pushIf,
+  round2,
+  tlGate,
+  warning,
+} from './shared.js';
 import {
   type Damage,
   type EnergyModId,
@@ -60,36 +69,19 @@ function validateEnergy(params: EnergyParams): Issue[] {
       (groups.get(def.group) ?? groups.set(def.group, []).get(def.group)!).push(
         def.label,
       );
-    if (def.minTL && tl < def.minTL)
-      issues.push({
-        severity: 'error',
-        message: `${def.label} requires TL${def.minTL}`,
-      });
+    pushIf(issues, tlGate(tl, def.label, def.minTL));
   }
   for (const labels of groups.values())
     if (labels.length > 1)
-      issues.push({
-        severity: 'error',
-        message: `Incompatible features: ${labels.join(' + ')}`,
-      });
+      issues.push(error(`Incompatible features: ${labels.join(' + ')}`));
 
-  for (const id of params.mods) {
-    const m = ENERGY_MODS[id];
-    if (m.minTL && tl < m.minTL)
-      issues.push({
-        severity: 'error',
-        message: `${m.label} requires TL${m.minTL}`,
-      });
-  }
-
-  for (const id of params.accessories) {
-    const a = ACCESSORIES[id];
-    if (a?.minTL && tl < a.minTL)
-      issues.push({
-        severity: 'error',
-        message: `${a.label} requires TL${a.minTL}`,
-      });
-  }
+  for (const id of params.mods)
+    pushIf(issues, tlGate(tl, ENERGY_MODS[id].label, ENERGY_MODS[id].minTL));
+  for (const id of params.accessories)
+    pushIf(
+      issues,
+      tlGate(tl, ACCESSORIES[id]?.label ?? id, ACCESSORIES[id]?.minTL),
+    );
   return issues;
 }
 
@@ -128,24 +120,22 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   const requested = Math.max(0, Math.floor(params.damageDice));
   let dice = Math.min(requested, receiverCap);
   if (dice < requested)
-    issues.push({
-      severity: 'warning',
-      message: `${receiver.label} receiver caps output at ${receiverCap}D — excess power is wasted`,
-    });
+    issues.push(
+      warning(
+        `${receiver.label} receiver caps output at ${receiverCap}D — excess power is wasted`,
+      ),
+    );
   const barrelCap = ENERGY_BARREL_POWER_CAP[params.barrel];
   if (barrelCap !== undefined && dice > barrelCap) {
-    issues.push({
-      severity: 'warning',
-      message: `${barrel.label} barrel limits this laser to ${barrelCap}D — excess power is wasted`,
-    });
+    issues.push(
+      warning(
+        `${barrel.label} barrel limits this laser to ${barrelCap}D — excess power is wasted`,
+      ),
+    );
     dice = barrelCap;
   }
 
   const traits: Traits = { 'Zero-G': true };
-  const addTrait = (name: string, level: number) => {
-    const existing = traits[name];
-    traits[name] = typeof existing === 'number' ? existing + level : level;
-  };
 
   // --- Breakdown: receiver line ---
   const typeLabel = ENERGY_WEAPON_TYPE_LABEL[params.weaponType] ?? 'Laser';
@@ -208,10 +198,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   if (params.powerSource === 'powerpack') {
     const perKg = powerPerKg(params.tl);
     if (perKg === 0)
-      issues.push({
-        severity: 'error',
-        message: 'Energy-weapon powerpacks require TL8+',
-      });
+      issues.push(error('Energy-weapon powerpacks require TL8+'));
     const kg = Math.max(0, params.powerpackKg);
     capacity = dice > 0 ? Math.floor((perKg * kg) / dice) : 0;
     add(
@@ -223,18 +210,16 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     // An under-rated pack suffers excessive draw → Unreliable.
     const packDice = ENERGY_POWER_CLASS_DICE[params.powerpackRating];
     if (packDice < dice) {
-      addTrait('Unreliable', dice - packDice);
-      issues.push({
-        severity: 'warning',
-        message: `Powerpack rating (${packDice}D) is below the weapon's ${dice}D output → Unreliable ${dice - packDice}`,
-      });
+      addTrait(traits, 'Unreliable', dice - packDice);
+      issues.push(
+        warning(
+          `Powerpack rating (${packDice}D) is below the weapon's ${dice}D output → Unreliable ${dice - packDice}`,
+        ),
+      );
     }
   } else {
     if (cartridgeMaxAt(params.tl) === null)
-      issues.push({
-        severity: 'error',
-        message: 'Energy-weapon cartridges require TL9+',
-      });
+      issues.push(error('Energy-weapon cartridges require TL9+'));
     capacity = Math.max(0, Math.floor(params.cartridgeCount));
     const cart = ENERGY_CARTRIDGE[params.cartridgeRating];
     // Disposable holder: weighs cartridges + 20%; build cost is one cartridge.
@@ -248,20 +233,22 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     const cartDice = ENERGY_POWER_CLASS_DICE[params.cartridgeRating];
     if (cartDice > dice) {
       // An over-powered cartridge stresses the weapon → Unreliable.
-      addTrait('Unreliable', cartDice - dice);
-      issues.push({
-        severity: 'warning',
-        message: `${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} cartridge exceeds the weapon's ${dice}D handling → Unreliable ${cartDice - dice}`,
-      });
+      addTrait(traits, 'Unreliable', cartDice - dice);
+      issues.push(
+        warning(
+          `${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} cartridge exceeds the weapon's ${dice}D handling → Unreliable ${cartDice - dice}`,
+        ),
+      );
     } else if (cartDice < dice) {
       // An under-powered cartridge simply delivers less.
       deliveredDice = cartDice;
-      issues.push({
-        severity: 'warning',
-        message: `${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} cartridge only delivers ${cartDice}D, below the weapon's ${dice}D capability`,
-      });
+      issues.push(
+        warning(
+          `${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} cartridge only delivers ${cartDice}D, below the weapon's ${dice}D capability`,
+        ),
+      );
     }
-    if (!params.cartridgeEjects) addTrait('Hazardous', -2);
+    if (!params.cartridgeEjects) addTrait(traits, 'Hazardous', -2);
   }
 
   // --- Derive the profile ---
@@ -289,17 +276,10 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   sigIndex += barrel.signatureShift;
 
   let quickdraw = barrel.quickdraw + (params.heavyBarrel ? -1 : 0);
-  const mergeTraits = (t?: Traits) => {
-    if (!t) return;
-    for (const [k, v] of Object.entries(t)) {
-      if (typeof v === 'number') addTrait(k, v);
-      else traits[k] = v;
-    }
-  };
   for (const f of features) {
     quickdraw += f.quickdraw;
     if (f.signatureShift) sigIndex += f.signatureShift;
-    mergeTraits(f.traits);
+    mergeTraits(traits, f.traits);
   }
   for (const id of params.furniture) quickdraw += FURNITURE[id]?.quickdraw ?? 0;
   for (const id of params.accessories) {
@@ -309,16 +289,16 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     if (a.rangeMult) range = Math.round(range * a.rangeMult);
     if (a.penetration) penetration += a.penetration;
     if (a.signatureShift) sigIndex += a.signatureShift;
-    mergeTraits(a.traits);
+    mergeTraits(traits, a.traits);
   }
 
   if (penetration < 0) traits['Lo-Pen'] = -penetration;
 
-  issues.push({
-    severity: 'warning',
-    message:
+  issues.push(
+    warning(
       'Base Signature for directed-energy weapons is not given in the supplied Field Catalogue text — the value shown is unverified.',
-  });
+    ),
+  );
 
   const profile: WeaponProfile = {
     tl: params.tl,
