@@ -20,6 +20,14 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
   path on the CLI).
 - **Ship library** — load any of the 24 built-in common spacecraft or your saved
   designs into the builder; import a design from a JSON file.
+- **Weapon builder** — design MgT2 conventional firearms (slug throwers) from the
+  _Field Catalogue_ rules: receiver, mechanism, calibre, barrel, furniture, feed
+  device, receiver features, accessories/sights and loaded ammunition. Shows the
+  full derived profile (damage, range, Auto, recoil, quickdraw, penetration,
+  signature, traits, magazine) plus a book-style cost/weight breakdown. `Ctrl+E`
+  export, `Ctrl+O` import. See [`docs/weapon-builder.md`](docs/weapon-builder.md).
+- **Weapon library** — load any of the worked _Field Catalogue_ example weapons
+  into the builder, or import one from a JSON file.
 - **Vehicle catalogue** — the Core Rulebook vehicles, with stat blocks, also
   selectable as carried craft.
 - **Jump & Fuel** — jump fuel by hull tonnage and jump number, jump validity
@@ -29,8 +37,10 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
 
 Ship construction follows the **Core Rulebook (2022)**; non-Core (High Guard)
 options are flagged, and the ship sheet lists which rulebooks a design needs.
-Weapon and robot builders are planned; the rules engine is structured so they
-slot in as new modules + screens.
+Weapon construction follows the **Field Catalogue** (conventional firearms so far;
+energy weapons, projectors, launchers and grenades are planned). A robot builder
+is also planned; the rules engine is structured so new builders slot in as new
+modules + screens.
 
 ## Project layout
 

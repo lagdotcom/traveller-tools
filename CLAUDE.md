@@ -1,7 +1,7 @@
 # CLAUDE.md
 
-Working notes for this repo. (User-facing intro lives in `README.md`; the ship
-builder design write-up is in `docs/ship-builder.md`.)
+Working notes for this repo. (User-facing intro lives in `README.md`; design
+write-ups are in `docs/ship-builder.md` and `docs/weapon-builder.md`.)
 
 ## What this is
 
@@ -92,6 +92,37 @@ Conventions that matter:
    `normalizeParams` (library.ts), the test `baseParams`, and the TUI
    (`formValues`, a field/section, the `params` object in `ShipBuilder.tsx`).
 4. Tonnage-based "systems" auto-appear in the builder's Systems list.
+
+## The weapon domain (`packages/core/src/weapons/`)
+
+Conventional firearms (slug throwers) from the **Field Catalogue** — design
+write-up in `docs/weapon-builder.md`.
+
+- **Deliberately NOT the generic engine.** The Field Catalogue cost/weight model
+  is **sequential-multiplicative off a "modified receiver" baseline**, not the
+  additive resource model `summarize` uses. So `evaluateWeapon(params)`
+  (`weapon.ts`) walks an explicit pipeline returning the same _shape_ as
+  `evaluateShip` — `{ profile, breakdown, issues, totals, sources }` — reusing the
+  engine's `Issue` type and the `source` provenance idea, but **not** `summarize`.
+- **Pipeline:** receiver baseline (gauss → mechanism → calibre → features →
+  Increased-Auto → capacity %, all multiplicative) then Phase B (barrel / stock /
+  furniture / feed / accessories as % of baseline, or flat Cr). Profile derivation
+  (damage with the "running out of dice" rule, range, Auto, recoil, quickdraw,
+  penetration→Lo-Pen, signature, traits) happens alongside; loaded ammo modifies
+  the **profile only**, not the build cost.
+- **All numbers come from the Field Catalogue** (`source: 'Field Catalogue'`). The
+  user supplied **eight worked worksheets**, shipped as `BUILTIN_WEAPONS` and used
+  as the test oracle. Six use the rules-text base values (seeded); the two early
+  ones (Generic 6 Revolver, Compact PDW) are outliers. **Rules-vs-worksheet
+  conflicts carry `reconcile:` notes in `data.ts` — do not silently override; the
+  user is the authority.** Known conflicts: base receiver values, light-handgun
+  cost/weight, small-smoothbore weight, pistol-calibre base penetration (−1),
+  smoothbore capacity, laser-pointer price.
+- **Adding a component:** add the id to the union + a row in the relevant `data.ts`
+  record; update `DEFAULT_WEAPON_PARAMS`/`normalizeWeaponParams` + the TUI
+  (`labelMap`, a field or one of the add/remove lists in `WeaponBuilder.tsx`).
+- v1 is conventional firearms only. Energy weapons, projectors, launchers and
+  grenades are out of scope but slot in as new weapon classes + tables.
 
 ## TUI notes (`packages/tui`)
 
