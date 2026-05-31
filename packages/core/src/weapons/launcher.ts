@@ -84,16 +84,20 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     recoil: 0,
     quickdraw: 0,
     penetration: 0,
+    // Physical (normal), per the launcher worked examples (IP-2, Spigot Mortar,
+    // ASSW, Tac Missile System).
     signatureKind: 'physical',
-    signature: 'high',
+    signature: 'normal',
     heat: 0,
     capacity,
     traits,
   };
 
+  // The warhead damage/blast values are still the FC thrown Hand-grenade figures
+  // (the launcher-calibre munition table isn't in the supplied text).
   issues.push(
     warning(
-      'Warhead values are the Field Catalogue Hand-grenade figures; launcher-calibre munition stats are not in the supplied text, so the profile is unverified.',
+      'Warhead damage values are the Field Catalogue Hand-grenade figures; launcher-calibre munition stats are not in the supplied text.',
     ),
   );
 

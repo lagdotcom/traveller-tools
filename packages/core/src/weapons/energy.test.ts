@@ -159,15 +159,13 @@ describe('energy weapon — tech-level gates', () => {
   });
 });
 
-describe('energy weapon — signature is flagged unverified', () => {
-  it('emits a warning that the base signature is not in the supplied text', () => {
-    const r = evaluateWeapon(energy({}));
+describe('energy weapon — signature', () => {
+  it('is Emissions (normal) and unshifted by the barrel', () => {
+    // A minimal barrel would +2 a firearm's signature; a laser collimator does not.
+    const r = evaluateWeapon(energy({ barrel: 'minimal', damageDice: 2 }));
     expect(r.profile.signatureKind).toBe('emissions');
-    expect(
-      r.issues.some(
-        (i) => i.severity === 'warning' && /unverified/.test(i.message),
-      ),
-    ).toBe(true);
+    expect(r.profile.signature).toBe('normal');
+    expect(r.issues.some((i) => /unverified/.test(i.message))).toBe(false);
   });
 });
 

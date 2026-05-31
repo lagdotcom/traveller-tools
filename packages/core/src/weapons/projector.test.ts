@@ -110,10 +110,10 @@ describe('projector — validation', () => {
     ).toBe(true);
   });
 
-  it('flags the signature as unverified', () => {
+  it('reads Emissions (extreme), per the MF-61 example', () => {
     const r = evaluateWeapon(proj({}));
-    expect(r.profile.signatureKind).toBe('physical');
-    expect(r.issues.some((i) => /unverified/.test(i.message))).toBe(true);
+    expect(r.profile.signatureKind).toBe('emissions');
+    expect(r.profile.signature).toBe('extreme');
   });
 });
 

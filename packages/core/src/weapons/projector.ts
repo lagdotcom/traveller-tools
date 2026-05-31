@@ -146,18 +146,14 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     recoil: 0,
     quickdraw: structure.quickdraw,
     penetration: 0,
-    signatureKind: 'physical',
-    signature: 'high',
+    // Emissions (extreme), per the MF-61 flame-projector worked example. Only the
+    // flame case is attested; cryo/suppressant projectors may differ.
+    signatureKind: 'emissions',
+    signature: 'extreme',
     heat: 0,
     capacity: attacks,
     traits,
   };
-
-  issues.push(
-    warning(
-      'Base Signature for projectors is not given in the supplied Field Catalogue text — the value shown is unverified.',
-    ),
-  );
 
   return {
     profile,

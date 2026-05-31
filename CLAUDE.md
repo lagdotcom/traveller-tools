@@ -147,12 +147,14 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   `DEFAULT_*_PARAMS`/`normalizeWeaponParams` branch + the TUI
   (`labelMap`/`choiceMap`, a field or one of the add/remove lists in
   `WeaponBuilder.tsx`).
-- **Unverified caveats:** the supplied FC text gives **no base Signature** for
-  energy weapons, projectors or grenades (shown but flagged); the launcher warhead
-  values are the _thrown_ Hand-grenade figures (the launcher-calibre munition table
-  isn't in the text, so `evaluateLauncher` flags the profile unverified); grenade
-  thrown range isn't a weapon stat (set 0). Don't replace these with invented
-  numbers — flag, don't guess.
+- **Signatures (derived from worked examples, not a rules table):** lasers/energy
+  = Emissions (normal), unshifted by the barrel (a collimator, not a muzzle);
+  projectors = Emissions (extreme) (from the MF-61 flame example — only flame is
+  attested, cryo may differ); launchers = Physical (normal). Grenades have no
+  attested signature (left flagged) and no thrown range (a thrower stat, set 0).
+- **Still unverified:** the launcher warhead damage/blast values are the _thrown_
+  Hand-grenade figures (the launcher-calibre munition table isn't in the supplied
+  text), so `evaluateLauncher` flags them. Don't replace with invented numbers.
 - The whole FC weapon-design chapter (firearms, energy, projectors, launchers,
   grenades) is now implemented; remaining FC content is non-weapon (armour, gear).
 

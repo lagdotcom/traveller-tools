@@ -72,9 +72,13 @@ describe('launcher — validation', () => {
     ).toBe(true);
   });
 
-  it('flags the warhead/profile as unverified', () => {
+  it('reads Physical (normal) and flags the warhead munition values', () => {
     const r = evaluateWeapon(launcher({}));
-    expect(r.issues.some((i) => /unverified/.test(i.message))).toBe(true);
+    expect(r.profile.signatureKind).toBe('physical');
+    expect(r.profile.signature).toBe('normal');
+    expect(
+      r.issues.some((i) => /launcher-calibre munition stats/.test(i.message)),
+    ).toBe(true);
   });
 });
 

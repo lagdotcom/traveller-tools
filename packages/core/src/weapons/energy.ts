@@ -270,10 +270,10 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   let penetration =
     -1 + barrel.penetration + (hasMod('intensifiedPulse') ? 1 : 0);
 
-  // Signature: NOT specified by the FC energy rules — start from a neutral level
-  // and flag it as unverified below.
+  // Signature: Emissions (normal), per the worked laser examples (BL-3, M-84,
+  // Nefertem). A laser's "barrel" is a collimator, so — unlike a firearm muzzle —
+  // it adds no signature shift; only stealth features/accessories move it.
   let sigIndex = SIGNATURE_LEVELS.indexOf('normal');
-  sigIndex += barrel.signatureShift;
 
   let quickdraw = barrel.quickdraw + (params.heavyBarrel ? -1 : 0);
   for (const f of features) {
@@ -293,12 +293,6 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   }
 
   if (penetration < 0) traits['Lo-Pen'] = -penetration;
-
-  issues.push(
-    warning(
-      'Base Signature for directed-energy weapons is not given in the supplied Field Catalogue text — the value shown is unverified.',
-    ),
-  );
 
   const profile: WeaponProfile = {
     tl: params.tl,
