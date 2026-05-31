@@ -21,6 +21,11 @@ import {
   ENERGY_RECEIVERS,
   ENERGY_WEAPON_TYPE_LABEL,
 } from './energyData.js';
+import {
+  PROJECTOR_FUELS,
+  PROJECTOR_PROPELLANTS,
+  PROJECTOR_STRUCTURES,
+} from './projectorData.js';
 import type {
   AccessoryId,
   AmmoTypeId,
@@ -36,6 +41,10 @@ import type {
   FirearmParams,
   FurnitureId,
   MechanismId,
+  ProjectorFuelId,
+  ProjectorParams,
+  ProjectorPropellantId,
+  ProjectorStructureId,
   ReceiverFeatureId,
   ReceiverTypeId,
   StockId,
@@ -97,6 +106,17 @@ export const DEFAULT_ENERGY_PARAMS: EnergyParams = {
   cartridgeRating: 'light',
   cartridgeCount: 20,
   cartridgeEjects: true,
+};
+
+/** A valid starting projector: a TL5 Compact jellied-fuel flamethrower. */
+export const DEFAULT_PROJECTOR_PARAMS: ProjectorParams = {
+  kind: 'projector',
+  tl: 5,
+  structure: 'compact',
+  propellant: 'compressed',
+  fuel: 'jellied',
+  fuelKg: 4,
+  propellantKg: 2,
 };
 
 // --- Validation helpers (shape-matched to ships/library.ts) -----------------
@@ -194,13 +214,40 @@ function normalizeEnergyParams(p: Record<string, unknown>): EnergyParams {
   };
 }
 
+/** Coerce arbitrary parsed JSON into a complete, valid ProjectorParams. */
+function normalizeProjectorParams(p: Record<string, unknown>): ProjectorParams {
+  const d = DEFAULT_PROJECTOR_PARAMS;
+  return {
+    kind: 'projector',
+    tl: num(p.tl, d.tl),
+    structure: pick<ProjectorStructureId>(
+      p.structure,
+      PROJECTOR_STRUCTURES,
+      d.structure,
+    ),
+    propellant: pick<ProjectorPropellantId>(
+      p.propellant,
+      PROJECTOR_PROPELLANTS,
+      d.propellant,
+    ),
+    fuel: pick<ProjectorFuelId>(p.fuel, PROJECTOR_FUELS, d.fuel),
+    fuelKg: num(p.fuelKg, d.fuelKg),
+    propellantKg: num(p.propellantKg, d.propellantKg),
+  };
+}
+
 /** Coerce arbitrary parsed JSON into a complete, valid WeaponParams. Never throws. */
 export function normalizeWeaponParams(input: unknown): WeaponParams {
   const p = isObject(input) ? input : {};
   // Legacy documents (no `kind`) are conventional firearms.
-  return p.kind === 'energy'
-    ? normalizeEnergyParams(p)
-    : normalizeFirearmParams(p);
+  switch (p.kind) {
+    case 'energy':
+      return normalizeEnergyParams(p);
+    case 'projector':
+      return normalizeProjectorParams(p);
+    default:
+      return normalizeFirearmParams(p);
+  }
 }
 
 // --- Serialize / parse ------------------------------------------------------
@@ -266,6 +313,18 @@ function energyWeapon(
     name,
     description,
     params: { ...DEFAULT_ENERGY_PARAMS, ...overrides },
+  };
+}
+
+function projector(
+  name: string,
+  description: string,
+  overrides: Partial<ProjectorParams>,
+): WeaponDefinition {
+  return {
+    name,
+    description,
+    params: { ...DEFAULT_PROJECTOR_PARAMS, ...overrides },
   };
 }
 
@@ -409,6 +468,18 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       powerSource: 'powerpack',
       powerpackKg: 2,
       powerpackRating: 'standard',
+    },
+  ),
+  projector(
+    'Flamethrower',
+    'TL5 Compact jellied-fuel flamethrower (Field Catalogue projector).',
+    {
+      tl: 5,
+      structure: 'compact',
+      propellant: 'compressed',
+      fuel: 'jellied',
+      fuelKg: 4,
+      propellantKg: 2,
     },
   ),
 ];

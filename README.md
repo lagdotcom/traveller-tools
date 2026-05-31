@@ -20,12 +20,13 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
   path on the CLI).
 - **Ship library** — load any of the 24 built-in common spacecraft or your saved
   designs into the builder; import a design from a JSON file.
-- **Weapon builder** — design MgT2 weapons from the _Field Catalogue_ rules, in two
-  classes (pick via the **Class** field): **conventional firearms** (receiver,
+- **Weapon builder** — design MgT2 weapons from the _Field Catalogue_ rules, in
+  three classes (pick via the **Class** field): **conventional firearms** (receiver,
   mechanism, calibre, barrel, furniture, feed, receiver features, accessories and
-  loaded ammunition) and **Directed Energy Weapons** (laser/microwave receiver by
+  loaded ammunition), **Directed Energy Weapons** (laser/microwave receiver by
   power class, chosen damage dice, powerpack/cartridge power source, and the energy
-  beam modifications). Shows the full derived profile (damage, range, Auto, recoil,
+  beam modifications), and **Projectors** (flame/cryo/chemical — frame, propellant
+  and fuel by payload). Shows the full derived profile (damage, range, Auto, recoil,
   quickdraw, penetration, signature, traits, magazine/shots) plus a book-style
   cost/weight breakdown. `Ctrl+S` save, `Ctrl+E` export, `Ctrl+O` import.
   See [`docs/weapon-builder.md`](docs/weapon-builder.md).
@@ -41,9 +42,9 @@ The same [Ink](https://github.com/vadimdemedes/ink) TUI runs two ways:
 
 Ship construction follows the **Core Rulebook (2022)**; non-Core (High Guard)
 options are flagged, and the ship sheet lists which rulebooks a design needs.
-Weapon construction follows the **Field Catalogue** (conventional firearms and
-directed-energy weapons so far; projectors, launchers and grenades are planned). A
-robot builder
+Weapon construction follows the **Field Catalogue** (conventional firearms,
+directed-energy weapons and projectors so far; launchers and grenades are
+planned). A robot builder
 is also planned; the rules engine is structured so new builders slot in as new
 modules + screens.
 

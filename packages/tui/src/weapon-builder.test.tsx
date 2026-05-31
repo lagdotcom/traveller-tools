@@ -57,6 +57,17 @@ describe('Weapon builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('switches to the projector class and shows projector fields', async () => {
+    const ui = await openBuilder();
+    await ui.type('Projector');
+    await ui.waitFor('Frame');
+    expect(ui.frame()).toContain('Propellant');
+    await ui.type(TAB); // Type -> Payload
+    expect(ui.frame()).toContain('Fuel (kg)');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('loads a built-in weapon from the library', async () => {
     const ui = renderInk();
     await ui.waitFor('Traveller Tools');

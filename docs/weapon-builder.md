@@ -117,8 +117,32 @@ not in the book" convention) rather than inventing a confirmed number. Two
 built-ins (`Laser Carbine`, `Laser Rifle`) seed `BUILTIN_WEAPONS`; `energy.test.ts`
 checks the totals/caps/power-mismatch maths against the rules-text examples.
 
+## Projectors (`projector.ts` / `projectorData.ts`)
+
+Flamethrowers, cryo and chemical sprayers (`kind: 'projector'`). Built from three
+pieces — a **Structure** (frame), a **Propellant** and a **Fuel** — with the
+designer choosing how many kg of fuel and propellant to carry as payload.
+
+- **Structure** (Large / Compact / Hand) sets the max payload (20 / 10 / 2 kg),
+  the Blast level (3 / 2 / 1), Quickdraw, and the cost model: the frame weighs a
+  fraction of the payload (30 / 20 / 10 %) and the whole loaded weapon costs a flat
+  Cr/kg of its total weight (Cr50 / 100 / 25). A Hand frame halves range.
+- **Propellant** sets attacks-per-kg and effective range (Compressed 4/kg @ 20 m,
+  Supercompressed 6/kg @ 25 m, Generated 10/kg @ 30 m). Generated gas adds one-off
+  machinery (Cr500/kg) on top of the consumable reagents (Cr200/kg).
+- **Fuel** sets the damage/effect per attack (Liquid 3D, Jellied 4D, Advanced 5D,
+  Cryogenic 4D, Suppressant 2D + half range, Irritant/Battlechem = effect only).
+- **Attacks** (the "magazine") = whichever runs out first, fuel (1 kg = 1 attack)
+  or propellant (kg × attacks-per-kg). Fuel + propellant are consumables, priced as
+  the reload cost. All projectors carry **Hazardous −6** and the structure's Blast.
+
+`reconcile:` the fuel table lists Liquid as 4D / Cr75 (identical to Jellied); the
+prose says 3D / Cr25, which keeps the TL damage progression, so the prose value is
+seeded. **Signature** is again not given, so it is shown Physical but flagged
+unverified. Built-in: `Flamethrower`; `projector.test.ts` checks the maths.
+
 ## Out of scope (future phases)
 
-Projectors (flame/cryo), launchers & support weapons, and the
-grenade/warhead/explosive catalogue. Each slots in as additional weapon classes +
-catalogue tables, reusing this pipeline and the builder UI.
+Launchers & support weapons (FC "Launchers"), and the grenade / warhead /
+explosive catalogue. Each slots in as an additional weapon class + catalogue
+tables, reusing this pipeline and the builder UI.

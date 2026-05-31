@@ -8,6 +8,7 @@ import {
   type CalibreId,
   CALIBRES,
   DEFAULT_ENERGY_PARAMS,
+  DEFAULT_PROJECTOR_PARAMS,
   DEFAULT_WEAPON_PARAMS,
   ENERGY_MODS,
   ENERGY_POWER_CLASS_LABEL,
@@ -26,6 +27,13 @@ import {
   type MechanismId,
   MECHANISMS,
   parseWeapon,
+  PROJECTOR_FUELS,
+  PROJECTOR_PROPELLANTS,
+  PROJECTOR_STRUCTURES,
+  type ProjectorFuelId,
+  type ProjectorParams,
+  type ProjectorPropellantId,
+  type ProjectorStructureId,
   RECEIVER_FEATURES,
   type ReceiverFeatureId,
   RECEIVERS,
@@ -75,6 +83,9 @@ const FURN = labelMap<FurnitureId>(FURNITURE);
 const ACCESSORY = labelMap<AccessoryId>(ACCESSORIES);
 const ERECEIVER = labelMap<EnergyReceiverId>(ENERGY_RECEIVERS);
 const EMOD = labelMap<EnergyModId>(ENERGY_MODS);
+const PSTRUCT = labelMap<ProjectorStructureId>(PROJECTOR_STRUCTURES);
+const PPROP = labelMap<ProjectorPropellantId>(PROJECTOR_PROPELLANTS);
+const PFUEL = labelMap<ProjectorFuelId>(PROJECTOR_FUELS);
 
 /** Small label list for a fixed set of ids (used for enum-like choices). */
 function choiceMap<T extends string>(entries: [T, string][]) {
@@ -89,6 +100,7 @@ function choiceMap<T extends string>(entries: [T, string][]) {
 const WCLASS = choiceMap<WeaponClass>([
   ['firearm', 'Firearm'],
   ['energy', 'Energy'],
+  ['projector', 'Projector'],
 ]);
 const EWTYPE = choiceMap<EnergyWeaponTypeId>([
   ['laser', 'Laser'],
@@ -116,13 +128,18 @@ const YN = ['no', 'yes'];
 function formValues(p: WeaponParams) {
   const f: FirearmParams = p.kind === 'firearm' ? p : DEFAULT_WEAPON_PARAMS;
   const e: EnergyParams = p.kind === 'energy' ? p : DEFAULT_ENERGY_PARAMS;
+  const pr: ProjectorParams =
+    p.kind === 'projector' ? p : DEFAULT_PROJECTOR_PARAMS;
+  // Barrel/stock are shared by firearm + energy only (projectors have neither).
+  const bs: FirearmParams | EnergyParams =
+    p.kind === 'projector' ? DEFAULT_WEAPON_PARAMS : p;
   return {
     weaponClass: WCLASS.toLabel(p.kind),
     tl: String(p.tl),
-    // shared
-    barrel: BARREL.toLabel(p.barrel),
-    heavyBarrel: p.heavyBarrel ? 'yes' : 'no',
-    stock: STOCK.toLabel(p.stock),
+    // shared (firearm + energy)
+    barrel: BARREL.toLabel(bs.barrel),
+    heavyBarrel: bs.heavyBarrel ? 'yes' : 'no',
+    stock: STOCK.toLabel(bs.stock),
     // firearm
     receiver: RECEIVER.toLabel(f.receiver),
     gauss: f.gauss ? 'yes' : 'no',
@@ -142,6 +159,12 @@ function formValues(p: WeaponParams) {
     cartridgeRating: PCLASS.toLabel(e.cartridgeRating),
     cartridgeCount: String(e.cartridgeCount),
     cartridgeEjects: e.cartridgeEjects ? 'yes' : 'no',
+    // projector
+    pStructure: PSTRUCT.toLabel(pr.structure),
+    pPropellant: PPROP.toLabel(pr.propellant),
+    pFuel: PFUEL.toLabel(pr.fuel),
+    fuelKg: String(pr.fuelKg),
+    propellantKg: String(pr.propellantKg),
   };
 }
 
@@ -163,14 +186,16 @@ export function WeaponBuilderScreen({
   type FormKey = keyof typeof form.values;
 
   const [name, setName] = useState(initial?.name ?? 'Untitled Weapon');
+  // Features/furniture/accessories are shared by firearm + energy; projectors
+  // have none, so seed empty for them.
+  const listSeed =
+    startParams.kind === 'projector' ? DEFAULT_WEAPON_PARAMS : startParams;
   const [features, setFeatures] = useState<ReceiverFeatureId[]>(
-    startParams.features,
+    listSeed.features,
   );
-  const [furniture, setFurniture] = useState<FurnitureId[]>(
-    startParams.furniture,
-  );
+  const [furniture, setFurniture] = useState<FurnitureId[]>(listSeed.furniture);
   const [accessories, setAccessories] = useState<AccessoryId[]>(
-    startParams.accessories,
+    listSeed.accessories,
   );
   const [mods, setMods] = useState<EnergyModId[]>(
     startParams.kind === 'energy' ? startParams.mods : [],
@@ -383,8 +408,36 @@ export function WeaponBuilderScreen({
     { label: 'Accessories', list: 'accessories' },
   ];
 
+  const projectorSections: {
+    label: string;
+    fields?: FieldDef[];
+    list?: ListId;
+  }[] = [
+    {
+      label: 'Type',
+      fields: [
+        classField,
+        { key: 'tl', label: 'Tech level' },
+        { key: 'pStructure', label: 'Frame', options: PSTRUCT.labels },
+        { key: 'pFuel', label: 'Fuel', options: PFUEL.labels },
+        { key: 'pPropellant', label: 'Propellant', options: PPROP.labels },
+      ],
+    },
+    {
+      label: 'Payload',
+      fields: [
+        { key: 'fuelKg', label: 'Fuel (kg)' },
+        { key: 'propellantKg', label: 'Propellant (kg)' },
+      ],
+    },
+  ];
+
   const sectionDefs =
-    weaponClass === 'energy' ? energySections : firearmSections;
+    weaponClass === 'energy'
+      ? energySections
+      : weaponClass === 'projector'
+        ? projectorSections
+        : firearmSections;
 
   const rows: Row[] = [];
   sectionDefs.forEach((section, si) => {
@@ -429,24 +482,34 @@ export function WeaponBuilderScreen({
           cartridgeCount: num(form.values.cartridgeCount, 10),
           cartridgeEjects: form.values.cartridgeEjects === 'yes',
         }
-      : {
-          kind: 'firearm',
-          tl: num(form.values.tl, 0),
-          receiver: RECEIVER.toId(form.values.receiver),
-          gauss: form.values.gauss === 'yes',
-          calibre: CALIBRE.toId(form.values.calibre),
-          mechanism: MECHANISM.toId(form.values.mechanism),
-          autoIncrease: num(form.values.autoIncrease),
-          features,
-          barrel: BARREL.toId(form.values.barrel),
-          heavyBarrel: form.values.heavyBarrel === 'yes',
-          stock: STOCK.toId(form.values.stock),
-          furniture,
-          feed: FEED.toId(form.values.feed),
-          capacityPct: num(form.values.capacityPct, 100),
-          accessories,
-          ammo: AMMO.toId(form.values.ammo),
-        };
+      : weaponClass === 'projector'
+        ? {
+            kind: 'projector',
+            tl: num(form.values.tl, 0),
+            structure: PSTRUCT.toId(form.values.pStructure),
+            propellant: PPROP.toId(form.values.pPropellant),
+            fuel: PFUEL.toId(form.values.pFuel),
+            fuelKg: num(form.values.fuelKg, 0),
+            propellantKg: num(form.values.propellantKg, 0),
+          }
+        : {
+            kind: 'firearm',
+            tl: num(form.values.tl, 0),
+            receiver: RECEIVER.toId(form.values.receiver),
+            gauss: form.values.gauss === 'yes',
+            calibre: CALIBRE.toId(form.values.calibre),
+            mechanism: MECHANISM.toId(form.values.mechanism),
+            autoIncrease: num(form.values.autoIncrease),
+            features,
+            barrel: BARREL.toId(form.values.barrel),
+            heavyBarrel: form.values.heavyBarrel === 'yes',
+            stock: STOCK.toId(form.values.stock),
+            furniture,
+            feed: FEED.toId(form.values.feed),
+            capacityPct: num(form.values.capacityPct, 100),
+            accessories,
+            ammo: AMMO.toId(form.values.ammo),
+          };
   const currentDef: WeaponDefinition = { name, params };
   const evaluation = evaluateWeapon(params);
 

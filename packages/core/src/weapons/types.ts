@@ -174,10 +174,29 @@ export type EnergyModId =
   | 'intensifiedPulse'
   | 'variableIntensity';
 
+// --- Projector selectable ids (flame / cryo / chemical projectors) ----------
+
+/** Projector frame size (sets max payload, weight %, cost/kg and Blast). */
+export type ProjectorStructureId = 'large' | 'compact' | 'hand';
+/** Propellant type (sets attacks-per-kg and effective range). */
+export type ProjectorPropellantId =
+  | 'compressed'
+  | 'supercompressed'
+  | 'generated';
+/** Fuel type (sets the damage/effect each attack delivers). */
+export type ProjectorFuelId =
+  | 'liquid'
+  | 'jellied'
+  | 'irritant'
+  | 'suppressant'
+  | 'battlechem'
+  | 'advanced'
+  | 'cryogenic';
+
 // --- User-facing parameters -------------------------------------------------
 
 /** Discriminates the weapon class so `WeaponParams` is a tagged union. */
-export type WeaponClass = 'firearm' | 'energy';
+export type WeaponClass = 'firearm' | 'energy' | 'projector';
 
 export interface FirearmParams {
   /** Conventional slug-thrower (the original/default class). */
@@ -241,8 +260,26 @@ export interface EnergyParams {
   cartridgeEjects: boolean;
 }
 
+/**
+ * A Projector (flamethrower / cryo / chemical sprayer). Built from a frame
+ * (Structure), a Propellant and a Fuel; the designer chooses how many kg of each
+ * to carry as payload. Damage comes from the fuel, range from the propellant, and
+ * the number of attacks from whichever of the two runs out first.
+ */
+export interface ProjectorParams {
+  kind: 'projector';
+  tl: number;
+  structure: ProjectorStructureId;
+  propellant: ProjectorPropellantId;
+  fuel: ProjectorFuelId;
+  /** Kilograms of fuel carried (1kg = 1 attack). */
+  fuelKg: number;
+  /** Kilograms of propellant carried (attacks = kg × attacks-per-kg). */
+  propellantKg: number;
+}
+
 /** A weapon design of any class (discriminated by `kind`). */
-export type WeaponParams = FirearmParams | EnergyParams;
+export type WeaponParams = FirearmParams | EnergyParams | ProjectorParams;
 
 // --- The derived weapon profile ---------------------------------------------
 

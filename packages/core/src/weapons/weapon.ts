@@ -26,6 +26,7 @@ import {
   STOCKS,
 } from './data.js';
 import { evaluateEnergyWeapon } from './energy.js';
+import { evaluateProjector } from './projector.js';
 import { clampLevel, round2 } from './shared.js';
 import {
   type Damage,
@@ -178,9 +179,14 @@ function validate(params: FirearmParams): Issue[] {
 
 /** Evaluate any weapon, dispatching on its class. */
 export function evaluateWeapon(params: WeaponParams): WeaponEvaluation {
-  return params.kind === 'energy'
-    ? evaluateEnergyWeapon(params)
-    : evaluateFirearm(params);
+  switch (params.kind) {
+    case 'energy':
+      return evaluateEnergyWeapon(params);
+    case 'projector':
+      return evaluateProjector(params);
+    default:
+      return evaluateFirearm(params);
+  }
 }
 
 export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {

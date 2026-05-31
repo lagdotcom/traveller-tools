@@ -95,18 +95,18 @@ Conventions that matter:
 
 ## The weapon domain (`packages/core/src/weapons/`)
 
-Field Catalogue weapons in two classes — conventional firearms (slug throwers) and
-directed-energy weapons (lasers/microwave) — design write-up in
-`docs/weapon-builder.md`.
+Field Catalogue weapons in three classes — conventional firearms (slug throwers),
+directed-energy weapons (lasers/microwave) and projectors (flame/cryo) — design
+write-up in `docs/weapon-builder.md`.
 
-- **Two classes.** `WeaponParams` is a discriminated union on `kind: 'firearm' |
-'energy'`. `evaluateWeapon(params)` (`weapon.ts`) dispatches to `evaluateFirearm`
-  or `evaluateEnergyWeapon` (`energy.ts`), both returning the same shape. Legacy
-  docs with no `kind` normalise to firearms. Energy weapons reuse the firearm
-  barrel/stock/furniture/accessory tables; energy-only tables live in
-  `energyData.ts` (receivers by power class, powerpack/cartridge ratings, beam
-  mods). Shared helpers (`round2`, `clampLevel`) are in `shared.ts` to avoid a
-  weapon↔energy import cycle.
+- **Three classes.** `WeaponParams` is a discriminated union on `kind: 'firearm' |
+'energy' | 'projector'`. `evaluateWeapon(params)` (`weapon.ts`) dispatches to
+  `evaluateFirearm`, `evaluateEnergyWeapon` (`energy.ts`) or `evaluateProjector`
+  (`projector.ts`), all returning the same shape. Legacy docs with no `kind`
+  normalise to firearms. Energy weapons reuse the firearm barrel/stock/furniture/
+  accessory tables; projectors share nothing structural. Class-only tables live in
+  `energyData.ts` / `projectorData.ts`. Shared helpers (`round2`, `clampLevel`) are
+  in `shared.ts` to avoid a weapon↔energy/projector import cycle.
 - **Deliberately NOT the generic engine.** The Field Catalogue cost/weight model
   is **sequential-multiplicative off a "modified receiver" baseline**, not the
   additive resource model `summarize` uses. So the evaluators
@@ -127,15 +127,17 @@ directed-energy weapons (lasers/microwave) — design write-up in
   user is the authority.** Known conflicts: base receiver values, light-handgun
   cost/weight, small-smoothbore weight, pistol-calibre base penetration (−1),
   smoothbore capacity, laser-pointer price.
-- **Adding a component:** add the id to the union + a row in the relevant `data.ts`
-  (firearm) or `energyData.ts` (energy) record; update the relevant
-  `DEFAULT_*_PARAMS`/`normalizeWeaponParams` branch + the TUI (`labelMap`/`choiceMap`,
-  a field or one of the add/remove lists in `WeaponBuilder.tsx`).
-- **Energy-weapon caveat:** the supplied FC text gives **no base Signature** for
-  directed-energy weapons, so `evaluateEnergyWeapon` flags the shown Emissions
-  level as _unverified_ (a warning) rather than inventing a number.
-- Projectors (flame/cryo), launchers and grenades remain out of scope but slot in
-  as new weapon classes + tables (the FC sections are in the supplied design text).
+- **Adding a component:** add the id to the union + a row in the relevant
+  `data.ts` (firearm) / `energyData.ts` / `projectorData.ts` record; update the
+  relevant `DEFAULT_*_PARAMS`/`normalizeWeaponParams` branch + the TUI
+  (`labelMap`/`choiceMap`, a field or one of the add/remove lists in
+  `WeaponBuilder.tsx`).
+- **Signature caveat:** the supplied FC text gives **no base Signature** for
+  directed-energy weapons or projectors, so `evaluateEnergyWeapon` /
+  `evaluateProjector` flag the shown level as _unverified_ (a warning) rather than
+  inventing a number.
+- Launchers and grenades remain out of scope but slot in as new weapon classes +
+  tables (the FC sections are in the supplied design text).
 
 ## TUI notes (`packages/tui`)
 
