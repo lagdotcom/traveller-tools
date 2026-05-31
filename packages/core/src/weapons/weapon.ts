@@ -191,34 +191,71 @@ export function evaluateWeapon(params: WeaponParams): WeaponEvaluation {
 }
 
 export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
-  const receiver = RECEIVERS[params.receiver] ?? RECEIVERS.handgun;
-  const calibre = CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun;
-  const mechanism = MECHANISMS[params.mechanism] ?? MECHANISMS.semiAuto;
-  const barrel = BARRELS[params.barrel] ?? BARRELS.rifle;
-  const stock = STOCKS[params.stock] ?? STOCKS.none;
-  const feed = FEEDS[params.feed] ?? FEEDS.standard;
-  const ammo = AMMO_TYPES[params.ammo] ?? AMMO_TYPES.ball;
+  const parts = resolveParts(params);
+  const recv = firearmReceiver(params, parts);
+  const comp = firearmComponents(params, parts, recv);
+  const { profile, magazineCr } = firearmProfile(params, parts, recv);
 
-  const issues = validate(params);
-  const sources = new Set<string>([SOURCE]);
+  return {
+    profile,
+    breakdown: [...recv.lines, ...comp.lines],
+    issues: validate(params),
+    totals: {
+      costCr: round2(recv.baselineCost + comp.costCr),
+      weightKg: round2(recv.baselineWeight + comp.weightKg),
+      magazineCr,
+    },
+    sources: [...new Set([SOURCE, ...comp.sources])],
+    ...(comp.secondary ? { secondary: comp.secondary } : {}),
+  };
+}
 
-  const features = params.features
-    .map((id) => RECEIVER_FEATURES[id])
-    .filter(Boolean);
+/** The catalogue rows + derived counts a firearm build is assembled from. */
+function resolveParts(params: FirearmParams) {
   const autoSteps = Math.max(0, Math.min(6, Math.floor(params.autoIncrease)));
-  const incAuto = INCREASED_AUTO[autoSteps];
+  return {
+    receiver: RECEIVERS[params.receiver] ?? RECEIVERS.handgun,
+    calibre: CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun,
+    mechanism: MECHANISMS[params.mechanism] ?? MECHANISMS.semiAuto,
+    barrel: BARRELS[params.barrel] ?? BARRELS.rifle,
+    stock: STOCKS[params.stock] ?? STOCKS.none,
+    feed: FEEDS[params.feed] ?? FEEDS.standard,
+    ammo: AMMO_TYPES[params.ammo] ?? AMMO_TYPES.ball,
+    features: params.features
+      .map((id) => RECEIVER_FEATURES[id])
+      .filter(Boolean),
+    autoSteps,
+    incAuto: INCREASED_AUTO[autoSteps],
+    capPct: Number.isFinite(params.capacityPct) ? params.capacityPct : 100,
+    extraBarrels: Math.max(0, Math.floor(params.additionalBarrels)),
+  };
+}
+type Parts = ReturnType<typeof resolveParts>;
 
-  // --- Receiver: one multiplicative modifier chain off the base cost/weight ---
-  // The same chain yields the baseline (its running product) and the itemised
-  // breakdown (one marginal line per step), so the two can never drift apart.
-  const capPct = Number.isFinite(params.capacityPct) ? params.capacityPct : 100;
+interface ReceiverBuild {
+  /** Base + one percentage-mod line per modifier + a "Receiver Totals" line. */
+  lines: WeaponLineItem[];
+  baselineCost: number;
+  baselineWeight: number;
+  capacity: number;
+  /** Ammo-cost multiplier from features (extreme stealth ×20). */
+  ammoCostMult: number;
+}
+
+/**
+ * Phase 1 — the receiver. One multiplicative modifier chain yields both the
+ * baseline (its running product) and the itemised breakdown (a marginal line per
+ * step), so the two can never drift apart. Capacity is its own chain.
+ */
+function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
+  const { receiver, calibre, mechanism, features, autoSteps, incAuto, capPct } =
+    parts;
   const capPctSteps = (capPct - 100) / 10;
   const costCapMult =
     capPct >= 100 ? 1 + 0.1 * capPctSteps : 1 + 0.05 * capPctSteps;
   const weightCapMult = 1 + 0.05 * capPctSteps;
 
-  type Mod = { label: string; cost: number; weight: number };
-  const chain: Mod[] = [];
+  const chain: { label: string; cost: number; weight: number }[] = [];
   const step = (label: string, cost: number, weight = 1) => {
     if (cost !== 1 || weight !== 1) chain.push({ label, cost, weight });
   };
@@ -230,8 +267,7 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     step(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight);
   if (capPct !== 100) step(`Capacity ${capPct}%`, costCapMult, weightCapMult);
 
-  // Fold the chain: a base line, then a percentage-mod line per step.
-  const breakdown: WeaponLineItem[] = [
+  const lines: WeaponLineItem[] = [
     {
       label: `Receiver: ${receiver.label}`,
       costCr: round2(receiver.baseCost),
@@ -241,7 +277,7 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   let rc = receiver.baseCost;
   let rw = receiver.baseWeight;
   for (const mod of chain) {
-    breakdown.push({
+    lines.push({
       label: mod.label,
       costCr: round2(rc * mod.cost - rc),
       weightKg: round2(rw * mod.weight - rw),
@@ -254,9 +290,6 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const baselineCost = round2(rc);
   const baselineWeight = round2(rw);
 
-  // Base ammunition capacity (its own multiplicative chain) and the special
-  // extreme-stealth ammo-cost multiplier — both independent of cost/weight.
-  const ammoCostMult = features.reduce((m, f) => m * (f.ammoCostMult ?? 1), 1);
   let capacity: number;
   if (calibre.smoothbore) {
     // Large-calibre smoothbores use fixed per-receiver values (no mechanism cap).
@@ -273,20 +306,44 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
       ? 1
       : Math.round(capacity * (capPct / 100));
 
-  breakdown.push({
+  lines.push({
     label: 'Receiver Totals',
     costCr: baselineCost,
     weightKg: baselineWeight,
     notes: `Capacity ${capacity}`,
   });
 
-  // --- Phase B: percentages of the receiver baseline ---
-  let totalCost = baselineCost;
-  let totalWeight = baselineWeight;
+  const ammoCostMult = features.reduce((m, f) => m * (f.ammoCostMult ?? 1), 1);
+  return { lines, baselineCost, baselineWeight, capacity, ammoCostMult };
+}
+
+interface ComponentBuild {
+  lines: WeaponLineItem[];
+  costCr: number; // sum of the Phase-B lines (added to the receiver baseline)
+  weightKg: number;
+  secondary?: WeaponEvaluation['secondary'];
+  sources: string[];
+}
+
+/**
+ * Phase 2 — components fitted to the receiver (barrel, stock, furniture, extra
+ * barrels, accessories, a mounted secondary). Each is a fraction of the receiver
+ * baseline (or a flat Credit catalogue price).
+ */
+function firearmComponents(
+  params: FirearmParams,
+  parts: Parts,
+  recv: ReceiverBuild,
+): ComponentBuild {
+  const { barrel, stock, extraBarrels } = parts;
+  const { baselineCost, baselineWeight } = recv;
+  const lines: WeaponLineItem[] = [];
+  let costCr = 0;
+  let weightKg = 0;
   const push = (item: WeaponLineItem) => {
-    totalCost += item.costCr;
-    totalWeight += item.weightKg;
-    breakdown.push(item);
+    costCr += item.costCr;
+    weightKg += item.weightKg;
+    lines.push(item);
   };
   // A component that adds a fraction of the receiver baseline shows that %.
   const addPct = (
@@ -322,10 +379,9 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     if (f) addPct(f.label, f.costPct, f.weightPct);
   }
 
-  // Extra barrels (multi-barrel weapons). Each is bought at the barrel's cost and
+  // Extra barrels (multi-barrel weapons): each is bought at the barrel's cost and
   // adds half its weight; a *complete* multi-barrel (no partialMultiBarrel
   // feature) also adds 10% of the receiver baseline per extra barrel.
-  const extraBarrels = Math.max(0, Math.floor(params.additionalBarrels));
   if (extraBarrels > 0) {
     const partial = params.features.includes('partialMultiBarrel');
     const recCost = partial ? 0 : baselineCost * 0.1 * extraBarrels;
@@ -354,7 +410,44 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     });
   }
 
-  // --- Derive the profile ---
+  // A mounted secondary weapon (e.g. under-barrel shotgun): designed as its own
+  // weapon, but mounting it costs/weighs 10% of its values. It keeps its own
+  // profile (a separate data line); its full build is not added to this weapon.
+  let secondary: WeaponEvaluation['secondary'];
+  const sources: string[] = [];
+  if (params.secondary) {
+    const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary });
+    const sc = secondaryLabel(params.secondary);
+    push({
+      label: `Secondary mount: ${sc}`,
+      costCr: round2(sub.totals.costCr * 0.1),
+      weightKg: round2(sub.totals.weightKg * 0.1),
+      notes: '10% of the secondary',
+    });
+    sources.push(...sub.sources);
+    secondary = {
+      label: sc,
+      profile: sub.profile,
+      magazineCr: sub.totals.magazineCr,
+    };
+  }
+
+  return { lines, costCr, weightKg, secondary, sources };
+}
+
+/**
+ * Phase 3 — the fired profile. Starts from the calibre and is reshaped by the
+ * barrel (damage/range/penetration/signature), mechanism (Auto), features,
+ * furniture, accessories and finally the loaded ammunition.
+ */
+function firearmProfile(
+  params: FirearmParams,
+  parts: Parts,
+  recv: ReceiverBuild,
+): { profile: WeaponProfile; magazineCr: number } {
+  const { receiver, calibre, mechanism, barrel, feed, ammo, features } = parts;
+  const { autoSteps, extraBarrels } = parts;
+
   let damage: Damage = { ...calibre.damage };
   const traits: Traits = { ...calibre.traits };
 
@@ -379,12 +472,11 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     ? 5
     : Math.round(calibre.range * featureRangeMult * barrel.rangeMult);
 
-  // Penetration.
   let penetration = calibre.penetration + barrel.penetration;
 
   // Signature (physical for chemical guns, emissions for gauss).
-  let sigIndex = SIGNATURE_LEVELS.indexOf(calibre.signature);
-  sigIndex += barrel.signatureShift;
+  let sigIndex =
+    SIGNATURE_LEVELS.indexOf(calibre.signature) + barrel.signatureShift;
 
   let quickdraw =
     receiver.quickdraw + barrel.quickdraw + feed.quickdraw - extraBarrels;
@@ -405,7 +497,6 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     if (a.penetration) penetration += a.penetration;
     if (a.signatureShift) sigIndex += a.signatureShift;
     mergeTraits(traits, a.traits);
-    if (a.minTL) sources.add(SOURCE);
   }
 
   // Loaded ammunition modifies the profile (but not the weapon's build cost).
@@ -436,7 +527,11 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
 
   // Loaded magazine price: rounds × (Cr/100) × any ammo cost multiplier.
   const magazineCr = round2(
-    (capacity * calibre.ammoCostPer100 * ammoCostMult * ammo.costMult) / 100,
+    (recv.capacity *
+      calibre.ammoCostPer100 *
+      recv.ammoCostMult *
+      ammo.costMult) /
+      100,
   );
 
   const profile: WeaponProfile = {
@@ -450,43 +545,10 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     signatureKind: calibre.signatureKind,
     signature: clampLevel(sigIndex),
     heat: 0,
-    capacity,
+    capacity: recv.capacity,
     traits,
   };
-
-  // A mounted secondary weapon (e.g. under-barrel shotgun): designed as its own
-  // weapon, but mounting it costs/weighs 10% of its values. It keeps its own
-  // profile (a separate data line); its full build is not added to this weapon.
-  let secondary: WeaponEvaluation['secondary'];
-  if (params.secondary) {
-    const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary });
-    const sc = secondaryLabel(params.secondary);
-    push({
-      label: `Secondary mount: ${sc}`,
-      costCr: round2(sub.totals.costCr * 0.1),
-      weightKg: round2(sub.totals.weightKg * 0.1),
-      notes: '10% of the secondary',
-    });
-    for (const s of sub.sources) sources.add(s);
-    secondary = {
-      label: sc,
-      profile: sub.profile,
-      magazineCr: sub.totals.magazineCr,
-    };
-  }
-
-  return {
-    profile,
-    breakdown,
-    issues,
-    totals: {
-      costCr: round2(totalCost),
-      weightKg: round2(totalWeight),
-      magazineCr,
-    },
-    sources: [...sources],
-    ...(secondary ? { secondary } : {}),
-  };
+  return { profile, magazineCr };
 }
 
 /** Short descriptive label for a secondary weapon (calibre + mechanism). */
