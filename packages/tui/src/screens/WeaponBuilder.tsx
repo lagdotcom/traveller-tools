@@ -47,6 +47,7 @@ import {
   type ReceiverFeatureId,
   RECEIVERS,
   type ReceiverTypeId,
+  type SecondaryWeaponParams,
   serializeWeapon,
   type StockId,
   STOCKS,
@@ -145,71 +146,199 @@ const YN = ['no', 'yes'];
  * other side falls back to its defaults, so switching class mid-edit is lossless
  * for the side you started on.
  */
+/** Barrel/stock, shared by firearm + energy (projectors/launchers have neither). */
+const barrelStockValues = (p: FirearmParams | EnergyParams) => ({
+  barrel: BARREL.toLabel(p.barrel),
+  heavyBarrel: p.heavyBarrel ? 'yes' : 'no',
+  stock: STOCK.toLabel(p.stock),
+});
+
+const firearmValues = (f: FirearmParams) => ({
+  receiver: RECEIVER.toLabel(f.receiver),
+  gauss: f.gauss ? 'yes' : 'no',
+  calibre: CALIBRE.toLabel(f.calibre),
+  mechanism: MECHANISM.toLabel(f.mechanism),
+  autoIncrease: String(f.autoIncrease),
+  additionalBarrels: String(f.additionalBarrels),
+  feed: FEED.toLabel(f.feed),
+  capacityPct: String(f.capacityPct),
+  ammo: AMMO.toLabel(f.ammo),
+  // secondary weapon (an under-barrel weapon, fired independently)
+  secEnabled: f.secondary ? 'yes' : 'no',
+  secReceiver: RECEIVER.toLabel(f.secondary?.receiver ?? 'handgun'),
+  secCalibre: CALIBRE.toLabel(f.secondary?.calibre ?? 'lightSmoothbore'),
+  secMechanism: MECHANISM.toLabel(f.secondary?.mechanism ?? 'singleShot'),
+  secBarrel: BARREL.toLabel(f.secondary?.barrel ?? 'short'),
+  secAmmo: AMMO.toLabel(f.secondary?.ammo ?? 'pellet'),
+});
+
+const energyValues = (e: EnergyParams) => ({
+  eWeaponType: EWTYPE.toLabel(e.weaponType),
+  eReceiver: ERECEIVER.toLabel(e.receiver),
+  damageDice: String(e.damageDice),
+  powerSource: PSOURCE.toLabel(e.powerSource),
+  powerpackKg: String(e.powerpackKg),
+  powerpackRating: PCLASS.toLabel(e.powerpackRating),
+  cartridgeRating: PCLASS.toLabel(e.cartridgeRating),
+  cartridgeCount: String(e.cartridgeCount),
+  cartridgeEjects: e.cartridgeEjects ? 'yes' : 'no',
+});
+
+const projectorValues = (pr: ProjectorParams) => ({
+  pStructure: PSTRUCT.toLabel(pr.structure),
+  pPropellant: PPROP.toLabel(pr.propellant),
+  pFuel: PFUEL.toLabel(pr.fuel),
+  fuelKg: String(pr.fuelKg),
+  propellantKg: String(pr.propellantKg),
+  armour: String(pr.armour),
+  bulwark: String(pr.bulwark),
+});
+
+const launcherValues = (l: LauncherParams) => ({
+  lReceiver: LRECEIVER.toLabel(l.receiver),
+  warhead: WARHEAD.toLabel(l.warhead),
+  guidance: l.guidance ? 'yes' : 'no',
+  magazineSize: String(l.magazineSize),
+});
+
+const grenadeValues = (g: GrenadeParams) => ({
+  gType: GTYPE.toLabel(g.type),
+  gSize: GSIZE.toLabel(g.size),
+});
+
+/**
+ * Flatten any weapon into one string-keyed form record. Whichever class `p` is
+ * seeds its own fields; the other classes fall back to their defaults, so
+ * switching class mid-edit is lossless for the side you started on.
+ */
 function formValues(p: WeaponParams) {
-  const f: FirearmParams = p.kind === 'firearm' ? p : DEFAULT_WEAPON_PARAMS;
-  const e: EnergyParams = p.kind === 'energy' ? p : DEFAULT_ENERGY_PARAMS;
-  const pr: ProjectorParams =
-    p.kind === 'projector' ? p : DEFAULT_PROJECTOR_PARAMS;
-  const l: LauncherParams = p.kind === 'launcher' ? p : DEFAULT_LAUNCHER_PARAMS;
-  const g: GrenadeParams = p.kind === 'grenade' ? p : DEFAULT_GRENADE_PARAMS;
-  // Barrel/stock are shared by firearm + energy only (projectors/launchers have
-  // neither).
-  const bs: FirearmParams | EnergyParams =
-    p.kind === 'firearm' || p.kind === 'energy' ? p : DEFAULT_WEAPON_PARAMS;
+  const bs = p.kind === 'firearm' || p.kind === 'energy' ? p : undefined;
   return {
     weaponClass: WCLASS.toLabel(p.kind),
     tl: String(p.tl),
-    // shared (firearm + energy)
-    barrel: BARREL.toLabel(bs.barrel),
-    heavyBarrel: bs.heavyBarrel ? 'yes' : 'no',
-    stock: STOCK.toLabel(bs.stock),
-    // firearm
-    receiver: RECEIVER.toLabel(f.receiver),
-    gauss: f.gauss ? 'yes' : 'no',
-    calibre: CALIBRE.toLabel(f.calibre),
-    mechanism: MECHANISM.toLabel(f.mechanism),
-    autoIncrease: String(f.autoIncrease),
-    additionalBarrels: String(f.additionalBarrels),
-    feed: FEED.toLabel(f.feed),
-    capacityPct: String(f.capacityPct),
-    ammo: AMMO.toLabel(f.ammo),
-    // secondary weapon (an under-barrel weapon, fired independently)
-    secEnabled: f.secondary ? 'yes' : 'no',
-    secReceiver: RECEIVER.toLabel(f.secondary?.receiver ?? 'handgun'),
-    secCalibre: CALIBRE.toLabel(f.secondary?.calibre ?? 'lightSmoothbore'),
-    secMechanism: MECHANISM.toLabel(f.secondary?.mechanism ?? 'singleShot'),
-    secBarrel: BARREL.toLabel(f.secondary?.barrel ?? 'short'),
-    secAmmo: AMMO.toLabel(f.secondary?.ammo ?? 'pellet'),
-    // energy
-    eWeaponType: EWTYPE.toLabel(e.weaponType),
-    eReceiver: ERECEIVER.toLabel(e.receiver),
-    damageDice: String(e.damageDice),
-    powerSource: PSOURCE.toLabel(e.powerSource),
-    powerpackKg: String(e.powerpackKg),
-    powerpackRating: PCLASS.toLabel(e.powerpackRating),
-    cartridgeRating: PCLASS.toLabel(e.cartridgeRating),
-    cartridgeCount: String(e.cartridgeCount),
-    cartridgeEjects: e.cartridgeEjects ? 'yes' : 'no',
-    // projector
-    pStructure: PSTRUCT.toLabel(pr.structure),
-    pPropellant: PPROP.toLabel(pr.propellant),
-    pFuel: PFUEL.toLabel(pr.fuel),
-    fuelKg: String(pr.fuelKg),
-    propellantKg: String(pr.propellantKg),
-    armour: String(pr.armour),
-    bulwark: String(pr.bulwark),
-    // launcher
-    lReceiver: LRECEIVER.toLabel(l.receiver),
-    warhead: WARHEAD.toLabel(l.warhead),
-    guidance: l.guidance ? 'yes' : 'no',
-    magazineSize: String(l.magazineSize),
-    // grenade
-    gType: GTYPE.toLabel(g.type),
-    gSize: GSIZE.toLabel(g.size),
+    ...barrelStockValues(bs ?? DEFAULT_WEAPON_PARAMS),
+    ...firearmValues(p.kind === 'firearm' ? p : DEFAULT_WEAPON_PARAMS),
+    ...energyValues(p.kind === 'energy' ? p : DEFAULT_ENERGY_PARAMS),
+    ...projectorValues(p.kind === 'projector' ? p : DEFAULT_PROJECTOR_PARAMS),
+    ...launcherValues(p.kind === 'launcher' ? p : DEFAULT_LAUNCHER_PARAMS),
+    ...grenadeValues(p.kind === 'grenade' ? p : DEFAULT_GRENADE_PARAMS),
   };
 }
 
 type ListId = 'features' | 'furniture' | 'accessories' | 'mods';
+
+/** The flat string-keyed record the form holds (one entry per builder field). */
+type FormValues = ReturnType<typeof formValues>;
+/** The multi-select state arrays, threaded into the per-class param builders. */
+interface Lists {
+  features: ReceiverFeatureId[];
+  furniture: FurnitureId[];
+  accessories: AccessoryId[];
+  mods: EnergyModId[];
+}
+
+// --- Per-class param builders (form values + selections → WeaponParams) -----
+
+function buildSecondary(v: FormValues): SecondaryWeaponParams {
+  return {
+    tl: num(v.tl, 0),
+    receiver: RECEIVER.toId(v.secReceiver),
+    gauss: false,
+    calibre: CALIBRE.toId(v.secCalibre),
+    mechanism: MECHANISM.toId(v.secMechanism),
+    autoIncrease: 0,
+    features: [],
+    barrel: BARREL.toId(v.secBarrel),
+    heavyBarrel: false,
+    additionalBarrels: 0,
+    stock: 'none',
+    furniture: [],
+    feed: 'standard',
+    capacityPct: 100,
+    accessories: [],
+    ammo: AMMO.toId(v.secAmmo),
+  };
+}
+
+function buildFirearm(v: FormValues, lists: Lists): FirearmParams {
+  return {
+    kind: 'firearm',
+    tl: num(v.tl, 0),
+    receiver: RECEIVER.toId(v.receiver),
+    gauss: v.gauss === 'yes',
+    calibre: CALIBRE.toId(v.calibre),
+    mechanism: MECHANISM.toId(v.mechanism),
+    autoIncrease: num(v.autoIncrease),
+    features: lists.features,
+    barrel: BARREL.toId(v.barrel),
+    heavyBarrel: v.heavyBarrel === 'yes',
+    additionalBarrels: num(v.additionalBarrels, 0),
+    stock: STOCK.toId(v.stock),
+    furniture: lists.furniture,
+    feed: FEED.toId(v.feed),
+    capacityPct: num(v.capacityPct, 100),
+    accessories: lists.accessories,
+    ammo: AMMO.toId(v.ammo),
+    ...(v.secEnabled === 'yes' ? { secondary: buildSecondary(v) } : {}),
+  };
+}
+
+function buildEnergy(v: FormValues, lists: Lists): EnergyParams {
+  return {
+    kind: 'energy',
+    tl: num(v.tl, 0),
+    weaponType: EWTYPE.toId(v.eWeaponType),
+    receiver: ERECEIVER.toId(v.eReceiver),
+    damageDice: num(v.damageDice, 1),
+    barrel: BARREL.toId(v.barrel),
+    heavyBarrel: v.heavyBarrel === 'yes',
+    stock: STOCK.toId(v.stock),
+    furniture: lists.furniture,
+    features: lists.features,
+    mods: lists.mods,
+    accessories: lists.accessories,
+    powerSource: PSOURCE.toId(v.powerSource),
+    powerpackKg: num(v.powerpackKg, 1),
+    powerpackRating: PCLASS.toId(v.powerpackRating),
+    cartridgeRating: PCLASS.toId(v.cartridgeRating),
+    cartridgeCount: num(v.cartridgeCount, 10),
+    cartridgeEjects: v.cartridgeEjects === 'yes',
+  };
+}
+
+function buildProjector(v: FormValues): ProjectorParams {
+  return {
+    kind: 'projector',
+    tl: num(v.tl, 0),
+    structure: PSTRUCT.toId(v.pStructure),
+    propellant: PPROP.toId(v.pPropellant),
+    fuel: PFUEL.toId(v.pFuel),
+    fuelKg: num(v.fuelKg, 0),
+    propellantKg: num(v.propellantKg, 0),
+    armour: num(v.armour, 0),
+    bulwark: num(v.bulwark, 0),
+  };
+}
+
+function buildLauncher(v: FormValues): LauncherParams {
+  return {
+    kind: 'launcher',
+    tl: num(v.tl, 0),
+    receiver: LRECEIVER.toId(v.lReceiver),
+    guidance: v.guidance === 'yes',
+    magazineSize: num(v.magazineSize, 1),
+    warhead: WARHEAD.toId(v.warhead),
+  };
+}
+
+function buildGrenade(v: FormValues): GrenadeParams {
+  return {
+    kind: 'grenade',
+    tl: num(v.tl, 0),
+    type: GTYPE.toId(v.gType),
+    size: GSIZE.toId(v.gSize),
+  };
+}
 
 export function WeaponBuilderScreen({
   onBack,
@@ -567,97 +696,17 @@ export function WeaponBuilderScreen({
     if (idx >= 0) setActive(idx);
   };
 
+  const selected: Lists = { features, furniture, accessories, mods };
   const params: WeaponParams =
     weaponClass === 'energy'
-      ? {
-          kind: 'energy',
-          tl: num(form.values.tl, 0),
-          weaponType: EWTYPE.toId(form.values.eWeaponType),
-          receiver: ERECEIVER.toId(form.values.eReceiver),
-          damageDice: num(form.values.damageDice, 1),
-          barrel: BARREL.toId(form.values.barrel),
-          heavyBarrel: form.values.heavyBarrel === 'yes',
-          stock: STOCK.toId(form.values.stock),
-          furniture,
-          features,
-          mods,
-          accessories,
-          powerSource: PSOURCE.toId(form.values.powerSource),
-          powerpackKg: num(form.values.powerpackKg, 1),
-          powerpackRating: PCLASS.toId(form.values.powerpackRating),
-          cartridgeRating: PCLASS.toId(form.values.cartridgeRating),
-          cartridgeCount: num(form.values.cartridgeCount, 10),
-          cartridgeEjects: form.values.cartridgeEjects === 'yes',
-        }
+      ? buildEnergy(form.values, selected)
       : weaponClass === 'projector'
-        ? {
-            kind: 'projector',
-            tl: num(form.values.tl, 0),
-            structure: PSTRUCT.toId(form.values.pStructure),
-            propellant: PPROP.toId(form.values.pPropellant),
-            fuel: PFUEL.toId(form.values.pFuel),
-            fuelKg: num(form.values.fuelKg, 0),
-            propellantKg: num(form.values.propellantKg, 0),
-            armour: num(form.values.armour, 0),
-            bulwark: num(form.values.bulwark, 0),
-          }
+        ? buildProjector(form.values)
         : weaponClass === 'launcher'
-          ? {
-              kind: 'launcher',
-              tl: num(form.values.tl, 0),
-              receiver: LRECEIVER.toId(form.values.lReceiver),
-              guidance: form.values.guidance === 'yes',
-              magazineSize: num(form.values.magazineSize, 1),
-              warhead: WARHEAD.toId(form.values.warhead),
-            }
+          ? buildLauncher(form.values)
           : weaponClass === 'grenade'
-            ? {
-                kind: 'grenade',
-                tl: num(form.values.tl, 0),
-                type: GTYPE.toId(form.values.gType),
-                size: GSIZE.toId(form.values.gSize),
-              }
-            : {
-                kind: 'firearm',
-                tl: num(form.values.tl, 0),
-                receiver: RECEIVER.toId(form.values.receiver),
-                gauss: form.values.gauss === 'yes',
-                calibre: CALIBRE.toId(form.values.calibre),
-                mechanism: MECHANISM.toId(form.values.mechanism),
-                autoIncrease: num(form.values.autoIncrease),
-                features,
-                barrel: BARREL.toId(form.values.barrel),
-                heavyBarrel: form.values.heavyBarrel === 'yes',
-                additionalBarrels: num(form.values.additionalBarrels, 0),
-                stock: STOCK.toId(form.values.stock),
-                furniture,
-                feed: FEED.toId(form.values.feed),
-                capacityPct: num(form.values.capacityPct, 100),
-                accessories,
-                ammo: AMMO.toId(form.values.ammo),
-                ...(form.values.secEnabled === 'yes'
-                  ? {
-                      secondary: {
-                        tl: num(form.values.tl, 0),
-                        receiver: RECEIVER.toId(form.values.secReceiver),
-                        gauss: false,
-                        calibre: CALIBRE.toId(form.values.secCalibre),
-                        mechanism: MECHANISM.toId(form.values.secMechanism),
-                        autoIncrease: 0,
-                        features: [],
-                        barrel: BARREL.toId(form.values.secBarrel),
-                        heavyBarrel: false,
-                        additionalBarrels: 0,
-                        stock: 'none',
-                        furniture: [],
-                        feed: 'standard',
-                        capacityPct: 100,
-                        accessories: [],
-                        ammo: AMMO.toId(form.values.secAmmo),
-                      },
-                    }
-                  : {}),
-              };
+            ? buildGrenade(form.values)
+            : buildFirearm(form.values, selected);
   const currentDef: WeaponDefinition = { name, params };
   const evaluation = evaluateWeapon(params);
 
