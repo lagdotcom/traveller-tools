@@ -475,6 +475,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       capacityPct: 50,
     },
   ),
+  // reconcile: the worked Adjudicator lists its Handgun barrel at 0.12kg, which
+  // is 15% of the 0.8kg receiver — the barrel's *cost* fraction. The FC barrel
+  // table gives a Handgun barrel 20% weight (→ 0.16kg here), matching the
+  // Bodyguard worksheet's rifle barrel, so we follow the rules table (0.16kg)
+  // and treat the worksheet's 0.12kg as using the cost figure by mistake.
   weapon(
     'Adjudicator',
     'Small-smoothbore revolver, Ailene Armament (Field Catalogue worked example).',
