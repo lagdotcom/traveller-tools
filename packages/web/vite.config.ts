@@ -38,6 +38,22 @@ function inkBrowserShims(): Plugin {
 export default defineConfig({
   root,
   base: '/traveller-tools/',
+  // `resolve.alias` (unlike the resolveId plugin above) is also applied during
+  // the dev server's esbuild dep pre-bundling, where Ink/`is-in-ci` are bundled
+  // before our plugins run. Without it the optimizer externalizes `node:process`
+  // and `is-in-ci` crashes reading `node:process.env.CI`. Anchored regexes so we
+  // only hijack the exact specifiers, not e.g. `node:process/foo`.
+  resolve: {
+    alias: [
+      { find: /^node:process$/, replacement: processShim },
+      { find: /^process$/, replacement: processShim },
+      { find: /^is-in-ci$/, replacement: isInCiShim },
+    ],
+  },
+  // Don't let esbuild pre-bundle the real `is-in-ci`; force it through the alias.
+  optimizeDeps: {
+    exclude: ['is-in-ci'],
+  },
   plugins: [
     inkBrowserShims(),
     wasm(),
