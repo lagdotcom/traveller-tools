@@ -166,6 +166,25 @@ describe('multiple supported ammo types', () => {
   });
 });
 
+describe('manufacturer metadata', () => {
+  it('round-trips the manufacturer through serialize/parse', () => {
+    const def = {
+      name: 'GC-24',
+      manufacturer: 'Anhur Industries',
+      params: DEFAULT_WEAPON_PARAMS,
+    };
+    expect(parseWeapon(serializeWeapon(def)).manufacturer).toBe(
+      'Anhur Industries',
+    );
+  });
+
+  it('migrated the embedded makers off the built-in descriptions', () => {
+    const gc24 = BUILTIN_WEAPONS.find((w) => w.name === 'GC-24')!;
+    expect(gc24.manufacturer).toBe('Anhur Industries');
+    expect(gc24.description).not.toMatch(/Anhur/);
+  });
+});
+
 describe('magazine options', () => {
   it('overrides the standard magazine count/cost without touching the build', () => {
     // Reliant lists Mag 50 (Cr110 ball) — a manual count the % rule wouldn't give.

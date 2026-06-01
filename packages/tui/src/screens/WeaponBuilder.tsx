@@ -397,6 +397,9 @@ export function WeaponBuilderScreen({
   type FormKey = keyof typeof form.values;
 
   const [name, setName] = useState(initial?.name ?? 'Untitled Weapon');
+  const [manufacturer, setManufacturer] = useState(initial?.manufacturer ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [saveField, setSaveField] = useState(0); // 0=name 1=manufacturer 2=desc
   // Features are shared by firearm + energy + launcher + projector (all reuse
   // RECEIVER_FEATURES); furniture/accessories are firearm/energy only. Seed each
   // from the start params.
@@ -811,7 +814,12 @@ export function WeaponBuilderScreen({
           : weaponClass === 'grenade'
             ? buildGrenade(form.values)
             : buildFirearm(form.values, selected);
-  const currentDef: WeaponDefinition = { name, params };
+  const currentDef: WeaponDefinition = {
+    name,
+    ...(manufacturer.trim() ? { manufacturer: manufacturer.trim() } : {}),
+    ...(description.trim() ? { description: description.trim() } : {}),
+    params,
+  };
   const evaluation = evaluateWeapon(params);
 
   // Parse imported JSON text and load it (or report why it failed).
@@ -852,7 +860,14 @@ export function WeaponBuilderScreen({
 
   const doSave = () => {
     const finalName = saveName.trim() || 'Untitled Weapon';
-    store.save({ name: finalName, params });
+    const mfr = manufacturer.trim();
+    const desc = description.trim();
+    store.save({
+      name: finalName,
+      ...(mfr ? { manufacturer: mfr } : {}),
+      ...(desc ? { description: desc } : {}),
+      params,
+    });
     setName(finalName);
     setMode('edit');
     setMessage(`Saved “${finalName}”.`);
@@ -861,6 +876,7 @@ export function WeaponBuilderScreen({
   useInput((input, key) => {
     if (mode === 'edit' && key.ctrl && input === 's') {
       setSaveName(name);
+      setSaveField(0);
       setMessage('');
       setMode('save');
       return;
@@ -875,6 +891,10 @@ export function WeaponBuilderScreen({
     }
     if (mode !== 'edit') {
       if (key.escape) setMode('edit');
+      else if (mode === 'save' && key.downArrow)
+        setSaveField((f) => Math.min(2, f + 1));
+      else if (mode === 'save' && key.upArrow)
+        setSaveField((f) => Math.max(0, f - 1));
       return;
     }
     if (key.escape) onBack();
@@ -897,11 +917,25 @@ export function WeaponBuilderScreen({
           <Field
             label="Name"
             value={saveName}
-            isActive
+            isActive={saveField === 0}
             onChange={setSaveName}
             onSubmit={doSave}
           />
-          <Text dimColor>Enter to save to the library · Esc to cancel</Text>
+          <Field
+            label="Manufacturer"
+            value={manufacturer}
+            isActive={saveField === 1}
+            onChange={setManufacturer}
+            onSubmit={doSave}
+          />
+          <Field
+            label="Description"
+            value={description}
+            isActive={saveField === 2}
+            onChange={setDescription}
+            onSubmit={doSave}
+          />
+          <Text dimColor>↑/↓ between fields · Enter saves · Esc cancels</Text>
         </Box>
       </Box>
     );

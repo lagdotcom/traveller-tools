@@ -73,6 +73,8 @@ import type {
 export interface WeaponDefinition {
   name: string;
   description?: string;
+  /** Designer / manufacturer (e.g. "Anhur Industries"). */
+  manufacturer?: string;
   params: WeaponParams;
 }
 
@@ -458,6 +460,7 @@ export function serializeWeapon(def: WeaponDefinition): string {
     weapon: {
       name: def.name,
       ...(def.description ? { description: def.description } : {}),
+      ...(def.manufacturer ? { manufacturer: def.manufacturer } : {}),
       params: normalizeWeaponParams(def.params),
     },
   };
@@ -485,6 +488,9 @@ export function parseWeapon(text: string): WeaponDefinition {
     ...(typeof weapon.description === 'string'
       ? { description: weapon.description }
       : {}),
+    ...(typeof weapon.manufacturer === 'string'
+      ? { manufacturer: weapon.manufacturer }
+      : {}),
     params: normalizeWeaponParams(params),
   };
 }
@@ -495,10 +501,12 @@ function weapon(
   name: string,
   description: string,
   overrides: Partial<FirearmParams>,
+  manufacturer?: string,
 ): WeaponDefinition {
   return {
     name,
     description,
+    ...(manufacturer ? { manufacturer } : {}),
     params: { ...DEFAULT_WEAPON_PARAMS, ...overrides },
   };
 }
@@ -507,10 +515,12 @@ function energyWeapon(
   name: string,
   description: string,
   overrides: Partial<EnergyParams>,
+  manufacturer?: string,
 ): WeaponDefinition {
   return {
     name,
     description,
+    ...(manufacturer ? { manufacturer } : {}),
     params: { ...DEFAULT_ENERGY_PARAMS, ...overrides },
   };
 }
@@ -519,10 +529,12 @@ function projector(
   name: string,
   description: string,
   overrides: Partial<ProjectorParams>,
+  manufacturer?: string,
 ): WeaponDefinition {
   return {
     name,
     description,
+    ...(manufacturer ? { manufacturer } : {}),
     params: { ...DEFAULT_PROJECTOR_PARAMS, ...overrides },
   };
 }
@@ -531,10 +543,12 @@ function launcher(
   name: string,
   description: string,
   overrides: Partial<LauncherParams>,
+  manufacturer?: string,
 ): WeaponDefinition {
   return {
     name,
     description,
+    ...(manufacturer ? { manufacturer } : {}),
     params: { ...DEFAULT_LAUNCHER_PARAMS, ...overrides },
   };
 }
@@ -614,50 +628,70 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   // table gives a Handgun barrel 20% weight (→ 0.16kg here), matching the
   // Bodyguard worksheet's rifle barrel, so we follow the rules table (0.16kg)
   // and treat the worksheet's 0.12kg as using the cost figure by mistake.
-  weapon('Adjudicator', 'Small-smoothbore revolver, Ailene Armament', {
-    tl: 7,
-    receiver: 'handgun',
-    calibre: 'smallSmoothbore',
-    mechanism: 'repeater',
-    barrel: 'handgun',
-    stock: 'none',
-    ammo: ['ball', 'pellet', 'flechette', 'explosive'],
-  }),
-  weapon('GA-100', 'Gauss-shotgun bullpup assault weapon, Anhur Industries', {
-    tl: 13,
-    receiver: 'assault',
-    calibre: 'gaussShotgun',
-    mechanism: 'fullAuto',
-    features: ['bullpup', 'quickdraw', 'highCapacity'],
-    capacityPct: 130,
-    barrel: 'assault',
-    stock: 'full',
-    // reconcile: 3D+5 and AP 4 reproduce; magazine reads Cr34.5 vs the book's
-    // Cr55 (gauss-shotgun ammo cost).
-  }),
-  weapon('GC-24', 'Gauss handgun, Anhur Industries', {
-    tl: 13,
-    receiver: 'handgun',
-    calibre: 'smallGauss',
-    mechanism: 'burst',
-    features: ['veryCompact', 'lightweight'],
-    autoIncrease: 2,
-    capacityPct: 120,
-    barrel: 'short',
-    // reconcile: weight (0.7744kg), AP 3 and Emissions (low) reproduce; receiver
-    // cost reads Cr1212.75 vs the book's Cr808.5 (unresolved).
-  }),
-  weapon('GS-40', 'Gauss sidearm, Anhur Industries', {
-    tl: 13,
-    receiver: 'handgun',
-    calibre: 'smallGauss',
-    mechanism: 'burst',
-    barrel: 'handgun',
-    // AP 3 and Emissions (low) reproduce.
-  }),
+  weapon(
+    'Adjudicator',
+    'Small-smoothbore revolver',
+    {
+      tl: 7,
+      receiver: 'handgun',
+      calibre: 'smallSmoothbore',
+      mechanism: 'repeater',
+      barrel: 'handgun',
+      stock: 'none',
+      ammo: ['ball', 'pellet', 'flechette', 'explosive'],
+    },
+    'Ailene Armament',
+  ),
+  weapon(
+    'GA-100',
+    'Gauss-shotgun bullpup assault weapon',
+    {
+      tl: 13,
+      receiver: 'assault',
+      calibre: 'gaussShotgun',
+      mechanism: 'fullAuto',
+      features: ['bullpup', 'quickdraw', 'highCapacity'],
+      capacityPct: 130,
+      barrel: 'assault',
+      stock: 'full',
+      // reconcile: 3D+5 and AP 4 reproduce; magazine reads Cr34.5 vs the book's
+      // Cr55 (gauss-shotgun ammo cost).
+    },
+    'Anhur Industries',
+  ),
+  weapon(
+    'GC-24',
+    'Gauss handgun',
+    {
+      tl: 13,
+      receiver: 'handgun',
+      calibre: 'smallGauss',
+      mechanism: 'burst',
+      features: ['veryCompact', 'lightweight'],
+      autoIncrease: 2,
+      capacityPct: 120,
+      barrel: 'short',
+      // reconcile: weight (0.7744kg), AP 3 and Emissions (low) reproduce; receiver
+      // cost reads Cr1212.75 vs the book's Cr808.5 (unresolved).
+    },
+    'Anhur Industries',
+  ),
+  weapon(
+    'GS-40',
+    'Gauss sidearm',
+    {
+      tl: 13,
+      receiver: 'handgun',
+      calibre: 'smallGauss',
+      mechanism: 'burst',
+      barrel: 'handgun',
+      // AP 3 and Emissions (low) reproduce.
+    },
+    'Anhur Industries',
+  ),
   weapon(
     'Stowaway',
-    'Extreme-stealth full-auto body pistol, Colvery Solutions',
+    'Extreme-stealth full-auto body pistol',
     {
       tl: 12,
       receiver: 'handgun',
@@ -668,10 +702,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'short',
       stock: 'none',
     },
+    'Colvery Solutions',
   ),
   weapon(
     'Liberator Derringer',
-    'Heavy-handgun multi-barrel hold-out, Hangul Arms and Tactical',
+    'Heavy-handgun multi-barrel hold-out',
     {
       tl: 7,
       receiver: 'handgun',
@@ -685,10 +720,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // reconcile: Quickdraw +12, Lo-Pen 3, Slow Loader 4
       // TODO: Liberator Defender variant: short smg, supports ball/distraction/explosive
     },
+    'Hangul Arms and Tactical',
   ),
   weapon(
     'Bodyguard Shotgun',
-    'Standard-smoothbore repeater longarm, Harrix Industries',
+    'Standard-smoothbore repeater longarm',
     {
       tl: 8,
       receiver: 'longarm',
@@ -702,24 +738,30 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // Signature reads high vs the book's normal (smoothbore signature).
       // TODO Pointguard variant: shorter, no stock - TL10, 125m range, 3.25Kg, Cr180, Mag 3 (Cr4.5), Quickdraw +2, pellet only
     },
+    'Harrix Industries',
   ),
-  weapon('Standard', 'Safety-conscious carbine, Interstellar Ordnance', {
-    tl: 9,
-    receiver: 'longarm',
-    calibre: 'lightRifle',
-    mechanism: 'semiAuto',
-    features: [
-      'bullpup',
-      'compact',
-      'rugged',
-      'lightweight',
-      { id: 'bulwarked', level: 2 },
-    ],
-    barrel: 'carbine',
-    stock: 'full',
-    accessories: ['scope'],
-    // reconcile: (thinks Bullpup is +20% cost?), Mag Cost Cr30, Damage 2D, Physical Signature (normal)
-  }),
+  weapon(
+    'Standard',
+    'Safety-conscious carbine',
+    {
+      tl: 9,
+      receiver: 'longarm',
+      calibre: 'lightRifle',
+      mechanism: 'semiAuto',
+      features: [
+        'bullpup',
+        'compact',
+        'rugged',
+        'lightweight',
+        { id: 'bulwarked', level: 2 },
+      ],
+      barrel: 'carbine',
+      stock: 'full',
+      accessories: ['scope'],
+      // reconcile: (thinks Bullpup is +20% cost?), Mag Cost Cr30, Damage 2D, Physical Signature (normal)
+    },
+    'Interstellar Ordnance',
+  ),
   weapon('Mk 1 Handgun', 'Generic early semi-automatic pistol', {
     tl: 5,
     receiver: 'handgun',
@@ -729,28 +771,38 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // reconcile: does not list Bulky or Lo-Pen 2
     // TODO: suppressed variant, Cr415, Quickdraw +5, Lo-Pen 2, Phys Sig (small)
   }),
-  weapon('Posi-9', 'Upmarket semi-auto pistol, Tacload Armaments', {
-    tl: 9,
-    receiver: 'handgun',
-    calibre: 'mediumHandgun',
-    mechanism: 'semiAuto',
-    capacityPct: 150,
-    features: ['advancedProjectile'],
-    barrel: 'handgun',
-    // reconcile: Physical Signature (normal)
-    // TODO: burst and auto variants
-  }),
-  weapon('Crewmate', 'Vehicle defense weapon, Tactical Systems Incorporated', {
-    tl: 7,
-    receiver: 'handgun',
-    calibre: 'intermediateRifle',
-    mechanism: 'fullAuto',
-    features: ['semiBullpup', 'rugged'],
-    autoIncrease: 1,
-    barrel: 'handgun',
-    accessories: ['scope'],
-    // Semi-Bullpup (+20% cost, +2 Quickdraw) and Lo-Pen 2 both reproduce.
-  }),
+  weapon(
+    'Posi-9',
+    'Upmarket semi-auto pistol',
+    {
+      tl: 9,
+      receiver: 'handgun',
+      calibre: 'mediumHandgun',
+      mechanism: 'semiAuto',
+      capacityPct: 150,
+      features: ['advancedProjectile'],
+      barrel: 'handgun',
+      // reconcile: Physical Signature (normal)
+      // TODO: burst and auto variants
+    },
+    'Tacload Armaments',
+  ),
+  weapon(
+    'Crewmate',
+    'Vehicle defense weapon',
+    {
+      tl: 7,
+      receiver: 'handgun',
+      calibre: 'intermediateRifle',
+      mechanism: 'fullAuto',
+      features: ['semiBullpup', 'rugged'],
+      autoIncrease: 1,
+      barrel: 'handgun',
+      accessories: ['scope'],
+      // Semi-Bullpup (+20% cost, +2 Quickdraw) and Lo-Pen 2 both reproduce.
+    },
+    'Tactical Systems Incorporated',
+  ),
   weapon('Desperado', 'Generic assault submachinegun', {
     tl: 5,
     receiver: 'assault',
@@ -775,21 +827,26 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // book's 2.079kg, Mag 18 vs 24 (the book ignores the Compact penalty), and
     // Physical Signature low vs normal.
   }),
-  weapon('IAW-12', 'Infantry Assault Weapon, Interstellar Ordnance', {
-    tl: 12,
-    receiver: 'assault',
-    calibre: 'smallGauss',
-    mechanism: 'fullAuto',
-    features: ['quickdraw', 'highCapacity'],
-    autoIncrease: 1,
-    barrel: 'assault',
-    accessories: ['laserPointer'],
-    // reconcile: Damage 3D-1, AP 4 and Emissions (low) reproduce; the book
-    // worksheet oddly charges 15% for 'No Stock'.
-  }),
+  weapon(
+    'IAW-12',
+    'Infantry Assault Weapon',
+    {
+      tl: 12,
+      receiver: 'assault',
+      calibre: 'smallGauss',
+      mechanism: 'fullAuto',
+      features: ['quickdraw', 'highCapacity'],
+      autoIncrease: 1,
+      barrel: 'assault',
+      accessories: ['laserPointer'],
+      // reconcile: Damage 3D-1, AP 4 and Emissions (low) reproduce; the book
+      // worksheet oddly charges 15% for 'No Stock'.
+    },
+    'Interstellar Ordnance',
+  ),
   weapon(
     'Planetsider',
-    'Starship crew security weapon, Unified Space Industries',
+    'Starship crew security weapon',
     {
       tl: 9,
       receiver: 'assault',
@@ -811,67 +868,83 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // reconcile: Range 55m, Quickdraw +5, no Lo-Pen
       // extra thing: "For those who require more firepower a 40-round casket magazine is available for Cr40 and a 70-round drum costs Cr100. The latter is heavy and awkward to use,and eliminates many of the weapon’s quick-reaction advantages. With any kind of magazine in place the Planetsider's weight absorbs recoil well, removing the Bulky trait."
     },
+    'Unified Space Industries',
   ),
-  weapon('GR-80', 'Gauss rifle, Anhur Industries', {
-    tl: 13,
-    receiver: 'longarm',
-    calibre: 'standardGauss',
-    mechanism: 'fullAuto',
-    features: ['bullpup'],
-    barrel: 'carbine',
-    stock: 'full',
-    accessories: ['multispectralScope'],
-    // reconcile: Emissions (low) reproduces; AP reads 5 vs the book's 3 (standard
-    // gauss AP) — and the book calls it both GR-80 and GR-90.
-    // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
-  }),
-  weapon('AIWS', 'Modular infantry weapon, Interstellar Ordnance', {
-    tl: 10,
-    receiver: 'longarm',
-    calibre: 'intermediateRifle',
-    mechanism: 'fullAuto',
-    features: ['advancedProjectile', 'highCapacity'],
-    capacityPct: 120,
-    barrel: 'rifle',
-    stock: 'full',
-    furniture: ['modularisation'],
-    accessories: ['scope'],
-    // TODO: carbine, support, assault configurations
-  }),
-  weapon('Intruder', 'Integrated AR/breaching shotgun, Tacload Armaments', {
-    tl: 8,
-    receiver: 'longarm',
-    calibre: 'intermediateRifle',
-    mechanism: 'fullAuto',
-    features: ['bullpup', 'highCapacity', 'quickdraw'],
-    barrel: 'carbine',
-    stock: 'fixed', // a fixed stock (+10% cost / +10% weight)
-    secondary: {
-      tl: 8,
-      receiver: 'assault',
-      calibre: 'standardSmoothbore',
-      mechanism: 'repeater',
-      autoIncrease: 0,
-      rapidFire: 'none',
-      features: [],
-      barrel: 'handgun',
-      heavyBarrel: false,
-      additionalBarrels: 0,
-      stock: 'none',
-      furniture: [],
-      feed: 'fixed',
-      capacityPct: 100,
-      accessories: [],
-      ammo: ['ball'],
-      // reconcile: "Accessory: Secondary Receiver (Standard Smoothbore, Complete)" Cr+10%, Weight+10%
-      // reconcile: "Accessory: Secondary Barrel (Handgun)" Cr+20%, Weight+20%
+  weapon(
+    'GR-80',
+    'Gauss rifle',
+    {
+      tl: 13,
+      receiver: 'longarm',
+      calibre: 'standardGauss',
+      mechanism: 'fullAuto',
+      features: ['bullpup'],
+      barrel: 'carbine',
+      stock: 'full',
+      accessories: ['multispectralScope'],
+      // reconcile: Emissions (low) reproduces; AP reads 5 vs the book's 3 (standard
+      // gauss AP) — and the book calls it both GR-80 and GR-90.
+      // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
     },
-    // The worked example's "Optical Sight" (Cr500/0.5kg) is the Long-Range Scope.
-    accessories: ['laserPointer', 'longRangeScope'],
-  }),
+    'Anhur Industries',
+  ),
+  weapon(
+    'AIWS',
+    'Modular infantry weapon',
+    {
+      tl: 10,
+      receiver: 'longarm',
+      calibre: 'intermediateRifle',
+      mechanism: 'fullAuto',
+      features: ['advancedProjectile', 'highCapacity'],
+      capacityPct: 120,
+      barrel: 'rifle',
+      stock: 'full',
+      furniture: ['modularisation'],
+      accessories: ['scope'],
+      // TODO: carbine, support, assault configurations
+    },
+    'Interstellar Ordnance',
+  ),
+  weapon(
+    'Intruder',
+    'Integrated AR/breaching shotgun',
+    {
+      tl: 8,
+      receiver: 'longarm',
+      calibre: 'intermediateRifle',
+      mechanism: 'fullAuto',
+      features: ['bullpup', 'highCapacity', 'quickdraw'],
+      barrel: 'carbine',
+      stock: 'fixed', // a fixed stock (+10% cost / +10% weight)
+      secondary: {
+        tl: 8,
+        receiver: 'assault',
+        calibre: 'standardSmoothbore',
+        mechanism: 'repeater',
+        autoIncrease: 0,
+        rapidFire: 'none',
+        features: [],
+        barrel: 'handgun',
+        heavyBarrel: false,
+        additionalBarrels: 0,
+        stock: 'none',
+        furniture: [],
+        feed: 'fixed',
+        capacityPct: 100,
+        accessories: [],
+        ammo: ['ball'],
+        // reconcile: "Accessory: Secondary Receiver (Standard Smoothbore, Complete)" Cr+10%, Weight+10%
+        // reconcile: "Accessory: Secondary Barrel (Handgun)" Cr+20%, Weight+20%
+      },
+      // The worked example's "Optical Sight" (Cr500/0.5kg) is the Long-Range Scope.
+      accessories: ['laserPointer', 'longRangeScope'],
+    },
+    'Tacload Armaments',
+  ),
   weapon(
     'Squadmate',
-    'Simple and effective rifle, Tactical Systems Incorporated',
+    'Simple and effective rifle',
     {
       tl: 7,
       receiver: 'longarm',
@@ -881,20 +954,26 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'fixed',
       // TODO: marksman variant - accurised, longer barrel, scope - 4.825kg, Cr1280
     },
+    'Tactical Systems Incorporated',
   ),
-  weapon('Sentinel', 'Low-G accelerator pistol, BeraTech', {
-    tl: 9,
-    receiver: 'handgun',
-    calibre: 'heavyHandgun', // "Ammunition Type: Heavy Handgun (rocket)"
-    mechanism: 'repeater',
-    features: ['highCapacity', 'vacuum'],
-    capacityPct: 140,
-    barrel: 'handgun',
-    ammo: ['ball', 'explosive'],
-  }),
+  weapon(
+    'Sentinel',
+    'Low-G accelerator pistol',
+    {
+      tl: 9,
+      receiver: 'handgun',
+      calibre: 'heavyHandgun', // "Ammunition Type: Heavy Handgun (rocket)"
+      mechanism: 'repeater',
+      features: ['highCapacity', 'vacuum'],
+      capacityPct: 140,
+      barrel: 'handgun',
+      ammo: ['ball', 'explosive'],
+    },
+    'BeraTech',
+  ),
   weapon(
     'Shipmate Handgun',
-    'Configurable low-recoil weapon, Unified Space Industries',
+    'Configurable low-recoil weapon',
     {
       tl: 9,
       receiver: 'handgun',
@@ -906,6 +985,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       furniture: ['modularisation'],
       // TODO 'assault weapon' and 'carbine' variants
     },
+    'Unified Space Industries',
   ),
   // reconcile: cost matches (Cr170.625 vs the worksheet's Cr170.25, ~Cr0.4 of
   // rounding) and the primary damage/Lo-Pen reproduce. Still off: weight (0.99 vs
@@ -915,7 +995,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   // range / Pellet Spread tables.
   weapon(
     'Ten-Six',
-    'snub revolver with an under-barrel smoothbore, Universal Security Solutions',
+    'snub revolver with an under-barrel smoothbore',
     {
       tl: 9,
       receiver: 'handgun',
@@ -943,25 +1023,31 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         ammo: ['pellet'],
       },
     },
+    'Universal Security Solutions',
   ),
-  weapon('Guardian', '100m heavy accelerator weapon, BeraTech', {
-    tl: 9,
-    receiver: 'lsw',
-    calibre: 'heavyRifle', // Heavy Rifle (Rocket)
-    mechanism: 'fullAuto',
-    features: ['vacuum'],
-    barrel: 'long',
-    stock: 'full',
-    accessories: ['laserPointer'], // book error: says 'Scope', but Cr200 0.1kg
-    ammo: ['ball', 'explosive', 'heap'],
-    // Book lists Mag 45 (a rocket-calibre quirk we don't derive); ball reload Cr270.
-    magazines: [{ rounds: 45, costCr: 270 }],
-    // reconcile: ball - 275m, 4D, QD -4, Inaccurate -1, Phys Sig (normal), Zero-G (rocket calibre not modelled)
-    // reconcile: explosive Mag Cr1400, HEAP Mag Cr2300 (per-ammo reload overrides not yet supported)
-  }),
+  weapon(
+    'Guardian',
+    '100m heavy accelerator weapon',
+    {
+      tl: 9,
+      receiver: 'lsw',
+      calibre: 'heavyRifle', // Heavy Rifle (Rocket)
+      mechanism: 'fullAuto',
+      features: ['vacuum'],
+      barrel: 'long',
+      stock: 'full',
+      accessories: ['laserPointer'], // book error: says 'Scope', but Cr200 0.1kg
+      ammo: ['ball', 'explosive', 'heap'],
+      // Book lists Mag 45 (a rocket-calibre quirk we don't derive); ball reload Cr270.
+      magazines: [{ rounds: 45, costCr: 270 }],
+      // reconcile: ball - 275m, 4D, QD -4, Inaccurate -1, Phys Sig (normal), Zero-G (rocket calibre not modelled)
+      // reconcile: explosive Mag Cr1400, HEAP Mag Cr2300 (per-ammo reload overrides not yet supported)
+    },
+    'BeraTech',
+  ),
   weapon(
     'Solo',
-    'Fully-auto anti-armour sniper rifle, Diversified Military Systems',
+    'Fully-auto anti-armour sniper rifle',
     {
       tl: 14,
       receiver: 'longarm',
@@ -983,23 +1069,29 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // reconcile: advanced AP mag Cr275 (per-ammo reload override not yet supported)
       // reconcile: Quickdraw +0
     },
+    'Diversified Military Systems',
   ),
-  weapon('Reliant', 'Light starship security machine-gun, Jervaux Aerospace', {
-    tl: 9,
-    receiver: 'lsw',
-    calibre: 'intermediateRifle', // reconcile: book has no Weight adjustment here
-    mechanism: 'fullAuto',
-    features: ['advancedProjectile', 'compact'],
-    autoIncrease: 1,
-    barrel: 'carbine',
-    heavyBarrel: true, // reconcile: book says Cr773.4375, 1.701kg
-    stock: 'folding', // reconcile: book says Cr464, 0.212625kg
-    accessories: ['scope'],
-    ammo: ['ball', 'apAdvanced'],
-    // Mag 50 is a manual override (mentioned in the text), ball reload Cr110.
-    magazines: [{ rounds: 50, costCr: 110 }],
-    // reconcile: AAP mag Cr180 (per-ammo reload override not yet supported)
-  }),
+  weapon(
+    'Reliant',
+    'Light starship security machine-gun',
+    {
+      tl: 9,
+      receiver: 'lsw',
+      calibre: 'intermediateRifle', // reconcile: book has no Weight adjustment here
+      mechanism: 'fullAuto',
+      features: ['advancedProjectile', 'compact'],
+      autoIncrease: 1,
+      barrel: 'carbine',
+      heavyBarrel: true, // reconcile: book says Cr773.4375, 1.701kg
+      stock: 'folding', // reconcile: book says Cr464, 0.212625kg
+      accessories: ['scope'],
+      ammo: ['ball', 'apAdvanced'],
+      // Mag 50 is a manual override (mentioned in the text), ball reload Cr110.
+      magazines: [{ rounds: 50, costCr: 110 }],
+      // reconcile: AAP mag Cr180 (per-ammo reload override not yet supported)
+    },
+    'Jervaux Aerospace',
+  ),
   weapon('Jimpy-G', 'General-purpose machinegun, generic', {
     tl: 5,
     receiver: 'lsw',
@@ -1013,51 +1105,61 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     magazines: [{ rounds: 50, costCr: 50 }],
     // reconcile: Range 375m, Quickdraw +4 (???), Slow Loader 4 (belt feed not modelled)
   }),
-  projector('MF-61', 'Individual flame weapon, Krabbine Heavy Industries', {
-    tl: 9,
-    structure: 'compact',
-    propellantKg: 0.4,
-    fuelKg: 4,
-    fuel: 'advanced',
-    propellant: 'generated',
-    features: [
-      { id: 'armoured', level: 2 },
-      { id: 'bulwarked', level: 3 },
-    ],
-  }),
-  projector('Cryojet', 'Breaching aid, Unified Space Industries', {
-    tl: 10,
-    structure: 'large',
-    propellantKg: 1,
-    fuelKg: 9,
-    fuel: 'cryogenic',
-    propellant: 'generated',
-    features: [
-      { id: 'armoured', level: 2 },
-      { id: 'bulwarked', level: 2 },
-    ],
-    secondary: {
-      tl: 10,
-      receiver: 'longarm',
-      calibre: 'heavySmoothbore',
-      mechanism: 'repeater',
-      autoIncrease: 0,
-      rapidFire: 'none',
-      features: [],
-      barrel: 'assault',
-      heavyBarrel: false,
-      additionalBarrels: 0,
-      stock: 'full',
-      furniture: [],
-      feed: 'fixed',
-      capacityPct: 100,
-      accessories: [],
-      ammo: ['ball'],
+  projector(
+    'MF-61',
+    'Individual flame weapon',
+    {
+      tl: 9,
+      structure: 'compact',
+      propellantKg: 0.4,
+      fuelKg: 4,
+      fuel: 'advanced',
+      propellant: 'generated',
+      features: [
+        { id: 'armoured', level: 2 },
+        { id: 'bulwarked', level: 3 },
+      ],
     },
-  }),
+    'Krabbine Heavy Industries',
+  ),
+  projector(
+    'Cryojet',
+    'Breaching aid',
+    {
+      tl: 10,
+      structure: 'large',
+      propellantKg: 1,
+      fuelKg: 9,
+      fuel: 'cryogenic',
+      propellant: 'generated',
+      features: [
+        { id: 'armoured', level: 2 },
+        { id: 'bulwarked', level: 2 },
+      ],
+      secondary: {
+        tl: 10,
+        receiver: 'longarm',
+        calibre: 'heavySmoothbore',
+        mechanism: 'repeater',
+        autoIncrease: 0,
+        rapidFire: 'none',
+        features: [],
+        barrel: 'assault',
+        heavyBarrel: false,
+        additionalBarrels: 0,
+        stock: 'full',
+        furniture: [],
+        feed: 'fixed',
+        capacityPct: 100,
+        accessories: [],
+        ammo: ['ball'],
+      },
+    },
+    'Unified Space Industries',
+  ),
   energyWeapon(
     'BL-3',
-    'Emergency defence weapon, Personal Security Solutions',
+    'Emergency defence weapon',
     {
       tl: 9,
       receiver: 'minimal',
@@ -1068,6 +1170,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       cartridgeRating: 'weak',
       cartridgeCount: 3,
     },
+    'Personal Security Solutions',
   ),
   energyWeapon('M-84', 'Battlefield configurable laser weapon', {
     tl: 11,
@@ -1105,7 +1208,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // barrel +full stock → 2.8kg. reconcile: the worksheet totals Cr940; the
     // firearm-style barrel/stock percentages give Cr975 (a ~Cr35 over-count we keep
     // flagged rather than fudge — the user is the authority on the exact figure).
-    'Whaite Industries Light Munition Launcher',
+    'semi-auto light tube launcher',
     {
       tl: 8,
       receiver: 'tubeSemiLight',
@@ -1116,6 +1219,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       warhead: 'fragmentation',
       // reconcile: incapacitant gas, baton, distraction, multiple projectile
     },
+    'Whaite Industries',
   ),
   // TODO: Interstellar Ordnance 42mm Advanced Squad Support Weapon
   // TODO: Xeirbin Components Tactical Multirole Missile System

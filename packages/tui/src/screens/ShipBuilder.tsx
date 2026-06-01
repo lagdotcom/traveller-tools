@@ -149,6 +149,9 @@ export function ShipBuilderScreen({
   type FormKey = keyof typeof form.values;
 
   const [name, setName] = useState(initial?.name ?? 'Untitled Ship');
+  const [manufacturer, setManufacturer] = useState(initial?.manufacturer ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [saveField, setSaveField] = useState(0); // 0=name 1=manufacturer 2=desc
   const [systems, setSystems] = useState<SystemEntry[]>(startParams.systems);
   const [software, setSoftware] = useState<SoftwareEntry[]>(
     startParams.software,
@@ -420,6 +423,7 @@ export function ShipBuilderScreen({
     // Library shortcuts are available from edit mode.
     if (mode === 'edit' && key.ctrl && input === 's') {
       setSaveName(name);
+      setSaveField(0);
       setMessage('');
       setMode('save');
       return;
@@ -439,6 +443,10 @@ export function ShipBuilderScreen({
     // handles its own typing, so swallow other keys here.
     if (mode !== 'edit') {
       if (key.escape) setMode('edit');
+      else if (mode === 'save' && key.downArrow)
+        setSaveField((f) => Math.min(2, f + 1));
+      else if (mode === 'save' && key.upArrow)
+        setSaveField((f) => Math.max(0, f - 1));
       return;
     }
 
@@ -454,7 +462,14 @@ export function ShipBuilderScreen({
 
   const doSave = () => {
     const finalName = saveName.trim() || 'Untitled Ship';
-    store.save({ name: finalName, params });
+    const mfr = manufacturer.trim();
+    const desc = description.trim();
+    store.save({
+      name: finalName,
+      ...(mfr ? { manufacturer: mfr } : {}),
+      ...(desc ? { description: desc } : {}),
+      params,
+    });
     setName(finalName);
     setMode('edit');
     setMessage(`Saved “${finalName}”.`);
@@ -633,7 +648,12 @@ export function ShipBuilderScreen({
     crewType: form.values.crewType as CrewType,
     standardDesign: form.values.standard === 'yes',
   };
-  const currentDef: ShipDefinition = { name, params };
+  const currentDef: ShipDefinition = {
+    name,
+    ...(manufacturer.trim() ? { manufacturer: manufacturer.trim() } : {}),
+    ...(description.trim() ? { description: description.trim() } : {}),
+    params,
+  };
   const {
     summary,
     issues,
@@ -695,11 +715,25 @@ export function ShipBuilderScreen({
           <Field
             label="Save as"
             value={saveName}
-            isActive
+            isActive={saveField === 0}
             onChange={setSaveName}
             onSubmit={doSave}
           />
-          <Text dimColor>Enter to save · Esc to cancel</Text>
+          <Field
+            label="Manufacturer"
+            value={manufacturer}
+            isActive={saveField === 1}
+            onChange={setManufacturer}
+            onSubmit={doSave}
+          />
+          <Field
+            label="Description"
+            value={description}
+            isActive={saveField === 2}
+            onChange={setDescription}
+            onSubmit={doSave}
+          />
+          <Text dimColor>↑/↓ between fields · Enter saves · Esc cancels</Text>
         </Box>
       )}
 

@@ -31,6 +31,8 @@ import {
 export interface ShipDefinition {
   name: string;
   description?: string;
+  /** Builder / shipyard / class manufacturer. */
+  manufacturer?: string;
   params: ShipParams;
 }
 
@@ -186,6 +188,7 @@ export function serializeShip(def: ShipDefinition): string {
     ship: {
       name: def.name,
       ...(def.description ? { description: def.description } : {}),
+      ...(def.manufacturer ? { manufacturer: def.manufacturer } : {}),
       params: normalizeParams(def.params),
     },
   };
@@ -217,6 +220,9 @@ export function parseShip(text: string): ShipDefinition {
     name,
     ...(typeof ship.description === 'string'
       ? { description: ship.description }
+      : {}),
+    ...(typeof ship.manufacturer === 'string'
+      ? { manufacturer: ship.manufacturer }
       : {}),
     params: normalizeParams(params),
   };

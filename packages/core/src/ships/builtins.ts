@@ -7,10 +7,12 @@ function ship(
   name: string,
   description: string,
   overrides: Partial<ShipParams>,
+  manufacturer?: string,
 ): ShipDefinition {
   return {
     name,
     description,
+    ...(manufacturer ? { manufacturer } : {}),
     params: { ...DEFAULT_SHIP_PARAMS, ...overrides },
   };
 }

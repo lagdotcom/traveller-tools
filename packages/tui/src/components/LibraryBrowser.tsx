@@ -7,6 +7,7 @@ import { filterByLabel, FilterList } from './FilterList.js';
 interface Definition {
   name: string;
   description?: string;
+  manufacturer?: string;
 }
 
 /**
@@ -121,7 +122,7 @@ export function LibraryBrowser<T extends Definition>({
       <Box marginTop={1}>
         <Text dimColor wrap="truncate-end">
           {selected
-            ? `${selected.def.name}${selected.def.description ? ` — ${selected.def.description}` : ''}`
+            ? `${selected.def.name}${selected.def.manufacturer ? ` · ${selected.def.manufacturer}` : ''}${selected.def.description ? ` — ${selected.def.description}` : ''}`
             : ' '}
         </Text>
       </Box>
