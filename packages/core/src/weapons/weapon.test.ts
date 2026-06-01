@@ -184,7 +184,7 @@ describe('leveled receiver features', () => {
     const base = evaluateWeapon({ ...DEFAULT_WEAPON_PARAMS });
     const comp = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
-      features: ['recoilComp2'],
+      features: [{ id: 'recoilComp', level: 2 }],
     });
     // 2 points: damage −3, Recoil −2 vs the base build.
     expect(comp.profile.damage.mod).toBe(base.profile.damage.mod - 3);
@@ -198,7 +198,7 @@ describe('leveled receiver features', () => {
   it('Armoured surfaces a Protection trait and adds +10% cost/+5% weight per point', () => {
     const r = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
-      features: ['armoured2'],
+      features: [{ id: 'armoured', level: 2 }],
     });
     expect(r.profile.traits['Armoured']).toBe(2);
     const recvLine = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
@@ -318,7 +318,7 @@ describe('validation rules', () => {
   it('flags a Low-Quality weapon with its Deficiency points', () => {
     const issues = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
-      features: ['veryLowQuality'],
+      features: [{ id: 'lowQuality', level: 2 }],
     }).issues;
     expect(
       issues.some((i) =>
@@ -330,7 +330,7 @@ describe('validation rules', () => {
   it('rejects two quality grades (High + Low) as incompatible', () => {
     const issues = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
-      features: ['highQuality', 'lowQuality'],
+      features: ['highQuality', { id: 'lowQuality', level: 1 }],
     }).issues;
     expect(issues.some((i) => /Incompatible features/.test(i.message))).toBe(
       true,

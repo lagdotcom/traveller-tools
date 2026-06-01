@@ -46,8 +46,10 @@ import {
   type ProjectorStructureId,
   RECEIVER_FEATURES,
   type ReceiverFeatureId,
+  type ReceiverFeatureRef,
   RECEIVERS,
   type ReceiverTypeId,
+  refFeatureId,
   type SecondaryWeaponParams,
   serializeWeapon,
   type StockId,
@@ -91,7 +93,24 @@ const BARREL = labelMap<BarrelId>(BARRELS);
 const STOCK = labelMap<StockId>(STOCKS);
 const FEED = labelMap<FeedId>(FEEDS);
 const AMMO = labelMap<AmmoTypeId>(AMMO_TYPES);
-const FEATURE = labelMap<ReceiverFeatureId>(RECEIVER_FEATURES);
+// Receiver features are picked by label; leveled features (Armoured, Bulwarked,
+// Recoil Comp, Disguised, Low Quality) expand to one labelled choice per level
+// that maps to an `{ id, level }` ref. Plain features map to a bare id.
+const FEATURE_REFS: ReceiverFeatureRef[] = (
+  Object.keys(RECEIVER_FEATURES) as ReceiverFeatureId[]
+).flatMap((id): ReceiverFeatureRef[] => {
+  const def = RECEIVER_FEATURES[id];
+  return def.levels ? def.levels.map((_, i) => ({ id, level: i + 1 })) : [id];
+});
+const featureRefLabel = (ref: ReceiverFeatureRef): string => {
+  const def = RECEIVER_FEATURES[refFeatureId(ref)];
+  if (!def.levels) return def.label;
+  const level = typeof ref === 'string' ? 1 : ref.level;
+  return def.levels[level - 1]!.label;
+};
+const FEATURE_LABELS = FEATURE_REFS.map(featureRefLabel);
+const featureLabelToRef = (label: string): ReceiverFeatureRef | undefined =>
+  FEATURE_REFS.find((r) => featureRefLabel(r) === label);
 const FURN = labelMap<FurnitureId>(FURNITURE);
 const ACCESSORY = labelMap<AccessoryId>(ACCESSORIES);
 const ERECEIVER = labelMap<EnergyReceiverId>(ENERGY_RECEIVERS);
@@ -233,7 +252,7 @@ type ListId = 'features' | 'furniture' | 'accessories' | 'mods';
 type FormValues = ReturnType<typeof formValues>;
 /** The multi-select state arrays, threaded into the per-class param builders. */
 interface Lists {
-  features: ReceiverFeatureId[];
+  features: ReceiverFeatureRef[];
   furniture: FurnitureId[];
   accessories: AccessoryId[];
   mods: EnergyModId[];
@@ -366,7 +385,7 @@ export function WeaponBuilderScreen({
     startParams.kind === 'firearm' || startParams.kind === 'energy'
       ? startParams
       : DEFAULT_WEAPON_PARAMS;
-  const [features, setFeatures] = useState<ReceiverFeatureId[]>(
+  const [features, setFeatures] = useState<ReceiverFeatureRef[]>(
     startParams.kind === 'launcher' ? startParams.features : listSeed.features,
   );
   const [furniture, setFurniture] = useState<FurnitureId[]>(listSeed.furniture);
@@ -392,7 +411,9 @@ export function WeaponBuilderScreen({
   const lists: Record<
     ListId,
     {
-      items: string[];
+      // Items render via `itemLabel`; only the count/indices are read here, so the
+      // element type is opaque (features hold `{id, level}` refs, others hold ids).
+      items: readonly unknown[];
       itemLabel: (i: number) => string;
       remove: (i: number) => void;
       available: string[];
@@ -403,18 +424,24 @@ export function WeaponBuilderScreen({
   > = {
     features: {
       items: features,
-      itemLabel: (i) => FEATURE.toLabel(features[i]!),
+      itemLabel: (i) => featureRefLabel(features[i]!),
       remove: (i) => setFeatures((p) => p.filter((_, k) => k !== i)),
-      available: FEATURE.labels.filter(
-        (l) => !features.includes(FEATURE.toId(l)),
-      ),
+      // Exclude every level of a feature already chosen (one feature per id).
+      available: FEATURE_LABELS.filter((l) => {
+        const ref = featureLabelToRef(l);
+        return (
+          ref !== undefined &&
+          !features.some((f) => refFeatureId(f) === refFeatureId(ref))
+        );
+      }),
       addValue: addFeature,
       onAddChange: setAddFeature,
       onAdd: () => {
-        const id = FEATURE.toId(
+        const ref = featureLabelToRef(
           effective(addFeature, lists.features.available),
         );
-        if (id && !features.includes(id)) setFeatures((p) => [...p, id]);
+        if (ref && !features.some((f) => refFeatureId(f) === refFeatureId(ref)))
+          setFeatures((p) => [...p, ref]);
         setAddFeature('');
       },
     },

@@ -113,24 +113,21 @@ export type ReceiverFeatureId =
   | 'stealthBasic'
   | 'stealthExtreme'
   | 'partialMultiBarrel'
-  // Leveled features modelled as discrete, mutually-exclusive list entries.
-  | 'recoilComp1'
-  | 'recoilComp2'
-  | 'disguised1'
-  | 'disguised2'
-  | 'disguised3'
-  | 'disguised4'
+  // Leveled features: a single id carrying a `level` option (see ReceiverFeatureRef).
+  | 'recoilComp'
+  | 'disguised'
   | 'lowQuality'
-  | 'veryLowQuality'
-  | 'extremelyLowQuality'
-  | 'appallingQuality'
-  | 'pieceOfJunk'
-  | 'armoured1'
-  | 'armoured2'
-  | 'armoured3'
-  | 'bulwarked1'
-  | 'bulwarked2'
-  | 'bulwarked3';
+  | 'armoured'
+  | 'bulwarked';
+
+/**
+ * A selected receiver feature. A bare id is a plain (level-1) feature; the object
+ * form carries a `level` for the leveled features (Armoured, Bulwarked, Recoil
+ * Compensation, Disguised, Low Quality) — like a ship `ComponentDef`'s options.
+ */
+export type ReceiverFeatureRef =
+  | ReceiverFeatureId
+  | { id: ReceiverFeatureId; level: number };
 
 /** Furniture add-ons beyond the stock choice (multi-select). */
 export type FurnitureId =
@@ -306,7 +303,7 @@ export interface FirearmParams {
   mechanism: MechanismId;
   /** Extra Auto bought on a burst/full-auto receiver (Increased Auto table). */
   autoIncrease: number;
-  features: ReceiverFeatureId[];
+  features: ReceiverFeatureRef[];
   barrel: BarrelId;
   /** Heavy-profile barrel (doubles barrel weight & cost). */
   heavyBarrel: boolean;
@@ -355,7 +352,7 @@ export interface EnergyParams {
   stock: StockId;
   furniture: FurnitureId[];
   /** Shared firearm receiver features (applied for cost/weight/quickdraw/sig). */
-  features: ReceiverFeatureId[];
+  features: ReceiverFeatureRef[];
   /** Energy-weapon-exclusive modifications. */
   mods: EnergyModId[];
   accessories: AccessoryId[];
@@ -407,7 +404,7 @@ export interface LauncherParams {
    * Receiver features (Lightweight, Bullpup, …), applied as a multiplicative
    * chain off the base receiver — exactly as on a firearm.
    */
-  features: ReceiverFeatureId[];
+  features: ReceiverFeatureRef[];
   /** Barrel fitted to the launcher (a % of the modified-receiver baseline). */
   barrel: BarrelId;
   /** Stock fitted to the launcher (a % of the modified-receiver baseline). */

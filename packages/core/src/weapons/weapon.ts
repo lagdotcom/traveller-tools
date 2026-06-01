@@ -16,11 +16,13 @@ import {
   GAUSS_CAPACITY_MULT,
   GAUSS_COST_MULT,
   GAUSS_WEIGHT_MULT,
+  hasFeature,
   INCREASED_AUTO,
   MECHANISMS,
-  RECEIVER_FEATURES,
   RECEIVERS,
   RECOIL_CLASS_MOD,
+  resolveFeature,
+  resolveFeatures,
   SMOOTHBORE_CAPACITY,
   SOURCE,
   STOCKS,
@@ -130,8 +132,9 @@ function validate(params: FirearmParams): Issue[] {
 
   // Mutually-exclusive feature groups (size, weight, cooling, stealth, quality…).
   const groups = new Map<string, string[]>();
-  for (const id of params.features) {
-    const def = RECEIVER_FEATURES[id];
+  for (const ref of params.features) {
+    const def = resolveFeature(ref);
+    if (!def) continue;
     if (def.group)
       (groups.get(def.group) ?? groups.set(def.group, []).get(def.group)!).push(
         def.label,
@@ -151,12 +154,12 @@ function validate(params: FirearmParams): Issue[] {
       issues.push(error(`Incompatible features: ${labels.join(' + ')}`));
 
   // Bullpup requires a full stock; high-capacity is incompatible with compacting.
-  if (params.features.includes('bullpup') && params.stock !== 'full')
+  if (hasFeature(params.features, 'bullpup') && params.stock !== 'full')
     issues.push(error('A Bullpup weapon must have a full stock'));
   if (
-    params.features.includes('highCapacity') &&
-    (params.features.includes('compact') ||
-      params.features.includes('veryCompact'))
+    hasFeature(params.features, 'highCapacity') &&
+    (hasFeature(params.features, 'compact') ||
+      hasFeature(params.features, 'veryCompact'))
   )
     issues.push(
       error('High Capacity is incompatible with Compact / Very Compact'),
@@ -220,9 +223,7 @@ function resolveParts(params: FirearmParams) {
     stock: STOCKS[params.stock] ?? STOCKS.none,
     feed: FEEDS[params.feed] ?? FEEDS.standard,
     ammo: AMMO_TYPES[params.ammo] ?? AMMO_TYPES.ball,
-    features: params.features
-      .map((id) => RECEIVER_FEATURES[id])
-      .filter(Boolean),
+    features: resolveFeatures(params.features),
     autoSteps,
     incAuto: INCREASED_AUTO[autoSteps],
     capPct: Number.isFinite(params.capacityPct) ? params.capacityPct : 100,
@@ -382,7 +383,7 @@ function firearmComponents(
   // adds half its weight; a *complete* multi-barrel (no partialMultiBarrel
   // feature) also adds 10% of the receiver baseline per extra barrel.
   if (extraBarrels > 0) {
-    const partial = params.features.includes('partialMultiBarrel');
+    const partial = hasFeature(params.features, 'partialMultiBarrel');
     const recCost = partial ? 0 : baselineCost * 0.1 * extraBarrels;
     const recWeight = partial ? 0 : baselineWeight * 0.1 * extraBarrels;
     push({

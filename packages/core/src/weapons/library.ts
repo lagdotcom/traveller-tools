@@ -58,6 +58,7 @@ import type {
   ProjectorPropellantId,
   ProjectorStructureId,
   ReceiverFeatureId,
+  ReceiverFeatureRef,
   ReceiverTypeId,
   SecondaryWeaponParams,
   StockId,
@@ -186,6 +187,34 @@ function pickList<T extends string>(
   return v.filter((x): x is T => typeof x === 'string' && x in allowed);
 }
 
+/**
+ * Coerce a feature list, accepting both bare ids and `{id, level}` objects.
+ * Canonicalises to a bare id for plain features and `{id, level}` (clamped to the
+ * feature's level range) for leveled ones, dropping anything unknown.
+ */
+function normalizeFeatures(v: unknown): ReceiverFeatureRef[] {
+  if (!Array.isArray(v)) return [];
+  const out: ReceiverFeatureRef[] = [];
+  for (const item of v) {
+    const id =
+      typeof item === 'string'
+        ? item
+        : isObject(item) && typeof item.id === 'string'
+          ? item.id
+          : undefined;
+    if (!id || !(id in RECEIVER_FEATURES)) continue;
+    const def = RECEIVER_FEATURES[id as ReceiverFeatureId];
+    if (!def.levels) {
+      out.push(id as ReceiverFeatureId);
+    } else {
+      const raw = isObject(item) ? num(item.level, 1) : 1;
+      const level = Math.max(1, Math.min(def.levels.length, Math.floor(raw)));
+      out.push({ id: id as ReceiverFeatureId, level });
+    }
+  }
+  return out;
+}
+
 const POWER_CLASSES = ENERGY_POWER_CLASS_DICE;
 const POWER_SOURCES = { powerpack: 0, cartridge: 0 };
 
@@ -199,7 +228,7 @@ function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
     calibre: pick<CalibreId>(p.calibre, CALIBRES, d.calibre),
     mechanism: pick<MechanismId>(p.mechanism, MECHANISMS, d.mechanism),
     autoIncrease: num(p.autoIncrease, d.autoIncrease),
-    features: pickList<ReceiverFeatureId>(p.features, RECEIVER_FEATURES),
+    features: normalizeFeatures(p.features),
     barrel: pick<BarrelId>(p.barrel, BARRELS, d.barrel),
     heavyBarrel: bool(p.heavyBarrel, d.heavyBarrel),
     additionalBarrels: num(p.additionalBarrels, d.additionalBarrels),
@@ -257,7 +286,7 @@ function normalizeEnergyParams(p: Record<string, unknown>): EnergyParams {
     heavyBarrel: bool(p.heavyBarrel, d.heavyBarrel),
     stock: pick<StockId>(p.stock, STOCKS, d.stock),
     furniture: pickList<FurnitureId>(p.furniture, FURNITURE),
-    features: pickList<ReceiverFeatureId>(p.features, RECEIVER_FEATURES),
+    features: normalizeFeatures(p.features),
     mods: pickList<EnergyModId>(p.mods, ENERGY_MODS),
     accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
     powerSource: pick<EnergyPowerSourceId>(
@@ -316,7 +345,7 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
       LAUNCHER_RECEIVERS,
       d.receiver,
     ),
-    features: pickList<ReceiverFeatureId>(p.features, RECEIVER_FEATURES),
+    features: normalizeFeatures(p.features),
     barrel: pick<BarrelId>(p.barrel, BARRELS, d.barrel),
     stock: pick<StockId>(p.stock, STOCKS, d.stock),
     guidance: bool(p.guidance, d.guidance),
@@ -602,7 +631,13 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     receiver: 'longarm',
     calibre: 'lightRifle',
     mechanism: 'semiAuto',
-    features: ['bullpup', 'compact', 'rugged', 'lightweight', 'bulwarked2'],
+    features: [
+      'bullpup',
+      'compact',
+      'rugged',
+      'lightweight',
+      { id: 'bulwarked', level: 2 },
+    ],
     barrel: 'carbine',
     stock: 'full',
     accessories: ['scope'],
@@ -654,7 +689,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     calibre: 'lightHandgun',
     mechanism: 'fullAuto',
     autoIncrease: 1,
-    features: ['compact', 'recoilComp2', 'lightweight'],
+    features: ['compact', { id: 'recoilComp', level: 2 }, 'lightweight'],
     barrel: 'assault',
     stock: 'folding',
     // reconcile: Receiver Totals Cr715.05, 2.079kg

@@ -127,6 +127,13 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
 - **Gauss is implied by the calibre** (no separate `gauss` field): the gauss
   calibres carry a `gauss` flag, and `calibre.gauss` triggers the gauss ×2 cost /
   ×1.25 weight / ×3 capacity modifier and the TL12 gate.
+- **Receiver features carry options** (ship-component style). `params.features` is
+  a `ReceiverFeatureRef[]`: a bare id for a plain feature, or `{ id, level }` for a
+  _leveled_ one (Armoured/Bulwarked/Recoil Comp/Disguised/Low Quality), so one id
+  covers every level. A leveled `ReceiverFeatureDef` carries a `levels[]` table;
+  `resolveFeature` (in `data.ts`) flattens the chosen level into a concrete def
+  before the multiplicative chain runs. Use `resolveFeatures`/`hasFeature`/
+  `refFeatureId` rather than touching `RECEIVER_FEATURES` directly.
 - **All numbers come from the Field Catalogue** (`source: 'Field Catalogue'`). The
   user supplied **eight worked worksheets**, shipped as `BUILTIN_WEAPONS` and used
   as the test oracle. Six use the rules-text base values (seeded); the two early

@@ -11,7 +11,13 @@
  * shared `WeaponEvaluation` shape.
  */
 import type { Issue } from '../design/index.js';
-import { BARRELS, RECEIVER_FEATURES, SOURCE, STOCKS } from './data.js';
+import {
+  BARRELS,
+  resolveFeature,
+  resolveFeatures,
+  SOURCE,
+  STOCKS,
+} from './data.js';
 import {
   DELIVERY_SYSTEMS,
   GUIDANCE_COST_MULT,
@@ -48,8 +54,8 @@ function validateLauncher(params: LauncherParams): Issue[] {
 
   // Receiver-feature TL gates + mutually-exclusive groups (reuses firearm data).
   const groups = new Map<string, string[]>();
-  for (const id of params.features) {
-    const def = RECEIVER_FEATURES[id];
+  for (const ref of params.features) {
+    const def = resolveFeature(ref);
     if (!def) continue;
     pushIf(issues, tlGate(tl, def.label, def.minTL));
     if (def.group)
@@ -72,9 +78,7 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     DELIVERY_SYSTEMS[params.delivery] ?? DELIVERY_SYSTEMS.cartridge;
   const barrel = BARRELS[params.barrel] ?? BARRELS.minimal;
   const stock = STOCKS[params.stock] ?? STOCKS.none;
-  const features = params.features
-    .map((id) => RECEIVER_FEATURES[id])
-    .filter(Boolean);
+  const features = resolveFeatures(params.features);
 
   const issues = validateLauncher(params);
   const sources = new Set<string>([SOURCE]);

@@ -19,6 +19,7 @@ import type {
   FurnitureId,
   MechanismId,
   ReceiverFeatureId,
+  ReceiverFeatureRef,
   ReceiverTypeId,
   SignatureKind,
   SignatureLevel,
@@ -746,6 +747,46 @@ export interface ReceiverFeatureDef {
   traits?: Traits;
   /** Mutually-exclusive group (only one feature per group). */
   group?: string;
+  /**
+   * Per-level effects for a *leveled* feature (index 0 = level 1). When present
+   * the feature carries a `level` option (see `ReceiverFeatureRef`) and the flat
+   * multipliers above are ignored in favour of the chosen level's entry —
+   * `resolveFeature` flattens the two into a concrete def.
+   */
+  levels?: ReceiverFeatureLevel[];
+}
+
+/** One level of a leveled feature; missing fields default to "no effect". */
+export interface ReceiverFeatureLevel {
+  label: string;
+  costMult: number;
+  weightMult?: number;
+  capacityMult?: number;
+  quickdraw?: number;
+  signatureShift?: number;
+  damageMod?: number;
+  recoilMod?: number;
+  deficiency?: number;
+  traits?: Traits;
+}
+
+/** Build `max` per-point levels for a linear feature (Armoured / Bulwarked). */
+function LEVELED_POINTS(
+  max: number,
+  name: string,
+  costPerPt: number,
+  weightPerPt: number,
+): ReceiverFeatureLevel[] {
+  const r = (n: number) => Math.round(n * 1e6) / 1e6;
+  return Array.from({ length: max }, (_, i) => {
+    const n = i + 1;
+    return {
+      label: `${name} (${n})`,
+      costMult: r(1 + costPerPt * n),
+      weightMult: r(1 + weightPerPt * n),
+      traits: { [name]: n },
+    };
+  });
 }
 
 export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
@@ -901,170 +942,143 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       capacityMult: 1,
       quickdraw: 0,
     },
-    // --- Recoil Compensation (group 'recoil'): +10% cost / +5% wt per point;
-    // reduces Recoil by up to 2 at the cost of −1 damage (1pt) / −3 (2pts). ---
-    recoilComp1: {
-      label: 'Recoil Compensation (1 pt)',
-      costMult: 1.1,
-      weightMult: 1.05,
+    // --- Leveled features (carry a `level` option). Each `levels` entry is one
+    // point/grade; `resolveFeature` flattens the chosen level into a concrete def. ---
+    // Recoil Compensation: +10% cost / +5% wt per point; reduces Recoil by up to 2
+    // at the cost of −1 damage (1pt) / −3 (2pts).
+    recoilComp: {
+      label: 'Recoil Compensation',
+      costMult: 1,
+      weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
-      damageMod: -1,
-      recoilMod: -1,
       group: 'recoil',
+      levels: [
+        {
+          label: 'Recoil Compensation (1)',
+          costMult: 1.1,
+          weightMult: 1.05,
+          damageMod: -1,
+          recoilMod: -1,
+        },
+        {
+          label: 'Recoil Compensation (2)',
+          costMult: 1.2,
+          weightMult: 1.1,
+          damageMod: -3,
+          recoilMod: -2,
+        },
+      ],
     },
-    recoilComp2: {
-      label: 'Recoil Compensation (2 pts)',
-      costMult: 1.2,
-      weightMult: 1.1,
-      capacityMult: 1,
-      quickdraw: 0,
-      damageMod: -3,
-      recoilMod: -2,
-      group: 'recoil',
-    },
-    // --- Disguised (group 'disguise'): each −1 detection DM adds 50% cost. The
-    // detection DM is a play stat, noted in the label; cost is what we model. ---
-    disguised1: {
-      label: 'Disguised (DM-1)',
-      costMult: 1.5,
+    // Disguised: each −1 detection DM adds 50% cost (the DM is a play stat).
+    disguised: {
+      label: 'Disguised',
+      costMult: 1,
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
       group: 'disguise',
+      levels: [
+        { label: 'Disguised (DM-1)', costMult: 1.5 },
+        { label: 'Disguised (DM-2)', costMult: 2 },
+        { label: 'Disguised (DM-3)', costMult: 2.5 },
+        { label: 'Disguised (DM-4)', costMult: 3 },
+      ],
     },
-    disguised2: {
-      label: 'Disguised (DM-2)',
-      costMult: 2,
-      weightMult: 1,
-      capacityMult: 1,
-      quickdraw: 0,
-      group: 'disguise',
-    },
-    disguised3: {
-      label: 'Disguised (DM-3)',
-      costMult: 2.5,
-      weightMult: 1,
-      capacityMult: 1,
-      quickdraw: 0,
-      group: 'disguise',
-    },
-    disguised4: {
-      label: 'Disguised (DM-4)',
-      costMult: 3,
-      weightMult: 1,
-      capacityMult: 1,
-      quickdraw: 0,
-      group: 'disguise',
-    },
-    // --- Low Quality (group 'quality', shared with High Quality): a cost
-    // reduction plus Deficiency points the design must satisfy with negative
-    // traits (Inaccurate/Unreliable/Ramshackle/Hazardous). Which traits is the
-    // player's choice per the FC, so we flag the points rather than auto-apply. ---
+    // Low Quality (group 'quality', shared with High Quality): a cost reduction
+    // plus Deficiency points the design must satisfy with negative traits
+    // (Inaccurate/Unreliable/Ramshackle/Hazardous) — the player's choice, so we
+    // flag the points rather than auto-apply a trait.
     lowQuality: {
       label: 'Low Quality',
-      costMult: 0.9,
+      costMult: 1,
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
-      deficiency: 1,
       group: 'quality',
+      levels: [
+        { label: 'Low Quality', costMult: 0.9, deficiency: 1 },
+        { label: 'Very Low Quality', costMult: 0.8, deficiency: 2 },
+        { label: 'Extremely Low Quality', costMult: 0.6, deficiency: 3 },
+        { label: 'Appalling Quality', costMult: 0.4, deficiency: 5 },
+        { label: 'Piece of Junk', costMult: 0.2, deficiency: 8 },
+      ],
     },
-    veryLowQuality: {
-      label: 'Very Low Quality',
-      costMult: 0.8,
+    // Armoured: +10% cost / +5% wt per point of Protection (surfaced as a trait).
+    armoured: {
+      label: 'Armoured',
+      costMult: 1,
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
-      deficiency: 2,
-      group: 'quality',
-    },
-    extremelyLowQuality: {
-      label: 'Extremely Low Quality',
-      costMult: 0.6,
-      weightMult: 1,
-      capacityMult: 1,
-      quickdraw: 0,
-      deficiency: 3,
-      group: 'quality',
-    },
-    appallingQuality: {
-      label: 'Appalling Quality',
-      costMult: 0.4,
-      weightMult: 1,
-      capacityMult: 1,
-      quickdraw: 0,
-      deficiency: 5,
-      group: 'quality',
-    },
-    pieceOfJunk: {
-      label: 'Piece of Junk',
-      costMult: 0.2,
-      weightMult: 1,
-      capacityMult: 1,
-      quickdraw: 0,
-      deficiency: 8,
-      group: 'quality',
-    },
-    // --- Armoured (group 'armour'): +10% cost / +5% wt per point of Protection.
-    // Levels 1–3 cover personal weapons; higher points follow the same formula. ---
-    armoured1: {
-      label: 'Armoured (1 pt)',
-      costMult: 1.1,
-      weightMult: 1.05,
-      capacityMult: 1,
-      quickdraw: 0,
-      traits: { Armoured: 1 },
       group: 'armour',
+      levels: LEVELED_POINTS(5, 'Armoured', 0.1, 0.05),
     },
-    armoured2: {
-      label: 'Armoured (2 pts)',
-      costMult: 1.2,
-      weightMult: 1.1,
+    // Bulwarked: +20% cost / +10% wt per point; each point grants Malfunction DM+1.
+    bulwarked: {
+      label: 'Bulwarked',
+      costMult: 1,
+      weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
-      traits: { Armoured: 2 },
-      group: 'armour',
-    },
-    armoured3: {
-      label: 'Armoured (3 pts)',
-      costMult: 1.3,
-      weightMult: 1.15,
-      capacityMult: 1,
-      quickdraw: 0,
-      traits: { Armoured: 3 },
-      group: 'armour',
-    },
-    // --- Bulwarked (group 'bulwark'): +20% cost / +10% wt per point; each point
-    // grants DM+1 on the Malfunction table (surfaced as a trait). ---
-    bulwarked1: {
-      label: 'Bulwarked (1 pt)',
-      costMult: 1.2,
-      weightMult: 1.1,
-      capacityMult: 1,
-      quickdraw: 0,
-      traits: { Bulwarked: 1 },
       group: 'bulwark',
-    },
-    bulwarked2: {
-      label: 'Bulwarked (2 pts)',
-      costMult: 1.4,
-      weightMult: 1.2,
-      capacityMult: 1,
-      quickdraw: 0,
-      traits: { Bulwarked: 2 },
-      group: 'bulwark',
-    },
-    bulwarked3: {
-      label: 'Bulwarked (3 pts)',
-      costMult: 1.6,
-      weightMult: 1.3,
-      capacityMult: 1,
-      quickdraw: 0,
-      traits: { Bulwarked: 3 },
-      group: 'bulwark',
+      levels: LEVELED_POINTS(5, 'Bulwarked', 0.2, 0.1),
     },
   };
+
+/** The id of a selected feature (bare string or `{id, level}` object). */
+export const refFeatureId = (ref: ReceiverFeatureRef): ReceiverFeatureId =>
+  typeof ref === 'string' ? ref : ref.id;
+
+/** The level of a selected feature (1 for a bare id / non-leveled feature). */
+export const refFeatureLevel = (ref: ReceiverFeatureRef): number =>
+  typeof ref === 'string' ? 1 : ref.level;
+
+/** True if `id` is selected at any level. */
+export const hasFeature = (
+  refs: ReceiverFeatureRef[],
+  id: ReceiverFeatureId,
+): boolean => refs.some((r) => refFeatureId(r) === id);
+
+/**
+ * Flatten a selected feature into a concrete def: for a leveled feature the
+ * chosen level's entry replaces the (placeholder) flat multipliers; a plain
+ * feature is returned as-is. Returns undefined for an unknown id.
+ */
+export function resolveFeature(
+  ref: ReceiverFeatureRef,
+): ReceiverFeatureDef | undefined {
+  const def = RECEIVER_FEATURES[refFeatureId(ref)];
+  if (!def || !def.levels) return def;
+  const i =
+    Math.max(1, Math.min(def.levels.length, Math.floor(refFeatureLevel(ref)))) -
+    1;
+  const lv = def.levels[i]!;
+  return {
+    label: lv.label,
+    costMult: lv.costMult,
+    weightMult: lv.weightMult ?? 1,
+    capacityMult: lv.capacityMult ?? 1,
+    quickdraw: lv.quickdraw ?? 0,
+    minTL: def.minTL,
+    signatureShift: lv.signatureShift,
+    rangeMult: def.rangeMult,
+    ammoCostMult: def.ammoCostMult,
+    damageMod: lv.damageMod,
+    recoilMod: lv.recoilMod,
+    deficiency: lv.deficiency,
+    traits: lv.traits,
+    group: def.group,
+  };
+}
+
+/** Resolve a list of feature refs to concrete defs, dropping unknown ids. */
+export const resolveFeatures = (
+  refs: ReceiverFeatureRef[],
+): ReceiverFeatureDef[] =>
+  refs
+    .map(resolveFeature)
+    .filter((d): d is ReceiverFeatureDef => d !== undefined);
 
 // --- Accessories & sights ---------------------------------------------------
 

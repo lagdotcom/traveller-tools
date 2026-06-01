@@ -53,26 +53,30 @@ engine's `Issue` type and the `source`/provenance idea.
 
 All FC receiver features live in the one `RECEIVER_FEATURES` table and are picked
 from the builder's multi-select (shared by firearms, energy weapons and
-launchers). The **leveled** features are modelled as discrete, mutually-exclusive
-list entries rather than numeric fields, so the same multiplicative chain handles
-them with no extra plumbing:
+launchers). A selected feature is a `ReceiverFeatureRef`: a **bare id** for a
+plain feature, or an **`{ id, level }` object** for a _leveled_ feature — the same
+idea as a ship `ComponentDef`'s options, so one id covers all its levels (no
+`armoured1/2/3`). `resolveFeature` flattens the chosen level (from the def's
+`levels` table) into a concrete def before the multiplicative chain runs; the TUI
+expands each leveled feature into one labelled choice per level. The leveled
+features (each in a mutually-exclusive `group`):
 
-- **Recoil Compensation** — `recoilComp1` / `recoilComp2` (group `recoil`): +10% /
-  +20% cost, +5% / +10% weight, reducing Recoil by 1 / 2 and damage by −1 / −3.
-- **Disguised** — `disguised1`–`disguised4` (group `disguise`): +50% cost per −1
-  detection DM (the DM itself is a play stat, carried in the label).
-- **Low Quality** — `lowQuality` … `pieceOfJunk` (group `quality`, shared with
-  High Quality): −10% to −80% cost. Each leaves **Deficiency points** the design
-  must satisfy with negative traits (Inaccurate / Unreliable / Ramshackle /
-  Hazardous) — which traits is the player's choice per the FC, so `evaluateWeapon`
-  flags the points as a warning rather than auto-applying a guess.
-- **Armoured** — `armoured1`–`armoured3` (group `armour`): +10% cost / +5% weight
-  per Protection point, surfaced as an `Armoured N` trait.
-- **Bulwarked** — `bulwarked1`–`bulwarked3` (group `bulwark`): +20% cost / +10%
-  weight per point (each grants Malfunction DM+1), surfaced as a `Bulwarked N` trait.
+- **Recoil Compensation** (`recoil`, levels 1–2): +10% / +20% cost, +5% / +10%
+  weight, reducing Recoil by 1 / 2 and damage by −1 / −3.
+- **Disguised** (`disguise`, levels 1–4): +50% cost per −1 detection DM (the DM
+  itself is a play stat, carried in the level label).
+- **Low Quality** (`quality`, levels 1–5, shared with High Quality): −10% to −80%
+  cost across the named degrees (Low Quality … Piece of Junk). Each leaves
+  **Deficiency points** the design must satisfy with negative traits (Inaccurate /
+  Unreliable / Ramshackle / Hazardous) — the player's choice per the FC, so
+  `evaluateWeapon` flags the points as a warning rather than auto-applying a guess.
+- **Armoured** (`armour`, levels 1–5): +10% cost / +5% weight per Protection point,
+  surfaced as an `Armoured N` trait.
+- **Bulwarked** (`bulwark`, levels 1–5): +20% cost / +10% weight per point (each
+  grants Malfunction DM+1), surfaced as a `Bulwarked N` trait.
 
-Armoured/Bulwarked are offered to 3 points (ample for personal weapons); higher
-points follow the same per-point formula.
+Armoured/Bulwarked are offered to 5 points; higher points follow the same
+per-point formula (`LEVELED_POINTS` in `data.ts`).
 
 ## Validation oracle & the rules-vs-worksheet conflicts
 

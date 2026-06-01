@@ -11,7 +11,8 @@ import {
   ACCESSORIES,
   BARRELS,
   FURNITURE,
-  RECEIVER_FEATURES,
+  resolveFeature,
+  resolveFeatures,
   SOURCE,
   STOCKS,
 } from './data.js';
@@ -62,8 +63,8 @@ function validateEnergy(params: EnergyParams): Issue[] {
   const tl = params.tl;
 
   const groups = new Map<string, string[]>();
-  for (const id of params.features) {
-    const def = RECEIVER_FEATURES[id];
+  for (const ref of params.features) {
+    const def = resolveFeature(ref);
     if (!def) continue;
     if (def.group)
       (groups.get(def.group) ?? groups.set(def.group, []).get(def.group)!).push(
@@ -96,9 +97,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     ENERGY_RECEIVERS[params.receiver] ?? ENERGY_RECEIVERS.minimal;
   const barrel = BARRELS[params.barrel] ?? BARRELS.rifle;
   const stock = STOCKS[params.stock] ?? STOCKS.none;
-  const features = params.features
-    .map((id) => RECEIVER_FEATURES[id])
-    .filter(Boolean);
+  const features = resolveFeatures(params.features);
   const mods = params.mods.map((id) => ENERGY_MODS[id]).filter(Boolean);
   const hasMod = (id: EnergyModId) => params.mods.includes(id);
 
