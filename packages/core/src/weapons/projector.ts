@@ -9,7 +9,13 @@
  * attack) or propellant (kg × attacks-per-kg) runs out first.
  */
 import type { Issue } from '../design/index.js';
-import { CALIBRES, MECHANISMS, resolveFeatures, SOURCE } from './data.js';
+import {
+  CALIBRES,
+  collectNotes,
+  MECHANISMS,
+  resolveFeatures,
+  SOURCE,
+} from './data.js';
 import {
   PROJECTOR_FUELS,
   PROJECTOR_HAZARDOUS,
@@ -183,6 +189,7 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     issues,
     totals: { costCr: totalCost, weightKg: finalWeight, magazineCr },
     sources: [...sourceSet],
+    notes: collectNotes({ features: params.features }),
     ...(secondary ? { secondary } : {}),
   };
 }

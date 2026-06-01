@@ -156,6 +156,8 @@ export type AccessoryId =
   | 'bayonetLug'
   | 'flashlight'
   | 'gunCamera'
+  | 'graviticSupport'
+  | 'intelligentWeapon'
   | 'secureWeapon'
   | 'stabilisation';
 

@@ -13,6 +13,7 @@
 import type { Issue } from '../design/index.js';
 import {
   BARRELS,
+  collectNotes,
   resolveFeature,
   resolveFeatures,
   SOURCE,
@@ -210,5 +211,6 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     issues,
     totals: { costCr: launcherCost, weightKg: totalWeight, magazineCr },
     sources: [...sources],
+    notes: collectNotes({ features: params.features }),
   };
 }

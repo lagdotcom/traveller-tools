@@ -167,6 +167,17 @@ export function WeaponSheet({
         </Box>
       </Box>
 
+      {evaluation.notes && evaluation.notes.length > 0 ? (
+        <Box marginTop={1} flexDirection="column">
+          <Text bold>Notes</Text>
+          {evaluation.notes.map((n, i) => (
+            <Text key={i} dimColor wrap="wrap">
+              · {n}
+            </Text>
+          ))}
+        </Box>
+      ) : null}
+
       <Box marginTop={1}>
         <Text dimColor>Sources: {sources.join(', ')}</Text>
       </Box>

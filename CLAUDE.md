@@ -124,6 +124,12 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   (damage with the "running out of dice" rule, range, Auto, recoil, quickdraw,
   penetration→Lo-Pen, signature, traits) happens alongside; loaded ammo modifies
   the **profile only**, not the build cost.
+- **Play-time notes.** A choice whose effect is a _rule_ (a situational DM, a
+  special ability) rather than a stat/trait carries a `note` string on its def
+  (`AccessoryDef`/`ReceiverFeatureDef`/`FurnitureDef`). `collectNotes(...)` gathers
+  them (deduped) into `WeaponEvaluation.notes`, shown as a **Notes** panel on the
+  sheet (like Sources). Things already expressed as a trait/number don't get a
+  note (e.g. a plain Scope = the `Scope` trait, no note).
 - **Multiple ammo types.** `FirearmParams.ammo` is a **list** — the build is fixed
   but each loaded type yields its own profile row (`WeaponEvaluation.ammoProfiles`,
   the first = the primary `profile`), each with its own reload price. The sheet

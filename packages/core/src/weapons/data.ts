@@ -700,6 +700,8 @@ export interface FurnitureDef {
   weightPct: number;
   quickdraw: number;
   minTL?: number;
+  /** A play-time rule not captured as a stat/trait. */
+  note?: string;
 }
 
 export const FURNITURE: Record<FurnitureId, FurnitureDef> = {
@@ -709,12 +711,19 @@ export const FURNITURE: Record<FurnitureId, FurnitureDef> = {
     weightPct: 0.1,
     quickdraw: 0,
   },
-  bipod: { label: 'Bipod', costPct: 0.1, weightPct: 0.2, quickdraw: -4 },
+  bipod: {
+    label: 'Bipod',
+    costPct: 0.1,
+    weightPct: 0.2,
+    quickdraw: -4,
+    note: 'Bipod: once deployed (a significant action), DM+1 to attack beyond 50m.',
+  },
   detachableBipod: {
     label: 'Detachable Bipod',
     costPct: 0.15,
     weightPct: 0.2,
     quickdraw: -4,
+    note: 'Detachable Bipod: once deployed (a significant action), DM+1 to attack beyond 50m.',
   },
   supportMount: {
     label: 'Support Mount',
@@ -801,6 +810,8 @@ export interface ReceiverFeatureDef {
   /** Heat removed per round (cooling systems). */
   heatDissipation?: number;
   traits?: Traits;
+  /** A play-time rule not captured as a stat/trait. */
+  note?: string;
   /** Mutually-exclusive group (only one feature per group). */
   group?: string;
   /**
@@ -863,6 +874,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Accurised: DM+1 to aimed fire at ranges beyond 25m.',
     },
     bullpup: {
       label: 'Bullpup',
@@ -927,6 +939,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'High Quality: DM+1 to attack beyond 100m when using a scope or similar sight.',
       group: 'quality',
     },
     lightweight: {
@@ -951,6 +964,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 2,
+      note: 'Quickdraw: DM+1 to attack under 25m, DM−1 beyond 25m.',
     },
     rugged: {
       label: 'Rugged',
@@ -1035,6 +1049,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Disguised: imposes the level’s DM (−1 to −4) on attempts to detect, notice or recognise the weapon.',
       group: 'disguise',
       levels: [
         { label: 'Disguised (DM-1)', costMult: 1.5 },
@@ -1079,6 +1094,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Bulwarked: each point gives DM+1 to rolls on the Malfunction table.',
       group: 'bulwark',
       levels: LEVELED_POINTS(5, 'Bulwarked', 0.2, 0.1),
     },
@@ -1126,6 +1142,7 @@ export function resolveFeature(
     recoilMod: lv.recoilMod,
     deficiency: lv.deficiency,
     traits: lv.traits,
+    note: def.note,
     group: def.group,
   };
 }
@@ -1155,6 +1172,8 @@ export interface AccessoryDef {
   penetration?: number;
   signatureShift?: number;
   traits?: Traits;
+  /** A play-time rule not captured as a stat/trait (e.g. "DM+1 within 50m"). */
+  note?: string;
 }
 
 export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
@@ -1205,6 +1224,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     quickdraw: 0,
     minTL: 6,
     traits: { Scope: true },
+    note: 'Long-Range Scope: reduces the negative DM for range by 2.',
   },
   lowLightScope: {
     label: 'Low-Light Scope',
@@ -1213,6 +1233,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     quickdraw: 0,
     minTL: 6,
     traits: { Scope: true },
+    note: 'Low-Light Scope: negates near-darkness (needs a little light; useless through smoke).',
   },
   thermalScope: {
     label: 'Thermal Scope',
@@ -1221,6 +1242,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     quickdraw: 0,
     minTL: 6,
     traits: { Scope: true },
+    note: 'Thermal Scope: no to-hit DM, but DM+4 to Recon to spot concealed targets / locate shots.',
   },
   combinationScope: {
     label: 'Combination Scope',
@@ -1229,6 +1251,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     quickdraw: 0,
     minTL: 7,
     traits: { Scope: true },
+    note: 'Combination Scope: combines standard, low-light and thermal scopes.',
   },
   multispectralScope: {
     label: 'Multispectral Scope',
@@ -1237,6 +1260,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     quickdraw: 0,
     minTL: 9,
     traits: { Scope: true },
+    note: 'Multispectral Scope: DM+1 to hit at all ranges and DM+6 to Recon to spot targets.',
   },
   laserPointer: {
     label: 'Laser Pointer',
@@ -1244,6 +1268,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     weight: 0.1,
     quickdraw: 0,
     minTL: 8,
+    note: 'Laser Pointer: DM+1 to attack rolls out to 50m.',
   },
   integratedSight: {
     label: 'Integrated Sighting System',
@@ -1251,6 +1276,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     weight: 0.4,
     quickdraw: 0,
     minTL: 10,
+    note: 'Integrated Sighting System: all Multispectral-Scope benefits even when hip-firing.',
   },
   holographicSight: {
     label: 'Holographic Sight',
@@ -1260,15 +1286,46 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     weight: 0,
     quickdraw: 0,
     minTL: 12,
+    note: 'Holographic Sight: configurable holographic sighting; can use external sensor data like an ISS.',
   },
-  bayonetLug: { label: 'Bayonet Lug', cost: 0, weight: 0, quickdraw: 0 },
-  flashlight: { label: 'Flashlight', cost: 50, weight: 0.1, quickdraw: -2 },
+  bayonetLug: {
+    label: 'Bayonet Lug',
+    cost: 0,
+    weight: 0,
+    quickdraw: 0,
+    note: 'Bayonet Lug: lets a bayonet be fitted; a fitted bayonet imposes −2 Quickdraw (except when attacking with it).',
+  },
+  flashlight: {
+    label: 'Flashlight',
+    cost: 50,
+    weight: 0.1,
+    quickdraw: -2,
+    note: 'Flashlight: a high-powered light under the barrel.',
+  },
   gunCamera: {
     label: 'Gun Camera',
     cost: 75,
     weight: 0.1,
     quickdraw: 0,
     minTL: 6,
+    note: 'Gun Camera: records the firing view; the bulkier TL6–7 models impose −2 Quickdraw.',
+  },
+  graviticSupport: {
+    label: 'Gravitic Support',
+    cost: 0, // Cr2500/kg of the weapon — depends on final weight, so not auto-priced
+    weight: 0,
+    weightPct: 3, // weighs 3× the receiver when switched off
+    quickdraw: 0,
+    minTL: 12,
+    note: 'Gravitic Support: reduces Very Bulky to Bulky and removes Bulky; weighs 3× the receiver off, ~0 active. Cost is Cr2500 per kg of the weapon (add manually).',
+  },
+  intelligentWeapon: {
+    label: 'Intelligent Weapon',
+    cost: 1000,
+    weight: 0,
+    quickdraw: 0,
+    minTL: 11,
+    note: 'Intelligent Weapon: adds a Computer/0 (Computer/1 for Cr5000 at TL13).',
   },
   secureWeapon: {
     label: 'Secure Weapon',
@@ -1276,6 +1333,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     weight: 0,
     quickdraw: 0,
     minTL: 10,
+    note: 'Secure Weapon: requires authentication (DNA / voice / signal) before it will fire.',
   },
   stabilisation: {
     label: 'Stabilisation',
@@ -1284,8 +1342,25 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     weightPct: 0.2, // FC: a gyrostabiliser weighs 20% of the receiver
     quickdraw: 0,
     minTL: 9,
+    note: 'Stabilisation: offsets up to −2 aiming DM from movement (aimed fire while moving); reduces Very Bulky to Bulky and removes Bulky.',
   },
 };
+
+/**
+ * Gather the play-time `note` text from a weapon's chosen accessories, furniture
+ * and features (deduped) — for things whose effect is a rule, not a stat/trait.
+ */
+export function collectNotes(opts: {
+  accessories?: AccessoryId[];
+  furniture?: FurnitureId[];
+  features?: ReceiverFeatureRef[];
+}): string[] {
+  const out: (string | undefined)[] = [];
+  for (const id of opts.accessories ?? []) out.push(ACCESSORIES[id]?.note);
+  for (const id of opts.furniture ?? []) out.push(FURNITURE[id]?.note);
+  for (const r of opts.features ?? []) out.push(resolveFeature(r)?.note);
+  return [...new Set(out.filter((n): n is string => Boolean(n)))];
+}
 
 // --- Special (loaded) ammunition --------------------------------------------
 

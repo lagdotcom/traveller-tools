@@ -12,6 +12,7 @@ import {
   type AmmoTypeDef,
   BARRELS,
   CALIBRES,
+  collectNotes,
   FEEDS,
   FURNITURE,
   GAUSS_CAPACITY_MULT,
@@ -65,6 +66,8 @@ export interface WeaponEvaluation {
   issues: Issue[];
   totals: { costCr: number; weightKg: number; magazineCr: number };
   sources: string[];
+  /** Play-time rules carried by chosen components (not captured as stats/traits). */
+  notes?: string[];
   /**
    * One profile per loaded ammunition type (firearms only) — the primary is the
    * first and equals `profile`. Each carries its own reload price.
@@ -264,6 +267,11 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
       magazineCr: primary.magazineCr,
     },
     sources: [...new Set([SOURCE, ...comp.sources])],
+    notes: collectNotes({
+      accessories: params.accessories,
+      furniture: params.furniture,
+      features: params.features,
+    }),
     ammoProfiles,
     ...(comp.secondary ? { secondary: comp.secondary } : {}),
   };

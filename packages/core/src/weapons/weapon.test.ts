@@ -110,6 +110,28 @@ describe('worked examples — base receiver & grand totals', () => {
   });
 });
 
+describe('play-time notes', () => {
+  it('collects rule-text notes from accessories, furniture and features', () => {
+    const r = evalNamed('Intruder');
+    expect(r.notes?.some((n) => /Laser Pointer: DM\+1/.test(n))).toBe(true);
+    expect(r.notes?.some((n) => /Long-Range Scope: reduces/.test(n))).toBe(
+      true,
+    );
+    expect(
+      r.notes?.some((n) => /Quickdraw: DM\+1 to attack under 25m/.test(n)),
+    ).toBe(true);
+  });
+
+  it('a plain Scope adds no note (its effect is the Scope trait)', () => {
+    const r = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      accessories: ['scope'],
+    });
+    expect(r.profile.traits['Scope']).toBe(true);
+    expect(r.notes ?? []).toEqual([]);
+  });
+});
+
 describe('multiple supported ammo types', () => {
   it('lists one profile per loaded ammo type, sharing the build', () => {
     // The Crunch Gun is shown firing ball / explosive / incendiary / advanced AP.

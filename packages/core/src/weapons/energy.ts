@@ -10,6 +10,7 @@ import type { Issue } from '../design/index.js';
 import {
   ACCESSORIES,
   BARRELS,
+  collectNotes,
   FURNITURE,
   resolveFeature,
   resolveFeatures,
@@ -325,5 +326,10 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       magazineCr,
     },
     sources: [...sources],
+    notes: collectNotes({
+      accessories: params.accessories,
+      furniture: params.furniture,
+      features: params.features,
+    }),
   };
 }
