@@ -259,6 +259,9 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   depth" loop on a real TTY. `Field` and `ChoiceField` use a **stable
   `useCallback` handler that reads latest props from a ref**; `useForm` returns
   **stable per-field setters**. Preserve this pattern.
+- `Field` steps a numeric value on Left/Right by its `step` prop (default 1,
+  clamped at 0) — step-scaled fields pass the real increment (Capacity % and the
+  magazine size-% override use `step: 10`, matching the FC's 10% capacity steps).
 - `ChoiceField` sorts + filters its options and shows a scrolling **grid** —
   packing as many options per line as the terminal width allows (`useStdout`),
   snapped to whole rows. (Don't reintroduce a single wrapping row; the grid is a

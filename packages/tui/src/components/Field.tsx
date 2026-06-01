@@ -10,12 +10,14 @@ export interface FieldProps {
   onChange: (value: string) => void;
   /** Called when the user presses Enter; advance to the next field. */
   onSubmit: () => void;
+  /** Left/Right step for numeric values (default 1) — e.g. 10 for capacity %. */
+  step?: number;
 }
 
 /**
  * A labelled text input. Typing edits the value; when the value is numeric,
- * Left/Right step it by 1 (clamped at 0); Enter advances. Controlled by the
- * parent, so the displayed value always reflects state.
+ * Left/Right step it by `step` (default 1, clamped at 0); Enter advances.
+ * Controlled by the parent, so the displayed value always reflects state.
  *
  * The key handler is stable (reads the latest props from a ref) so Ink's
  * useInput doesn't re-subscribe every render — an unstable handler churns Ink's
@@ -35,7 +37,10 @@ export function Field(props: FieldProps): React.JSX.Element {
     if (key.leftArrow || key.rightArrow) {
       const n = Number.parseFloat(current.value);
       if (Number.isFinite(n)) {
-        current.onChange(String(key.leftArrow ? Math.max(0, n - 1) : n + 1));
+        const step = current.step ?? 1;
+        current.onChange(
+          String(key.leftArrow ? Math.max(0, n - step) : n + step),
+        );
       }
       return;
     }

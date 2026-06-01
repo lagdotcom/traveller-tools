@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ARROW_DOWN,
+  ARROW_RIGHT,
   ENTER,
   type InkHarness,
   renderInk,
@@ -29,6 +30,17 @@ describe('Weapon builder (real Ink)', () => {
     expect(ui.frame()).toContain('Components');
     expect(ui.frame()).toContain('TOTAL');
     expect(ui.frame()).toContain('No issues');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
+  it('steps the capacity field by 10 with Left/Right', async () => {
+    const ui = await openBuilder();
+    // Tab to the Feed section, then down to the Capacity (% of base) field.
+    for (let i = 0; i < 5; i++) await ui.type(TAB);
+    await ui.type(ARROW_DOWN);
+    await ui.type(ARROW_RIGHT); // 100 -> 110 (step 10, not 1)
+    await ui.waitFor('110');
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });

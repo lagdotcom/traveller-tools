@@ -673,6 +673,8 @@ export function WeaponBuilderScreen({
     key: FormKey;
     label: string;
     options?: string[];
+    /** Left/Right step for a numeric field (e.g. 10 for capacity %). */
+    step?: number;
   }
   interface BuilderSection {
     label: string;
@@ -741,7 +743,7 @@ export function WeaponBuilderScreen({
       label: 'Feed',
       fields: [
         { key: 'feed', label: 'Feed device', options: FEED.labels },
-        { key: 'capacityPct', label: 'Capacity (% of base)' },
+        { key: 'capacityPct', label: 'Capacity (% of base)', step: 10 },
       ],
     },
     { label: 'Accessories', list: 'accessories' },
@@ -1138,6 +1140,7 @@ export function WeaponBuilderScreen({
                 isActive={isActive}
                 onChange={form.setters[f.key]}
                 onSubmit={advance}
+                step={f.step}
               />
             );
           }
@@ -1177,6 +1180,7 @@ export function WeaponBuilderScreen({
                   isActive={isActive}
                   onChange={(v) => setMagPct(i, v)}
                   onSubmit={advance}
+                  step={10}
                 />
               );
             if (row.field === 'rounds')
