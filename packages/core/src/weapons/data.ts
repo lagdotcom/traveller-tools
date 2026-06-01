@@ -885,6 +885,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 2,
+      note: 'Bullpup: set up for a right- or left-handed shooter; firing from the wrong shoulder flings hot cases at the user.',
       group: 'layout',
     },
     semiBullpup: {
@@ -918,6 +919,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       capacityMult: 1,
       quickdraw: 0,
       heatDissipation: 2, // removes 2 Heat/round
+      note: 'Basic Cooling: a water jacket absorbs 25 Heat per kg before boiling off.',
       group: 'cooling',
     },
     coolingAdvanced: {
@@ -927,6 +929,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       capacityMult: 1,
       quickdraw: 0,
       heatDissipation: 5, // removes 5 Heat/round (needs a heat sink, e.g. a chill can)
+      note: 'Advanced Cooling: removes 5 Heat/round but its own capacity is only 25 Heat — needs a heat sink (e.g. a chill can) or support cooling.',
       group: 'cooling',
     },
     highCapacity: {
@@ -935,6 +938,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1.1,
       capacityMult: 1.2,
       quickdraw: 0,
+      note: 'High Capacity: its magazines are incompatible with non-High-Capacity weapons of the same calibre.',
     },
     highQuality: {
       label: 'High Quality',
@@ -951,6 +955,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 0.8,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Lightweight: the +50% cost may instead be taken as the Hazardous (−1) trait.',
       group: 'weight',
     },
     extremeLightweight: {
@@ -959,6 +964,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 0.6,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Extreme Lightweight: the +200% cost may instead be taken as the Hazardous (−3) trait.',
       group: 'weight',
     },
     quickdraw: {
@@ -983,6 +989,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Vacuum: functions in vacuum or very low pressure (enlarged trigger guard for vacc-suit gloves); works in space or atmosphere.',
     },
     underwater: {
       label: 'Underwater',
@@ -990,6 +997,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Underwater: usable underwater (range ÷5 rather than ÷10); requires specialist ammunition.',
     },
     stealthBasic: {
       label: 'Stealth (Basic)',
@@ -998,6 +1006,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       capacityMult: 1,
       quickdraw: 0,
       signatureShift: -1,
+      note: 'Basic Stealth: DM−2 to attempts to detect the weapon by scanner, observation or search.',
       group: 'stealth',
     },
     stealthExtreme: {
@@ -1009,6 +1018,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       signatureShift: -3,
       ammoCostMult: 20,
       traits: { 'Stealth (extreme)': true },
+      note: 'Extreme Stealth: DM−6 to detect the weapon; firing standard ammo instead gives only −2 Signature and DM−4.',
       group: 'stealth',
     },
     partialMultiBarrel: {
@@ -1088,6 +1098,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Armoured: the Protection points guard against external damage only, not internal malfunctions (e.g. breech explosions).',
       group: 'armour',
       levels: LEVELED_POINTS(5, 'Armoured', 0.1, 0.05),
     },
