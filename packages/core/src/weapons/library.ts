@@ -474,17 +474,17 @@ function launcher(
   };
 }
 
-function grenade(
-  name: string,
-  description: string,
-  overrides: Partial<GrenadeParams>,
-): WeaponDefinition {
-  return {
-    name,
-    description,
-    params: { ...DEFAULT_GRENADE_PARAMS, ...overrides },
-  };
-}
+// function grenade(
+//   name: string,
+//   description: string,
+//   overrides: Partial<GrenadeParams>,
+// ): WeaponDefinition {
+//   return {
+//     name,
+//     description,
+//     params: { ...DEFAULT_GRENADE_PARAMS, ...overrides },
+//   };
+// }
 
 export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   weapon('Generic 6 Revolver', 'Medium-calibre repeater revolver', {
@@ -746,6 +746,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // reconcile: AP 3, Emissions Signature (low)
     // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
   }),
+  // TODO: AIWS
+  // TODO: Intruder
+  // TODO: Squadmate
+  // TODO: Sentinel
+  // TODO: Shipmate
   // reconcile: the Ten-Six now reproduces on cost (we get Cr170.625 vs the
   // worksheet's Cr170.25 — a ~Cr0.4 rounding difference) via the FC complete
   // multi-barrel rule. The remaining differences are all explained:
@@ -786,81 +791,58 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       },
     },
   ),
-  energyWeapon(
-    'Laser Carbine',
-    'TL10 Small (Light) laser carbine, powerpack-fed (FC energy weapon).',
-    {
+  // TODO: Guardian
+  // TODO: Solo
+  // TODO: Reliant
+  // TODO: Jimpy-G
+  projector('MF-61', 'Individual flame weapon, Krabbine Heavy Industries', {
+    tl: 9,
+    structure: 'compact',
+    propellantKg: 0.4,
+    fuelKg: 4,
+    fuel: 'advanced',
+    propellant: 'generated',
+    features: ['armoured2', 'bulwarked3'],
+  }),
+  projector('Cryojet', 'Breaching aid, Unified Space Industries', {
+    tl: 10,
+    structure: 'large',
+    propellantKg: 1,
+    fuelKg: 9,
+    fuel: 'cryogenic',
+    propellant: 'generated',
+    features: ['armoured2', 'bulwarked2'],
+    secondary: {
       tl: 10,
-      receiver: 'small',
-      damageDice: 3,
-      barrel: 'carbine',
-      stock: 'full',
-      powerSource: 'powerpack',
-      powerpackKg: 1,
-      powerpackRating: 'light',
+      receiver: 'longarm',
+      calibre: 'heavySmoothbore',
+      mechanism: 'repeater',
+      barrel: 'assault',
     },
-  ),
+  }),
   energyWeapon(
-    'Laser Rifle',
-    'TL12 Medium (Standard) laser rifle with improved focus (FC energy weapon).',
+    'BL-3',
+    'Emergency defence weapon, Personal Security Solutions',
     {
-      tl: 12,
-      receiver: 'medium',
-      damageDice: 5,
-      barrel: 'rifle',
-      stock: 'full',
-      mods: ['improvedFocus'],
-      powerSource: 'powerpack',
-      powerpackKg: 2,
-      powerpackRating: 'standard',
+      tl: 9,
+      receiver: 'minimal',
+      damageDice: 2,
+      barrel: 'minimal',
+      // TODO: 'Accessory: Weak Energy Cartridge x3'
     },
   ),
-  projector(
-    'Flamethrower',
-    'TL5 Compact jellied-fuel flamethrower (FC projector).',
-    {
-      tl: 5,
-      structure: 'compact',
-      propellant: 'compressed',
-      fuel: 'jellied',
-      fuelKg: 4,
-      propellantKg: 2,
-    },
-  ),
-  projector(
-    'MF-61',
-    'Krabbine Heavy Industries MF-61 individual flame weapon (FC).',
-    {
-      tl: 10,
-      structure: 'compact',
-      propellant: 'generated',
-      fuel: 'advanced',
-      fuelKg: 4,
-      propellantKg: 0.4,
-      armour: 2,
-      bulwark: 3,
-    },
-  ),
-  launcher(
-    'Grenade Launcher',
-    'TL6 single-shot light tube grenade launcher (FC launcher).',
-    {
-      tl: 6,
-      receiver: 'tubeSingleLight',
-      warhead: 'fragmentation',
-      delivery: 'cartridge',
-    },
-  ),
-  launcher(
-    'Rocket Launcher',
-    'TL6 reusable heavy anti-armour rocket launcher (FC launcher).',
-    {
-      tl: 6,
-      receiver: 'reuseSingleHeavy',
-      warhead: 'antiArmour',
-      delivery: 'rpg',
-    },
-  ),
+  energyWeapon('M-84', 'Battlefield configurable laser weapon', {
+    tl: 11,
+    receiver: 'medium',
+    damageDice: 5,
+    features: ['efficientBeamGeneration', 'improvedBeamFocus'],
+    barrel: 'carbine',
+    stock: 'folding',
+    accessories: ['internalPowerpack'],
+  }),
+  // TODO: Nefertem
+  // TODO: Krabbine Heavy Industries IP-2 Standoff Incendiary Weapon
+  // TODO: Spigot Mortar, General Purpose
   launcher(
     'Light Munition Launcher',
     // Whaite Industries worked example: a semi-auto light tube made Lightweight +
@@ -872,21 +854,21 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 8,
       receiver: 'tubeSemiLight',
+      delivery: 'cartridge',
       features: ['lightweight', 'bullpup'],
       barrel: 'assault',
-      stock: 'full',
+      stock: 'fixed',
       warhead: 'fragmentation',
-      delivery: 'cartridge',
+      // reconcile: incapacitant gas, baton, distraction, multiple projectile
     },
   ),
-  grenade('Fragmentation Grenade', 'TL6 hand fragmentation grenade (FC).', {
-    tl: 6,
-    type: 'fragmentation',
-    size: 'hand',
-  }),
-  grenade('Smoke Grenade', 'TL6 hand smoke grenade (FC).', {
-    tl: 6,
-    type: 'smoke',
-    size: 'hand',
-  }),
+  // TODO: Interstellar Ordnance 42mm Advanced Squad Support Weapon
+  // TODO: Xeirbin Components Tactical Multirole Missile System
+  // TODO: AV-7 Missile
+  // TODO: Grenade, Anti-Armour
+  // TODO: Grenade, Mini, Multi-purpose Anti-Personnel
+  // TODO: Grenade, Mine Delivery
+  // TODO: Grenade, Smart-RAM, Plasma
+  // TODO: Rifle Grenade, Guided
+  // TODO: Rocket-Propelled Grenade, Anti-Armour
 ];

@@ -73,7 +73,7 @@ describe('grenade — serialization', () => {
       kind: 'grenade',
       type: 'nonsense',
       size: 'huge',
-    });
+    }) as GrenadeParams;
     expect(params.kind).toBe('grenade');
     expect(params.type).toBe(DEFAULT_GRENADE_PARAMS.type);
     expect(params.size).toBe(DEFAULT_GRENADE_PARAMS.size);
