@@ -160,8 +160,10 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   powerpacks/cartridges beyond the primary). The FC gives **no per-round weight**
   — magazine mass is only the capacity-% weight adjustment, so alternative-mag
   weight scales by that rule and there's no standalone "base magazine weighs X".
-  The builder carries these through unedited (standard magazine edited via
-  Capacity %); per-ammo reload-cost overrides aren't supported yet (flagged).
+  Both are editable in the builder: firearms get a **Magazines** section, energy a
+  **Power Packs** section (compound list editors like the ship turret/craft rows —
+  each entry has ammo/rounds/cost or kind/size/rating sub-rows, with a "✗ remove"
+  choice). The standard magazine's size is still set by the Capacity % field.
 - **Gauss is implied by the calibre** (no separate `gauss` field): the gauss
   calibres carry a `gauss` flag, and `calibre.gauss` triggers the gauss ×2 cost /
   ×1.25 weight / ×3 capacity modifier and the TL12 gate. Gauss calibres carry base

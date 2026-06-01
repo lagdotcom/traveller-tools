@@ -173,6 +173,15 @@ const PCLASS = choiceMap<EnergyPowerClass>([
 
 const YN = ['no', 'yes'];
 
+// Magazine / power-pack editors (compound list items, like ship turrets/craft).
+const MAG_REMOVE = '✗ remove';
+const PACK_KIND_LABELS = ['Powerpack', 'Cartridge'];
+const PACK_REMOVE = '✗ remove';
+const packKindLabel = (p: PackSpec) =>
+  p.kind === 'cartridge' ? 'Cartridge' : 'Powerpack';
+/** The editable "size" of a pack: kg for a powerpack, count for a cartridge. */
+const packSize = (p: PackSpec) => (p.kind === 'cartridge' ? p.count : p.kg);
+
 /** Barrel/stock, shared by firearm + energy (projectors/launchers have neither). */
 const barrelStockValues = (p: FirearmParams | EnergyParams) => ({
   barrel: BARREL.toLabel(p.barrel),
@@ -429,6 +438,16 @@ export function WeaponBuilderScreen({
   const [ammo, setAmmo] = useState<AmmoTypeId[]>(
     startParams.kind === 'firearm' ? startParams.ammo : ['ball'],
   );
+  // Magazine / power-pack options (the first magazine is the standard one). Each
+  // is editable in its own builder section.
+  const [magazines, setMagazines] = useState<MagazineSpec[]>(
+    startParams.kind === 'firearm' ? (startParams.magazines ?? []) : [],
+  );
+  const [packs, setPacks] = useState<PackSpec[]>(
+    startParams.kind === 'energy' ? (startParams.packs ?? []) : [],
+  );
+  const [addMagAmmo, setAddMagAmmo] = useState('');
+  const [addPackKind, setAddPackKind] = useState('');
   const [addFeature, setAddFeature] = useState('');
   const [addFurniture, setAddFurniture] = useState('');
   const [addAccessory, setAddAccessory] = useState('');
@@ -438,6 +457,90 @@ export function WeaponBuilderScreen({
   const [mode, setMode] = useState<'edit' | 'export' | 'import'>('edit');
   const [importBuffer, setImportBuffer] = useState('');
   const [message, setMessage] = useState('');
+
+  // --- Magazine editors (firearm) ---
+  const patchMag = (i: number, patch: Partial<MagazineSpec>) =>
+    setMagazines((prev) =>
+      prev.map((m, k) => (k === i ? { ...m, ...patch } : m)),
+    );
+  const setMagAmmo = (i: number, label: string) => {
+    if (label === MAG_REMOVE) {
+      setMagazines((prev) => prev.filter((_, k) => k !== i));
+      return;
+    }
+    patchMag(i, { ammo: AMMO.toId(label) });
+  };
+  // A blank / non-positive number clears the override (auto-derive).
+  const setMagRounds = (i: number, v: string) => {
+    const n = num(v, 0);
+    setMagazines((prev) =>
+      prev.map((m, k) => {
+        if (k !== i) return m;
+        const next: MagazineSpec = { ...m };
+        if (n > 0) next.rounds = n;
+        else delete next.rounds;
+        return next;
+      }),
+    );
+  };
+  const setMagCost = (i: number, v: string) => {
+    const n = num(v, 0);
+    setMagazines((prev) =>
+      prev.map((m, k) => {
+        if (k !== i) return m;
+        const next: MagazineSpec = { ...m };
+        if (n > 0) next.costCr = n;
+        else delete next.costCr;
+        return next;
+      }),
+    );
+  };
+  const addMagazine = () => {
+    const id = addMagAmmo ? AMMO.toId(addMagAmmo) : (ammo[0] ?? 'ball');
+    setMagazines((prev) => [...prev, { ammo: id }]);
+    setAddMagAmmo('');
+  };
+
+  // --- Power-pack editors (energy) ---
+  const setPackKind = (i: number, label: string) => {
+    if (label === PACK_REMOVE) {
+      setPacks((prev) => prev.filter((_, k) => k !== i));
+      return;
+    }
+    const rating = (packs[i]?.rating ?? 'standard') as EnergyPowerClass;
+    setPacks((prev) =>
+      prev.map((p, k) =>
+        k !== i
+          ? p
+          : label === 'Cartridge'
+            ? { kind: 'cartridge', count: packSize(p), rating }
+            : { kind: 'powerpack', kg: packSize(p), rating },
+      ),
+    );
+  };
+  const setPackSize = (i: number, v: string) => {
+    const n = Math.max(0, num(v, 0));
+    setPacks((prev) =>
+      prev.map((p, k) =>
+        k !== i
+          ? p
+          : p.kind === 'cartridge'
+            ? { ...p, count: n }
+            : { ...p, kg: n },
+      ),
+    );
+  };
+  const setPackRating = (i: number, label: string) =>
+    setPacks((prev) =>
+      prev.map((p, k) => (k === i ? { ...p, rating: PCLASS.toId(label) } : p)),
+    );
+  const addPack = () => {
+    setPacks((prev) => [
+      ...prev,
+      { kind: 'powerpack', kg: 1, rating: 'standard' },
+    ]);
+    setAddPackKind('');
+  };
 
   // Each multi-select category is an add/remove list (like Systems on a ship).
   const lists: Record<
@@ -544,10 +647,24 @@ export function WeaponBuilderScreen({
     label: string;
     options?: string[];
   }
+  interface BuilderSection {
+    label: string;
+    fields?: FieldDef[];
+    list?: ListId;
+    /** A magazine editor (firearm) / power-pack editor (energy). */
+    magazines?: true;
+    packs?: true;
+  }
+  type MagField = 'ammo' | 'rounds' | 'cost';
+  type PackField = 'kind' | 'size' | 'rating';
   type Row =
     | { section: number; kind: 'field'; field: FieldDef }
     | { section: number; kind: 'listItem'; list: ListId; index: number }
-    | { section: number; kind: 'listAdd'; list: ListId };
+    | { section: number; kind: 'listAdd'; list: ListId }
+    | { section: number; kind: 'magItem'; index: number; field: MagField }
+    | { section: number; kind: 'magAdd' }
+    | { section: number; kind: 'packItem'; index: number; field: PackField }
+    | { section: number; kind: 'packAdd' };
 
   const weaponClass: WeaponClass = WCLASS.toId(form.values.weaponClass);
 
@@ -557,11 +674,7 @@ export function WeaponBuilderScreen({
     options: WCLASS.labels,
   };
 
-  const firearmSections: {
-    label: string;
-    fields?: FieldDef[];
-    list?: ListId;
-  }[] = [
+  const firearmSections: BuilderSection[] = [
     {
       label: 'Type',
       fields: [
@@ -609,6 +722,7 @@ export function WeaponBuilderScreen({
       label: 'Ammo',
       list: 'ammo',
     },
+    { label: 'Magazines', magazines: true },
     {
       label: 'Secondary',
       fields: [
@@ -626,11 +740,7 @@ export function WeaponBuilderScreen({
     },
   ];
 
-  const energySections: {
-    label: string;
-    fields?: FieldDef[];
-    list?: ListId;
-  }[] = [
+  const energySections: BuilderSection[] = [
     {
       label: 'Type',
       fields: [
@@ -672,16 +782,13 @@ export function WeaponBuilderScreen({
         { key: 'cartridgeEjects', label: 'Cartridges eject', options: YN },
       ],
     },
+    { label: 'Power Packs', packs: true },
     { label: 'Modifications', list: 'mods' },
     { label: 'Features', list: 'features' },
     { label: 'Accessories', list: 'accessories' },
   ];
 
-  const projectorSections: {
-    label: string;
-    fields?: FieldDef[];
-    list?: ListId;
-  }[] = [
+  const projectorSections: BuilderSection[] = [
     {
       label: 'Type',
       fields: [
@@ -718,11 +825,7 @@ export function WeaponBuilderScreen({
     },
   ];
 
-  const launcherSections: {
-    label: string;
-    fields?: FieldDef[];
-    list?: ListId;
-  }[] = [
+  const launcherSections: BuilderSection[] = [
     {
       label: 'Type',
       fields: [
@@ -750,11 +853,7 @@ export function WeaponBuilderScreen({
     },
   ];
 
-  const grenadeSections: {
-    label: string;
-    fields?: FieldDef[];
-    list?: ListId;
-  }[] = [
+  const grenadeSections: BuilderSection[] = [
     {
       label: 'Type',
       fields: [
@@ -768,15 +867,14 @@ export function WeaponBuilderScreen({
 
   // Name / manufacturer / description are ordinary text fields in a trailing
   // Identity section (shared by every class).
-  const identitySection: { label: string; fields?: FieldDef[]; list?: ListId } =
-    {
-      label: 'Identity',
-      fields: [
-        { key: 'name', label: 'Name' },
-        { key: 'manufacturer', label: 'Manufacturer' },
-        { key: 'description', label: 'Description' },
-      ],
-    };
+  const identitySection: BuilderSection = {
+    label: 'Identity',
+    fields: [
+      { key: 'name', label: 'Name' },
+      { key: 'manufacturer', label: 'Manufacturer' },
+      { key: 'description', label: 'Description' },
+    ],
+  };
   const sectionDefs = [
     ...(weaponClass === 'energy'
       ? energySections
@@ -801,6 +899,20 @@ export function WeaponBuilderScreen({
         rows.push({ section: si, kind: 'listItem', list: section.list, index });
       rows.push({ section: si, kind: 'listAdd', list: section.list });
     }
+    if (section.magazines) {
+      magazines.forEach((_, index) => {
+        for (const field of ['ammo', 'rounds', 'cost'] as MagField[])
+          rows.push({ section: si, kind: 'magItem', index, field });
+      });
+      rows.push({ section: si, kind: 'magAdd' });
+    }
+    if (section.packs) {
+      packs.forEach((_, index) => {
+        for (const field of ['kind', 'size', 'rating'] as PackField[])
+          rows.push({ section: si, kind: 'packItem', index, field });
+      });
+      rows.push({ section: si, kind: 'packAdd' });
+    }
   });
 
   const safeActive = Math.min(active, rows.length - 1);
@@ -817,9 +929,8 @@ export function WeaponBuilderScreen({
     accessories,
     mods,
     ammo,
-    magazines:
-      startParams.kind === 'firearm' ? startParams.magazines : undefined,
-    packs: startParams.kind === 'energy' ? startParams.packs : undefined,
+    magazines: magazines.length > 0 ? magazines : undefined,
+    packs: packs.length > 0 ? packs : undefined,
   };
   const params: WeaponParams =
     weaponClass === 'energy'
@@ -997,6 +1108,108 @@ export function WeaponBuilderScreen({
               />
             );
           }
+          if (row.kind === 'magItem') {
+            const i = row.index;
+            const m = magazines[i]!;
+            const tag = i === 0 ? 'Standard' : `Alt ${i}`;
+            if (row.field === 'ammo')
+              return (
+                <ChoiceField
+                  key={`mag-${i}-ammo`}
+                  label={`${tag} magazine`}
+                  options={[...AMMO.labels, MAG_REMOVE]}
+                  value={AMMO.toLabel(m.ammo ?? ammo[0] ?? 'ball')}
+                  isActive={isActive}
+                  onChange={(v) => setMagAmmo(i, v)}
+                  onSubmit={advance}
+                />
+              );
+            if (row.field === 'rounds')
+              return (
+                <Field
+                  key={`mag-${i}-rounds`}
+                  label="· rounds (0=auto)"
+                  value={String(m.rounds ?? 0)}
+                  isActive={isActive}
+                  onChange={(v) => setMagRounds(i, v)}
+                  onSubmit={advance}
+                />
+              );
+            return (
+              <Field
+                key={`mag-${i}-cost`}
+                label="· reload Cr (0=auto)"
+                value={String(m.costCr ?? 0)}
+                isActive={isActive}
+                onChange={(v) => setMagCost(i, v)}
+                onSubmit={advance}
+              />
+            );
+          }
+          if (row.kind === 'magAdd') {
+            return (
+              <ChoiceField
+                key="mag-add"
+                label="Add magazine"
+                options={AMMO.labels}
+                value={effective(addMagAmmo, AMMO.labels)}
+                isActive={isActive}
+                onChange={setAddMagAmmo}
+                onSubmit={addMagazine}
+              />
+            );
+          }
+          if (row.kind === 'packItem') {
+            const i = row.index;
+            const p = packs[i]!;
+            if (row.field === 'kind')
+              return (
+                <ChoiceField
+                  key={`pack-${i}-kind`}
+                  label={`Pack ${i + 1}`}
+                  options={[...PACK_KIND_LABELS, PACK_REMOVE]}
+                  value={packKindLabel(p)}
+                  isActive={isActive}
+                  onChange={(v) => setPackKind(i, v)}
+                  onSubmit={advance}
+                />
+              );
+            if (row.field === 'size')
+              return (
+                <Field
+                  key={`pack-${i}-size`}
+                  label={p.kind === 'cartridge' ? '· cartridges' : '· kg'}
+                  value={String(packSize(p))}
+                  isActive={isActive}
+                  onChange={(v) => setPackSize(i, v)}
+                  onSubmit={advance}
+                />
+              );
+            return (
+              <ChoiceField
+                key={`pack-${i}-rating`}
+                label="· power class"
+                options={PCLASS.labels}
+                value={PCLASS.toLabel(p.rating)}
+                isActive={isActive}
+                onChange={(v) => setPackRating(i, v)}
+                onSubmit={advance}
+              />
+            );
+          }
+          if (row.kind === 'packAdd') {
+            return (
+              <ChoiceField
+                key="pack-add"
+                label="Add power pack"
+                options={PACK_KIND_LABELS}
+                value={effective(addPackKind, PACK_KIND_LABELS)}
+                isActive={isActive}
+                onChange={setAddPackKind}
+                onSubmit={addPack}
+              />
+            );
+          }
           const list = lists[row.list];
           if (row.kind === 'listItem') {
             const i = row.index;
@@ -1027,6 +1240,13 @@ export function WeaponBuilderScreen({
         {sectionDefs[activeSection]?.list && (
           <Text dimColor>
             Add… picks an option; Enter on a ✓ row removes it.
+          </Text>
+        )}
+        {(sectionDefs[activeSection]?.magazines ||
+          sectionDefs[activeSection]?.packs) && (
+          <Text dimColor>
+            The first magazine is the standard one (size also set by Capacity
+            %). Choose “✗ remove” to delete an entry.
           </Text>
         )}
       </Box>
