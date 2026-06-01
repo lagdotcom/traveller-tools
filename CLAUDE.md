@@ -126,7 +126,17 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   the **profile only**, not the build cost.
 - **Gauss is implied by the calibre** (no separate `gauss` field): the gauss
   calibres carry a `gauss` flag, and `calibre.gauss` triggers the gauss ×2 cost /
-  ×1.25 weight / ×3 capacity modifier and the TL12 gate.
+  ×1.25 weight / ×3 capacity modifier and the TL12 gate. Gauss calibres carry base
+  **Penetration +2** (intrinsic AP) which the Final Penetration table turns into an
+  AP trait.
+- **Final Penetration table** (`penetrationProfile` in `shared.ts`): a weapon's
+  net penetration (clamped ±4) maps to **Lo-Pen** (−pen+1, so −1→Lo-Pen 2 … −4→5)
+  or **AP** (positive pen → AP scaled by full damage dice, with a damage penalty).
+  So AP is _derived from penetration_, not a separate field — gauss +2 → AP
+  (GA-100: AP 4 + the 3D+6→3D+5 damage penalty). Pistol calibres are base pen 0
+  (a handgun/short barrel's −1 nets Lo-Pen 2); smoothbores keep base −1 and a
+  barrel's penetration penalty doesn't apply to them (low-velocity). Pellet/
+  flechette reduce penetration by the barrel's **Pellet Spread** (`PELLET_SPREAD`).
 - **Receiver features carry options** (ship-component style). `params.features` is
   a `ReceiverFeatureRef[]`: a bare id for a plain feature, or `{ id, level }` for a
   _leveled_ one (Armoured/Bulwarked/Recoil Comp/Disguised/Low Quality), so one id

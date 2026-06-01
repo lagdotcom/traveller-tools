@@ -78,7 +78,10 @@ describe('worked examples — base receiver & grand totals', () => {
     expect(r.totals.weightKg).toBeCloseTo(4.4275, 4);
     expect(r.profile.quickdraw).toBe(8);
     expect(r.profile.range).toBe(50);
-    expect(formatDamage(r.profile.damage)).toBe('3D+6');
+    // Gauss base Penetration +2 → AP 1 + 1/full die = AP 4 (3 dice), and the
+    // table's −1 damage per 2 full dice turns the 3D+6 base into the printed 3D+5.
+    expect(formatDamage(r.profile.damage)).toBe('3D+5');
+    expect(r.profile.traits['AP']).toBe(4);
     expect(r.profile.auto).toBe(3);
     expect(r.profile.capacity).toBe(23);
     expect(r.issues.filter((i) => i.severity === 'error')).toEqual([]);
@@ -107,11 +110,39 @@ describe('worked examples — base receiver & grand totals', () => {
   });
 });
 
-// Pistol-calibre + short barrel yields the worksheets' shown Lo-Pen 2.
-describe('penetration / Lo-Pen', () => {
+// The FC "Final Penetration" table maps net penetration → Lo-Pen / AP.
+describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
   it('handgun-calibre weapons read Lo-Pen 2', () => {
     expect(evalNamed('Compact PDW').profile.traits['Lo-Pen']).toBe(2);
     expect(evalNamed('Stowaway').profile.traits['Lo-Pen']).toBe(2);
+  });
+
+  it('a snub revolver reads Lo-Pen 3 (−2 net penetration)', () => {
+    // Ten-Six: snub (−1) + short barrel (−1) = −2 → Lo-Pen 3.
+    expect(evalNamed('Ten-Six').profile.traits['Lo-Pen']).toBe(3);
+  });
+
+  it('gauss weapons turn their +2 base penetration into AP, scaled by dice', () => {
+    // Small gauss (+2) − a barrel −1 = +1 → AP = full dice.
+    expect(evalNamed('GC-24').profile.traits['AP']).toBe(3); // 3 dice
+    // Gauss shotgun keeps +2 (no barrel loss on gauss) → AP 1 + 3 dice = 4.
+    expect(evalNamed('GA-100').profile.traits['AP']).toBe(4);
+    expect(evalNamed('GA-100').profile.traits['Lo-Pen']).toBeUndefined();
+  });
+
+  it('pellet spread (by barrel) drives penetration down to Lo-Pen', () => {
+    // Small smoothbore (−1) + pellet spread; a deep negative clamps at Lo-Pen 5.
+    const r = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      receiver: 'handgun',
+      calibre: 'smallSmoothbore',
+      mechanism: 'repeater',
+      barrel: 'handgun',
+      stock: 'none',
+      ammo: 'pellet',
+    });
+    expect(r.profile.traits['Spread']).toBe(4); // handgun-barrel spread
+    expect(r.profile.traits['Lo-Pen']).toBe(5); // clamped
   });
 });
 

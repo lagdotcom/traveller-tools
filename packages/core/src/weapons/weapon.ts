@@ -19,6 +19,7 @@ import {
   hasFeature,
   INCREASED_AUTO,
   MECHANISMS,
+  PELLET_SPREAD,
   RECEIVERS,
   RECOIL_CLASS_MOD,
   resolveFeature,
@@ -37,6 +38,7 @@ import {
   mergeTraits,
   modPct,
   pctOf,
+  penetrationProfile,
   pushIf,
   round2,
   tlGate,
@@ -479,7 +481,10 @@ function firearmProfile(
     ? 5
     : Math.round(calibre.range * featureRangeMult * barrel.rangeMult);
 
-  let penetration = calibre.penetration + barrel.penetration;
+  // Barrels lose penetration on high-velocity rounds; smoothbores are already
+  // low-velocity (fixed base Penetration) so a short barrel doesn't reduce them.
+  let penetration =
+    calibre.penetration + (calibre.smoothbore ? 0 : barrel.penetration);
 
   // Signature (physical for chemical guns, emissions for gauss).
   let sigIndex =
@@ -525,15 +530,21 @@ function firearmProfile(
   if (ammo.signatureShift) sigIndex += ammo.signatureShift;
   if (ammo.rangeOverride) range = ammo.rangeOverride;
   if (ammo.spread) {
-    const spread = typeof traits.Spread === 'number' ? traits.Spread : 2;
+    // Pellet/flechette spread comes from the barrel (FC Pellet Spread table) and
+    // reduces penetration by that score.
+    const spread = PELLET_SPREAD[params.barrel] ?? 2;
     traits.Spread = spread;
     penetration -= spread;
   }
   mergeTraits(traits, ammo.traits);
 
-  // Negative penetration surfaces as a Lo-Pen trait.
-  if (penetration < 0) traits['Lo-Pen'] = -penetration;
+  // Final Penetration table: net penetration → Lo-Pen or AP (+ AP damage penalty).
+  const pen = penetrationProfile(penetration, damage.dice);
+  if (pen.loPen) traits['Lo-Pen'] = pen.loPen;
   else delete traits['Lo-Pen'];
+  if (pen.ap) traits['AP'] = pen.ap;
+  else delete traits['AP'];
+  if (pen.damageMod) damage = { ...damage, mod: damage.mod + pen.damageMod };
 
   // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,
   // less any Recoil Compensation.

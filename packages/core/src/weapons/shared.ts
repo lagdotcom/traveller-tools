@@ -47,6 +47,38 @@ export const pctOf = (frac: number): string => {
   return p === 0 ? '—' : `+${p}%`;
 };
 
+// --- Final Penetration ------------------------------------------------------
+
+/**
+ * The Field Catalogue "Final Penetration" table. A weapon's net penetration
+ * (clamped to ±4) maps to either a Lo-Pen trait (poor vs armour) or an AP trait
+ * (armour-piercing); AP scales with the number of full damage dice and carries a
+ * damage penalty. Returns the trait level(s) and the damage modifier to apply.
+ */
+export function penetrationProfile(
+  pen: number,
+  dice: number,
+): { loPen?: number; ap?: number; damageMod: number } {
+  const p = Math.max(-4, Math.min(4, Math.round(pen)));
+  const full = Math.max(0, dice);
+  if (p < 0) return { loPen: -p + 1, damageMod: 0 }; // −1→2 … −4→5
+  switch (p) {
+    case 1: // Semi-AP: AP 1 per full dice
+      return { ap: full, damageMod: 0 };
+    case 2: // AP: AP 1 + 1 per full dice; −1 damage per 2 full dice
+      return { ap: 1 + full, damageMod: -Math.floor(full / 2) };
+    case 3: // High-AP: AP 3 + 3 per 2 full dice; −2 damage per 3 full dice
+      return {
+        ap: 3 + 3 * Math.floor(full / 2),
+        damageMod: -2 * Math.floor(full / 3),
+      };
+    case 4: // Extreme-AP: AP 5 + 2 per full dice; −1 damage per dice
+      return { ap: 5 + 2 * full, damageMod: -full };
+    default:
+      return { damageMod: 0 };
+  }
+}
+
 // --- Traits -----------------------------------------------------------------
 
 /** Add a numeric trait level, stacking with any existing numeric value. */

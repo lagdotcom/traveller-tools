@@ -233,7 +233,9 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     receiverCostMult: 0.8,
     receiverWeightMult: 0.75,
     capacityMult: 1.2,
-    penetration: -1,
+    // Pistol calibres net Lo-Pen 2 once a handgun/short barrel's −1 is applied
+    // (Final Penetration table: −1 → Lo-Pen 2); base is 0, not −1.
+    penetration: 0,
     signatureKind: 'physical',
     signature: 'low',
     traits: {},
@@ -247,7 +249,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     receiverCostMult: 1,
     receiverWeightMult: 1,
     capacityMult: 1,
-    penetration: -1,
+    penetration: 0,
     signatureKind: 'physical',
     signature: 'normal',
     traits: {},
@@ -265,7 +267,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     receiverCostMult: 1.2,
     receiverWeightMult: 1.15,
     capacityMult: 0.8,
-    penetration: -1,
+    penetration: 0,
     signatureKind: 'physical',
     signature: 'normal',
     traits: { Bulky: true },
@@ -545,6 +547,21 @@ export interface BarrelDef {
   /** Carbine: −1 per two full dice of base damage. */
   carbineReduction?: boolean;
 }
+
+/**
+ * Pellet ammunition's Spread score by barrel length (FC "Pellet Spread" table).
+ * Pellet rounds reduce Penetration by this score.
+ */
+export const PELLET_SPREAD: Record<BarrelId, number> = {
+  minimal: 6,
+  short: 5,
+  handgun: 4,
+  assault: 3,
+  carbine: 2,
+  rifle: 2,
+  long: 1,
+  veryLong: 1,
+};
 
 export const BARRELS: Record<BarrelId, BarrelDef> = {
   minimal: {
