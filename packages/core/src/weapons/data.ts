@@ -975,6 +975,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1.1,
       capacityMult: 1,
       quickdraw: 0,
+      note: 'Rugged: DM+2 to rolls on the Malfunction table.',
     },
     vacuum: {
       label: 'Vacuum',
