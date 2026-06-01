@@ -30,9 +30,9 @@ function ProfileBlock({
   return (
     <>
       <Box flexWrap="wrap">
-        <Text>Damage {formatDamage(profile.damage)} </Text>
-        <Text dimColor>· </Text>
         <Text>Range {profile.range}m </Text>
+        <Text dimColor>· </Text>
+        <Text>Damage {formatDamage(profile.damage)} </Text>
         <Text dimColor>· </Text>
         <Text>{profile.auto > 0 ? `Auto ${profile.auto} ` : 'Single '}</Text>
         <Text dimColor>· </Text>

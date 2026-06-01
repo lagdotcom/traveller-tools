@@ -93,7 +93,7 @@ export const DEFAULT_WEAPON_PARAMS: FirearmParams = {
   barrel: 'rifle',
   heavyBarrel: false,
   additionalBarrels: 0,
-  stock: 'full',
+  stock: 'none',
   furniture: [],
   feed: 'standard',
   capacityPct: 100,
@@ -398,7 +398,7 @@ export function parseWeapon(text: string): WeaponDefinition {
   };
 }
 
-// --- Built-in weapons (the worked Field Catalogue examples) -----------------
+// --- Built-in weapons (the worked FC examples) -----------------
 
 function weapon(
   name: string,
@@ -461,99 +461,107 @@ function grenade(
 }
 
 export const BUILTIN_WEAPONS: WeaponDefinition[] = [
-  weapon(
-    'Generic 6 Revolver',
-    'Medium-calibre repeater revolver (Field Catalogue worked example).',
-    {
-      tl: 6,
-      receiver: 'handgun',
-      calibre: 'mediumHandgun',
-      mechanism: 'repeater',
-      barrel: 'handgun',
-      stock: 'none',
-      capacityPct: 120,
-    },
-  ),
-  weapon(
-    'Compact PDW',
-    'Light-handgun personal defence weapon (Field Catalogue worked example).',
-    {
-      tl: 8,
-      receiver: 'assault',
-      calibre: 'lightHandgun',
-      mechanism: 'fullAuto',
-      autoIncrease: 1,
-      features: ['compact'],
-      barrel: 'handgun',
-      stock: 'none',
-      capacityPct: 70,
-    },
-  ),
-  weapon(
-    'Civilian Shotgun',
-    'Single-shot double-barrel light smoothbore (Field Catalogue worked example).',
-    {
-      tl: 4,
-      receiver: 'longarm',
-      calibre: 'lightSmoothbore',
-      mechanism: 'singleShot',
-      features: ['partialMultiBarrel'],
-      barrel: 'rifle',
-      additionalBarrels: 1,
-      stock: 'full',
-      ammo: 'pellet',
-    },
-  ),
-  weapon(
-    '13mm Crunch Gun',
-    'Anti-materiel repeater with a very long barrel (Field Catalogue worked example).',
-    {
-      tl: 4,
-      receiver: 'lsw',
-      calibre: 'antiMateriel',
-      mechanism: 'repeater',
-      barrel: 'veryLong',
-      stock: 'full',
-      furniture: ['bipod'],
-      accessories: ['scope'],
-      capacityPct: 50,
-    },
-  ),
+  weapon('Generic 6 Revolver', 'Medium-calibre repeater revolver', {
+    tl: 6,
+    receiver: 'handgun',
+    calibre: 'mediumHandgun',
+    mechanism: 'repeater',
+    barrel: 'handgun',
+    stock: 'none',
+    capacityPct: 120,
+  }),
+  weapon('Compact PDW', 'Light-handgun personal defence weapon', {
+    tl: 8,
+    receiver: 'assault',
+    calibre: 'lightHandgun',
+    mechanism: 'fullAuto',
+    autoIncrease: 1,
+    features: ['compact'],
+    barrel: 'handgun',
+    stock: 'none',
+    capacityPct: 70,
+  }),
+  weapon('Civilian Shotgun', 'Single-shot double-barrel light smoothbore', {
+    tl: 4,
+    receiver: 'longarm',
+    calibre: 'lightSmoothbore',
+    mechanism: 'singleShot',
+    features: ['partialMultiBarrel'],
+    barrel: 'rifle',
+    stock: 'full',
+    additionalBarrels: 1,
+    ammo: 'pellet',
+  }),
+  weapon('13mm Crunch Gun', 'Anti-materiel repeater with a very long barrel', {
+    tl: 4,
+    receiver: 'lsw',
+    calibre: 'antiMateriel',
+    mechanism: 'repeater',
+    capacityPct: 50,
+    barrel: 'veryLong',
+    stock: 'full',
+    furniture: ['bipod'],
+    accessories: ['scope'],
+  }),
+  weapon('Flintlock Jazail', 'Long-barrelled archaic black-powder rifle', {
+    tl: 3,
+    receiver: 'longarm',
+    calibre: 'archaicRifle',
+    mechanism: 'singleShot',
+    barrel: 'rifle',
+    stock: 'full',
+    ammo: 'ball',
+    // reconcile: stat line shows Damage 3D-2, Inaccurate -1, Lo-Pen 3
+  }),
   // reconcile: the worked Adjudicator lists its Handgun barrel at 0.12kg, which
   // is 15% of the 0.8kg receiver — the barrel's *cost* fraction. The FC barrel
   // table gives a Handgun barrel 20% weight (→ 0.16kg here), matching the
   // Bodyguard worksheet's rifle barrel, so we follow the rules table (0.16kg)
   // and treat the worksheet's 0.12kg as using the cost figure by mistake.
-  weapon(
-    'Adjudicator',
-    'Small-smoothbore revolver, Ailene Armament (Field Catalogue worked example).',
-    {
-      tl: 7,
-      receiver: 'handgun',
-      calibre: 'smallSmoothbore',
-      mechanism: 'repeater',
-      barrel: 'handgun',
-      stock: 'none',
-    },
-  ),
-  weapon(
-    'GA-100',
-    'Gauss-shotgun bullpup assault weapon, Anhur Industries (Field Catalogue worked example).',
-    {
-      tl: 13,
-      receiver: 'assault',
-      gauss: true,
-      calibre: 'gaussShotgun',
-      mechanism: 'fullAuto',
-      features: ['bullpup', 'quickdraw', 'highCapacity'],
-      barrel: 'assault',
-      stock: 'full',
-      capacityPct: 130,
-    },
-  ),
+  weapon('Adjudicator', 'Small-smoothbore revolver, Ailene Armament', {
+    tl: 7,
+    receiver: 'handgun',
+    calibre: 'smallSmoothbore',
+    mechanism: 'repeater',
+    barrel: 'handgun',
+    stock: 'none',
+  }),
+  weapon('GA-100', 'Gauss-shotgun bullpup assault weapon, Anhur Industries', {
+    tl: 13,
+    receiver: 'assault',
+    gauss: true,
+    calibre: 'gaussShotgun',
+    mechanism: 'fullAuto',
+    features: ['bullpup', 'quickdraw', 'highCapacity'],
+    capacityPct: 130,
+    barrel: 'assault',
+    stock: 'full',
+    // reconcile: table says: 3D+5 damage, mag costs Cr55, AP 4
+  }),
+  weapon('GC-24', 'Gauss handgun, Anhur Industries', {
+    tl: 13,
+    receiver: 'handgun',
+    gauss: true,
+    calibre: 'smallGauss',
+    mechanism: 'burst',
+    features: ['veryCompact', 'lightweight'],
+    autoIncrease: 2,
+    capacityPct: 120,
+    barrel: 'short',
+    // reconcile: receiver totals are Cr808.5 and 0.7744kg, AP 3, Emissions Signature (low)
+  }),
+  weapon('GS-40', 'Gauss sidearm, Anhur Industries', {
+    tl: 13,
+    receiver: 'handgun',
+    gauss: true,
+    calibre: 'smallGauss',
+    mechanism: 'burst',
+    barrel: 'handgun',
+    // reconcile: AP 3
+  }),
   weapon(
     'Stowaway',
-    'Extreme-stealth full-auto body pistol, Colvery Solutions (Field Catalogue worked example).',
+    'Extreme-stealth full-auto body pistol, Colvery Solutions',
     {
       tl: 12,
       receiver: 'handgun',
@@ -566,8 +574,24 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     },
   ),
   weapon(
+    'Liberator Derringer',
+    'Heavy-handgun multi-barrel hold-out, Hangul Arms and Tactical',
+    {
+      tl: 7,
+      receiver: 'handgun',
+      calibre: 'heavyHandgun',
+      mechanism: 'repeater',
+      features: ['partialMultiBarrel'],
+      barrel: 'minimal',
+      stock: 'none',
+      additionalBarrels: 3, // '3x Extra Barrel, Minimal'
+      ammo: 'lowPenetration',
+      // reconcile: Quickdraw +12, Lo-Pen 3, Slow Loader 4
+    },
+  ),
+  weapon(
     'Bodyguard Shotgun',
-    'Standard-smoothbore repeater longarm, Harrix Industries (Field Catalogue worked example).',
+    'Standard-smoothbore repeater longarm, Harrix Industries',
     {
       tl: 8,
       receiver: 'longarm',
@@ -576,22 +600,125 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'rifle',
       stock: 'full',
       accessories: ['laserPointer'],
+      // reconcile: Bulky, Physical Signature (normal)
     },
   ),
+  weapon('Standard', 'Safety-conscious carbine, Interstellar Ordnance', {
+    tl: 9,
+    receiver: 'longarm',
+    calibre: 'lightRifle',
+    mechanism: 'semiAuto',
+    features: ['bullpup', 'compact', 'rugged', 'lightweight', 'bulwarked2'],
+    barrel: 'carbine',
+    stock: 'full',
+    accessories: ['scope'],
+    // reconcile: (thinks Bullpup is +20% cost?), Mag Cost Cr30, Damage 2D, Physical Signature (normal)
+  }),
+  weapon('Mk 1 Handgun', 'Generic early semi-automatic pistol', {
+    tl: 5,
+    receiver: 'handgun',
+    calibre: 'heavyHandgun',
+    mechanism: 'semiAuto',
+    barrel: 'handgun',
+    // reconcile: does not list Bulky or Lo-Pen 2
+  }),
+  weapon('Posi-9', 'Upmarket semi-auto pistol, Tacload Armaments', {
+    tl: 9,
+    receiver: 'handgun',
+    calibre: 'mediumHandgun',
+    mechanism: 'semiAuto',
+    capacityPct: 150,
+    features: ['advancedProjectile'],
+    barrel: 'handgun',
+    // reconcile: Physical Signature (normal)
+  }),
+  weapon('Crewmate', 'Vehicle defense weapon, Tactical Systems Incorporated', {
+    tl: 7,
+    receiver: 'handgun',
+    calibre: 'intermediateRifle',
+    mechanism: 'fullAuto',
+    features: ['semiBullpup', 'rugged'],
+    autoIncrease: 1,
+    barrel: 'handgun',
+    accessories: ['scope'],
+    // implement: Semi-Bullpup gives +20% cost, Quickdraw +2
+    // reconcile: Lo-Pen 2
+  }),
+  weapon('Desperado', 'Generic assault submachinegun', {
+    tl: 5,
+    receiver: 'assault',
+    calibre: 'mediumHandgun',
+    mechanism: 'fullAuto',
+    barrel: 'assault',
+    stock: 'full',
+    // reconcile: book says +20% on Full Auto then only adds +10% lol
+    // reconcile: Inaccurate -1, no Penetration minus?
+  }),
+  weapon('Eliminator', 'Extreme close quarters smg', {
+    tl: 9,
+    receiver: 'assault',
+    calibre: 'lightHandgun',
+    mechanism: 'fullAuto',
+    autoIncrease: 1,
+    features: ['compact', 'recoilComp2', 'lightweight'],
+    barrel: 'assault',
+    stock: 'folding',
+    // reconcile: Receiver Totals Cr715.05, 2.079kg
+    // reconcile: Mag 24 (did they forget the penalty from Compact?)
+    // reconcile: no Lo-Pen? Physical Signature (normal)
+  }),
+  weapon('IAW-12', 'Infantry Assault Weapon, Interstellar Ordnance', {
+    tl: 12,
+    receiver: 'assault',
+    gauss: true,
+    calibre: 'smallGauss',
+    mechanism: 'fullAuto',
+    features: ['quickdraw', 'highCapacity'],
+    autoIncrease: 1,
+    barrel: 'assault',
+    accessories: ['laserPointer'],
+    // reconcile: table has 'No Stock' as costing 15% somehow
+    // reconcile: Damage 3D-1, AP 4
+  }),
   weapon(
-    'Hangul Liberator',
-    'Heavy-handgun multi-barrel hold-out, partial multi-barrel (Field Catalogue worked example: Cr105 / 0.92kg).',
+    'Planetsider',
+    'Starship crew security weapon, Unified Space Industries',
     {
-      tl: 6,
-      receiver: 'handgun',
+      tl: 9,
+      receiver: 'assault',
       calibre: 'heavyHandgun',
-      mechanism: 'repeater',
-      features: ['partialMultiBarrel'],
-      barrel: 'minimal',
-      additionalBarrels: 3,
-      stock: 'none',
+      mechanism: 'fullAuto',
+      features: [
+        'highCapacity',
+        'rugged',
+        'advancedProjectile',
+        'bullpup',
+        'quickdraw',
+      ],
+      capacityPct: 150,
+      barrel: 'carbine',
+      stock: 'full',
+      accessories: ['scope', 'laserPointer'],
+      // reconcile: 'Heavy Handgun ammo' adds +15% weight but no cost
+      // reconcile: Receiver Totals Cr1264, 3.13kg
+      // reconcile: Range 55m, Quickdraw +5, no Lo-Pen
+      // extra thing: "For those who require more firepower a 40-round casket magazine is available for Cr40 and a 70-round drum costs Cr100. The latter is heavy and awkward to use,and eliminates many of the weapon’s quick-reaction advantages. With any kind of magazine in place the Planetsider's weight absorbs recoil well, removing the Bulky trait."
     },
   ),
+  weapon('GR-80', 'Gauss rifle, Anhur Industries', {
+    tl: 13,
+    receiver: 'longarm',
+    gauss: true,
+    calibre: 'standardGauss',
+    mechanism: 'fullAuto',
+    features: ['bullpup'],
+    barrel: 'carbine',
+    stock: 'full',
+    accessories: ['multispectralScope'],
+    // reconcile: book calls it both GR-80 and GR-90 lol
+    // reconcile: AP 3, Emissions Signature (low)
+    // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
+  }),
   // reconcile: the Ten-Six now reproduces on cost (we get Cr170.625 vs the
   // worksheet's Cr170.25 — a ~Cr0.4 rounding difference) via the FC complete
   // multi-barrel rule. The remaining differences are all explained:
@@ -604,7 +731,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   //     + Pellet Spread table, which isn't implemented yet.
   weapon(
     'Ten-Six',
-    'Universal Security Solutions Ten-Six snub revolver with an under-barrel single-shot smoothbore (Field Catalogue worked example; see reconcile note — only partially reproduces).',
+    'Universal Security Solutions Ten-Six snub revolver with an under-barrel single-shot smoothbore (FC worked example; see reconcile note — only partially reproduces).',
     {
       tl: 9,
       receiver: 'handgun',
@@ -633,25 +760,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       },
     },
   ),
-  // No FC worksheet was supplied for the Jazail — it's a representative archaic
-  // black-powder longarm composed from the verified calibre/receiver tables (a
-  // derived design, not a worksheet oracle).
-  weapon(
-    'Jazail',
-    'Long-barrelled archaic black-powder rifle (representative build; no FC worksheet).',
-    {
-      tl: 3,
-      receiver: 'longarm',
-      calibre: 'archaicRifle',
-      mechanism: 'singleShot',
-      barrel: 'long',
-      stock: 'full',
-      ammo: 'ball',
-    },
-  ),
   energyWeapon(
     'Laser Carbine',
-    'TL10 Small (Light) laser carbine, powerpack-fed (Field Catalogue energy weapon).',
+    'TL10 Small (Light) laser carbine, powerpack-fed (FC energy weapon).',
     {
       tl: 10,
       receiver: 'small',
@@ -665,7 +776,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   energyWeapon(
     'Laser Rifle',
-    'TL12 Medium (Standard) laser rifle with improved focus (Field Catalogue energy weapon).',
+    'TL12 Medium (Standard) laser rifle with improved focus (FC energy weapon).',
     {
       tl: 12,
       receiver: 'medium',
@@ -680,7 +791,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   projector(
     'Flamethrower',
-    'TL5 Compact jellied-fuel flamethrower (Field Catalogue projector).',
+    'TL5 Compact jellied-fuel flamethrower (FC projector).',
     {
       tl: 5,
       structure: 'compact',
@@ -692,7 +803,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   projector(
     'MF-61',
-    'Krabbine Heavy Industries MF-61 individual flame weapon (Field Catalogue).',
+    'Krabbine Heavy Industries MF-61 individual flame weapon (FC).',
     {
       tl: 10,
       structure: 'compact',
@@ -706,7 +817,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   launcher(
     'Grenade Launcher',
-    'TL6 single-shot light tube grenade launcher (Field Catalogue launcher).',
+    'TL6 single-shot light tube grenade launcher (FC launcher).',
     {
       tl: 6,
       receiver: 'tubeSingleLight',
@@ -716,7 +827,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   launcher(
     'Rocket Launcher',
-    'TL6 reusable heavy anti-armour rocket launcher (Field Catalogue launcher).',
+    'TL6 reusable heavy anti-armour rocket launcher (FC launcher).',
     {
       tl: 6,
       receiver: 'reuseSingleHeavy',
@@ -731,7 +842,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // barrel +full stock → 2.8kg. reconcile: the worksheet totals Cr940; the
     // firearm-style barrel/stock percentages give Cr975 (a ~Cr35 over-count we keep
     // flagged rather than fudge — the user is the authority on the exact figure).
-    'Whaite Industries Light Munition Launcher (Field Catalogue worked example).',
+    'Whaite Industries Light Munition Launcher',
     {
       tl: 8,
       receiver: 'tubeSemiLight',
@@ -742,12 +853,12 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       delivery: 'cartridge',
     },
   ),
-  grenade(
-    'Fragmentation Grenade',
-    'TL6 hand fragmentation grenade (Field Catalogue).',
-    { tl: 6, type: 'fragmentation', size: 'hand' },
-  ),
-  grenade('Smoke Grenade', 'TL6 hand smoke grenade (Field Catalogue).', {
+  grenade('Fragmentation Grenade', 'TL6 hand fragmentation grenade (FC).', {
+    tl: 6,
+    type: 'fragmentation',
+    size: 'hand',
+  }),
+  grenade('Smoke Grenade', 'TL6 hand smoke grenade (FC).', {
     tl: 6,
     type: 'smoke',
     size: 'hand',
