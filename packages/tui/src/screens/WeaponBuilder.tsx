@@ -187,14 +187,14 @@ const firearmValues = (f: FirearmParams) => ({
   additionalBarrels: String(f.additionalBarrels),
   feed: FEED.toLabel(f.feed),
   capacityPct: String(f.capacityPct),
-  ammo: AMMO.toLabel(f.ammo),
+  // (loaded ammo is a multi-select list, not a single form field)
   // secondary weapon (an under-barrel weapon, fired independently)
   secEnabled: f.secondary ? 'yes' : 'no',
   secReceiver: RECEIVER.toLabel(f.secondary?.receiver ?? 'handgun'),
   secCalibre: CALIBRE.toLabel(f.secondary?.calibre ?? 'lightSmoothbore'),
   secMechanism: MECHANISM.toLabel(f.secondary?.mechanism ?? 'singleShot'),
   secBarrel: BARREL.toLabel(f.secondary?.barrel ?? 'short'),
-  secAmmo: AMMO.toLabel(f.secondary?.ammo ?? 'pellet'),
+  secAmmo: AMMO.toLabel(f.secondary?.ammo[0] ?? 'pellet'),
 });
 
 const energyValues = (e: EnergyParams) => ({
@@ -251,7 +251,7 @@ function formValues(p: WeaponParams) {
   };
 }
 
-type ListId = 'features' | 'furniture' | 'accessories' | 'mods';
+type ListId = 'features' | 'furniture' | 'accessories' | 'mods' | 'ammo';
 
 /** The flat string-keyed record the form holds (one entry per builder field). */
 type FormValues = ReturnType<typeof formValues>;
@@ -261,6 +261,7 @@ interface Lists {
   furniture: FurnitureId[];
   accessories: AccessoryId[];
   mods: EnergyModId[];
+  ammo: AmmoTypeId[];
 }
 
 // --- Per-class param builders (form values + selections → WeaponParams) -----
@@ -282,7 +283,7 @@ function buildSecondary(v: FormValues): SecondaryWeaponParams {
     feed: 'standard',
     capacityPct: 100,
     accessories: [],
-    ammo: AMMO.toId(v.secAmmo),
+    ammo: [AMMO.toId(v.secAmmo)],
   };
 }
 
@@ -304,7 +305,7 @@ function buildFirearm(v: FormValues, lists: Lists): FirearmParams {
     feed: FEED.toId(v.feed),
     capacityPct: num(v.capacityPct, 100),
     accessories: lists.accessories,
-    ammo: AMMO.toId(v.ammo),
+    ammo: lists.ammo,
     ...(v.secEnabled === 'yes' ? { secondary: buildSecondary(v) } : {}),
   };
 }
@@ -405,10 +406,14 @@ export function WeaponBuilderScreen({
   const [mods, setMods] = useState<EnergyModId[]>(
     startParams.kind === 'energy' ? startParams.mods : [],
   );
+  const [ammo, setAmmo] = useState<AmmoTypeId[]>(
+    startParams.kind === 'firearm' ? startParams.ammo : ['ball'],
+  );
   const [addFeature, setAddFeature] = useState('');
   const [addFurniture, setAddFurniture] = useState('');
   const [addAccessory, setAddAccessory] = useState('');
   const [addMod, setAddMod] = useState('');
+  const [addAmmo, setAddAmmo] = useState('');
   const [active, setActive] = useState(0);
   const [mode, setMode] = useState<'edit' | 'save' | 'export' | 'import'>(
     'edit',
@@ -500,6 +505,21 @@ export function WeaponBuilderScreen({
         setAddMod('');
       },
     },
+    ammo: {
+      items: ammo,
+      itemLabel: (i) => AMMO.toLabel(ammo[i]!),
+      // Keep at least one ammo type loaded.
+      remove: (i) =>
+        setAmmo((p) => (p.length > 1 ? p.filter((_, k) => k !== i) : p)),
+      available: AMMO.labels.filter((l) => !ammo.includes(AMMO.toId(l))),
+      addValue: addAmmo,
+      onAddChange: setAddAmmo,
+      onAdd: () => {
+        const id = AMMO.toId(effective(addAmmo, lists.ammo.available));
+        if (id && !ammo.includes(id)) setAmmo((p) => [...p, id]);
+        setAddAmmo('');
+      },
+    },
   };
 
   interface FieldDef {
@@ -570,7 +590,7 @@ export function WeaponBuilderScreen({
     { label: 'Accessories', list: 'accessories' },
     {
       label: 'Ammo',
-      fields: [{ key: 'ammo', label: 'Loaded ammo', options: AMMO.labels }],
+      list: 'ammo',
     },
     {
       label: 'Secondary',
@@ -761,7 +781,7 @@ export function WeaponBuilderScreen({
     if (idx >= 0) setActive(idx);
   };
 
-  const selected: Lists = { features, furniture, accessories, mods };
+  const selected: Lists = { features, furniture, accessories, mods, ammo };
   const params: WeaponParams =
     weaponClass === 'energy'
       ? buildEnergy(form.values, selected)

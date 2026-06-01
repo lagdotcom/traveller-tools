@@ -124,6 +124,13 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   (damage with the "running out of dice" rule, range, Auto, recoil, quickdraw,
   penetration→Lo-Pen, signature, traits) happens alongside; loaded ammo modifies
   the **profile only**, not the build cost.
+- **Multiple ammo types.** `FirearmParams.ammo` is a **list** — the build is fixed
+  but each loaded type yields its own profile row (`WeaponEvaluation.ammoProfiles`,
+  the first = the primary `profile`), each with its own reload price. The sheet
+  shows a labelled row per type (the Crunch Gun lists ball / explosive /
+  incendiary / advanced-AP). A loaded type below its TL is a **warning** (not an
+  error) — it just isn't available yet; accessories built into the weapon stay
+  errors.
 - **Gauss is implied by the calibre** (no separate `gauss` field): the gauss
   calibres carry a `gauss` flag, and `calibre.gauss` triggers the gauss ×2 cost /
   ×1.25 weight / ×3 capacity modifier and the TL12 gate. Gauss calibres carry base

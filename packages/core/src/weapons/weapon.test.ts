@@ -110,6 +110,40 @@ describe('worked examples — base receiver & grand totals', () => {
   });
 });
 
+describe('multiple supported ammo types', () => {
+  it('lists one profile per loaded ammo type, sharing the build', () => {
+    // The Crunch Gun is shown firing ball / explosive / incendiary / advanced AP.
+    const r = evalNamed('13mm Crunch Gun');
+    expect(r.ammoProfiles?.map((a) => a.ammo)).toEqual([
+      'ball',
+      'explosive',
+      'incendiary',
+      'apAdvanced',
+    ]);
+    // Ball is the primary; explosive adds dice (+1D plus +1D/3 full dice) and a
+    // pricier reload; advanced AP turns the +2 penetration into AP.
+    const byAmmo = Object.fromEntries(r.ammoProfiles!.map((a) => [a.ammo, a]));
+    expect(formatDamage(byAmmo.ball!.profile.damage)).toBe('5D');
+    expect(formatDamage(byAmmo.explosive!.profile.damage)).toBe('7D');
+    expect(byAmmo.explosive!.magazineCr).toBeGreaterThan(
+      byAmmo.ball!.magazineCr,
+    );
+    expect(byAmmo.apAdvanced!.profile.traits['AP']).toBe(6);
+  });
+
+  it('treats out-of-TL loaded ammo as a warning, not an error', () => {
+    // The TL4 Crunch Gun lists TL6/TL7 rounds — available later, not invalid.
+    const r = evalNamed('13mm Crunch Gun');
+    expect(
+      r.issues.some(
+        (i) =>
+          i.severity === 'warning' &&
+          /Explosive ammunition requires TL6/.test(i.message),
+      ),
+    ).toBe(true);
+  });
+});
+
 // The FC "Final Penetration" table maps net penetration → Lo-Pen / AP.
 describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
   it('handgun-calibre weapons read Lo-Pen 2', () => {
@@ -139,7 +173,7 @@ describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
       mechanism: 'repeater',
       barrel: 'handgun',
       stock: 'none',
-      ammo: 'pellet',
+      ammo: ['pellet'],
     });
     expect(r.profile.traits['Spread']).toBe(4); // handgun-barrel spread
     expect(r.profile.traits['Lo-Pen']).toBe(5); // clamped
@@ -316,7 +350,7 @@ describe('secondary weapon', () => {
     mechanism: 'singleShot' as const,
     barrel: 'short' as const,
     stock: 'none' as const,
-    ammo: 'pellet' as const,
+    ammo: ['pellet'] as const,
   };
 
   it('adds a complete extra barrel (FC rule) and exposes its own profile', () => {
@@ -438,7 +472,7 @@ describe('validation rules', () => {
     const issues = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
       tl: 5,
-      ammo: 'heap',
+      ammo: ['heap'],
       accessories: ['multispectralScope'],
     }).issues;
     expect(

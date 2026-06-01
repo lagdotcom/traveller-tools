@@ -9,6 +9,7 @@ import type { Issue } from '../design/index.js';
 import {
   ACCESSORIES,
   AMMO_TYPES,
+  type AmmoTypeDef,
   BARRELS,
   CALIBRES,
   FEEDS,
@@ -47,6 +48,7 @@ import {
   warning,
 } from './shared.js';
 import {
+  type AmmoTypeId,
   type Damage,
   type FirearmParams,
   type SecondaryWeaponParams,
@@ -63,6 +65,16 @@ export interface WeaponEvaluation {
   issues: Issue[];
   totals: { costCr: number; weightKg: number; magazineCr: number };
   sources: string[];
+  /**
+   * One profile per loaded ammunition type (firearms only) — the primary is the
+   * first and equals `profile`. Each carries its own reload price.
+   */
+  ammoProfiles?: {
+    ammo: AmmoTypeId;
+    label: string;
+    profile: WeaponProfile;
+    magazineCr: number;
+  }[];
   /** A mounted secondary weapon's own profile, shown as a second data line. */
   secondary?: { label: string; profile: WeaponProfile; magazineCr: number };
 }
@@ -182,11 +194,20 @@ function validate(params: FirearmParams): Issue[] {
       error('High Capacity is incompatible with Compact / Very Compact'),
     );
 
-  // Accessory and loaded-ammunition TL gates.
+  // Accessories are built into the weapon, so a TL shortfall is an error.
   for (const id of params.accessories)
     pushIf(issues, tlGate(tl, ACCESSORIES[id].label, ACCESSORIES[id].minTL));
-  const ammo = AMMO_TYPES[params.ammo];
-  pushIf(issues, tlGate(tl, `${ammo.label} ammunition`, ammo.minTL));
+  // Loaded ammunition is just carried — a TL shortfall only means it isn't
+  // available yet, so flag it as a warning rather than invalidating the build.
+  for (const id of params.ammo) {
+    const ammo = AMMO_TYPES[id];
+    if (ammo?.minTL && tl < ammo.minTL)
+      issues.push(
+        warning(
+          `${ammo.label} ammunition requires TL${ammo.minTL} (loaded into a TL${tl} weapon)`,
+        ),
+      );
+  }
 
   return issues;
 }
@@ -213,18 +234,27 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const parts = resolveParts(params);
   const recv = firearmReceiver(params, parts);
   const comp = firearmComponents(params, parts, recv);
-  const { profile, magazineCr } = firearmProfile(params, parts, recv);
+
+  // The build is fixed; each loaded ammunition type yields its own profile row.
+  const ammoIds = params.ammo.length > 0 ? params.ammo : ['ball' as AmmoTypeId];
+  const ammoProfiles = ammoIds.map((id) => {
+    const ammo = AMMO_TYPES[id] ?? AMMO_TYPES.ball;
+    const { profile, magazineCr } = firearmProfile(params, parts, recv, ammo);
+    return { ammo: id, label: ammo.label, profile, magazineCr };
+  });
+  const primary = ammoProfiles[0]!;
 
   return {
-    profile,
+    profile: primary.profile,
     breakdown: [...recv.lines, ...comp.lines],
     issues: validate(params),
     totals: {
       costCr: round2(recv.baselineCost + comp.costCr),
       weightKg: round2(recv.baselineWeight + comp.weightKg),
-      magazineCr,
+      magazineCr: primary.magazineCr,
     },
     sources: [...new Set([SOURCE, ...comp.sources])],
+    ammoProfiles,
     ...(comp.secondary ? { secondary: comp.secondary } : {}),
   };
 }
@@ -241,7 +271,6 @@ function resolveParts(params: FirearmParams) {
     barrel: BARRELS[params.barrel] ?? BARRELS.rifle,
     stock: STOCKS[params.stock] ?? STOCKS.none,
     feed: FEEDS[params.feed] ?? FEEDS.standard,
-    ammo: AMMO_TYPES[params.ammo] ?? AMMO_TYPES.ball,
     features: resolveFeatures(params.features),
     autoSteps,
     auto,
@@ -483,8 +512,9 @@ function firearmProfile(
   params: FirearmParams,
   parts: Parts,
   recv: ReceiverBuild,
+  ammo: AmmoTypeDef,
 ): { profile: WeaponProfile; magazineCr: number } {
-  const { receiver, calibre, barrel, feed, ammo, features } = parts;
+  const { receiver, calibre, barrel, feed, features } = parts;
   const { auto, extraBarrels, rapidFire } = parts;
 
   let damage: Damage = { ...calibre.damage };

@@ -23,13 +23,20 @@ const kg = (n: number): string => `${Math.round(n * 1000) / 1000}kg`;
 /** The headline stat lines for one weapon profile (primary or secondary). */
 function ProfileBlock({
   profile,
+  title,
+  magazineCr,
 }: {
   profile: WeaponProfile;
+  /** Optional per-ammo label (e.g. "Ball") shown ahead of the stats. */
+  title?: string;
+  /** Optional per-ammo reload price, shown alongside the magazine size. */
+  magazineCr?: number;
 }): React.JSX.Element {
   const sig = `${profile.signatureKind === 'emissions' ? 'Emissions' : 'Physical'} (${profile.signature})`;
   return (
     <>
       <Box flexWrap="wrap">
+        {title ? <Text color="green">{title.padEnd(11)} </Text> : null}
         <Text>Range {profile.range}m </Text>
         <Text dimColor>· </Text>
         <Text>Damage {formatDamage(profile.damage)} </Text>
@@ -50,7 +57,10 @@ function ProfileBlock({
         <Text dimColor>· </Text>
         <Text>Signature {sig} </Text>
         <Text dimColor>· </Text>
-        <Text>Magazine {profile.capacity} </Text>
+        <Text>
+          Magazine {profile.capacity}
+          {magazineCr !== undefined ? ` (${cr(magazineCr)})` : ''}{' '}
+        </Text>
         {profile.heat > 0 ? (
           <Text dimColor>
             · Heat {profile.heat}/rd (−{profile.heatDissipation ?? 0} idle,
@@ -97,7 +107,20 @@ export function WeaponSheet({
       <Text bold color="yellow">
         Profile — TL{profile.tl}
       </Text>
-      <ProfileBlock profile={profile} />
+      {evaluation.ammoProfiles && evaluation.ammoProfiles.length > 1 ? (
+        // One labelled row per loaded ammunition type.
+        evaluation.ammoProfiles.map((a) => (
+          <Box key={a.ammo} flexDirection="column" marginBottom={1}>
+            <ProfileBlock
+              profile={a.profile}
+              title={a.label}
+              magazineCr={a.magazineCr}
+            />
+          </Box>
+        ))
+      ) : (
+        <ProfileBlock profile={profile} magazineCr={totals.magazineCr} />
+      )}
 
       {evaluation.secondary ? (
         <Box flexDirection="column" marginTop={1}>

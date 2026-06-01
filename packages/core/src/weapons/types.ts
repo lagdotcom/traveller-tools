@@ -328,8 +328,12 @@ export interface FirearmParams {
   /** Actual magazine size as a percentage of base capacity (50–150). */
   capacityPct: number;
   accessories: AccessoryId[];
-  /** Loaded ammunition type used for the displayed profile. */
-  ammo: AmmoTypeId;
+  /**
+   * Ammunition types the weapon is shown firing — one profile row per type (the
+   * first is the primary). The build cost/weight is the same for all; only the
+   * derived profile and reload price differ. Empty falls back to ball.
+   */
+  ammo: AmmoTypeId[];
   /**
    * An optional secondary weapon (e.g. an under-barrel shotgun). It is designed
    * as its own weapon and fires independently; mounting it costs and weighs 10%

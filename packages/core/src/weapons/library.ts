@@ -100,7 +100,7 @@ export const DEFAULT_WEAPON_PARAMS: FirearmParams = {
   feed: 'standard',
   capacityPct: 100,
   accessories: [],
-  ammo: 'ball',
+  ammo: ['ball'],
 };
 
 /** A valid starting energy design: a TL10 Small (Light) laser carbine. */
@@ -216,6 +216,15 @@ function normalizeFeatures(v: unknown): ReceiverFeatureRef[] {
   return out;
 }
 
+/** Coerce ammunition into a non-empty list, tolerating a legacy single string. */
+function normalizeAmmo(v: unknown, fallback: AmmoTypeId[]): AmmoTypeId[] {
+  const arr = Array.isArray(v) ? v : typeof v === 'string' ? [v] : [];
+  const out = arr.filter(
+    (x): x is AmmoTypeId => typeof x === 'string' && x in AMMO_TYPES,
+  );
+  return out.length ? out : fallback;
+}
+
 const POWER_CLASSES = ENERGY_POWER_CLASS_DICE;
 const POWER_SOURCES = { powerpack: 0, cartridge: 0 };
 
@@ -243,7 +252,7 @@ function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
     feed: pick<FeedId>(p.feed, FEEDS, d.feed),
     capacityPct: num(p.capacityPct, d.capacityPct),
     accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
-    ammo: pick<AmmoTypeId>(p.ammo, AMMO_TYPES, d.ammo),
+    ammo: normalizeAmmo(p.ammo, d.ammo),
     // A secondary weapon (one level deep — its own `secondary` is dropped).
     ...(isObject(p.secondary)
       ? { secondary: normalizeSecondaryParams(p.secondary) }
@@ -525,7 +534,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'rifle',
     stock: 'full',
     additionalBarrels: 1,
-    ammo: 'pellet',
+    ammo: ['ball'],
   }),
   weapon('13mm Crunch Gun', 'Anti-materiel repeater with a very long barrel', {
     tl: 4,
@@ -537,6 +546,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'full',
     furniture: ['bipod'],
     accessories: ['scope'],
+    // Listed firing ball, explosive, incendiary and advanced AP (the latter
+    // three carry their own TL availability, flagged as warnings on a TL4 build).
+    ammo: ['ball', 'explosive', 'incendiary', 'apAdvanced'],
   }),
   weapon('Flintlock Jazail', 'Long-barrelled archaic black-powder rifle', {
     tl: 3,
@@ -545,7 +557,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mechanism: 'singleShot',
     barrel: 'rifle',
     stock: 'full',
-    ammo: 'ball',
+    ammo: ['ball'],
     // reconcile: stat line shows Damage 3D-2, Inaccurate -1, Lo-Pen 3
   }),
   // reconcile: the worked Adjudicator lists its Handgun barrel at 0.12kg, which
@@ -617,7 +629,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'minimal',
       stock: 'none',
       additionalBarrels: 3, // '3x Extra Barrel, Minimal'
-      ammo: 'lowPenetration',
+      ammo: ['lowPenetration'],
       // reconcile: Quickdraw +12, Lo-Pen 3, Slow Loader 4
     },
   ),
@@ -798,7 +810,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         feed: 'standard',
         capacityPct: 100,
         accessories: [],
-        ammo: 'pellet',
+        ammo: ['pellet'],
       },
     },
   ),
@@ -845,7 +857,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       feed: 'fixed',
       capacityPct: 100,
       accessories: [],
-      ammo: 'ball',
+      ammo: ['ball'],
     },
   }),
   energyWeapon(
