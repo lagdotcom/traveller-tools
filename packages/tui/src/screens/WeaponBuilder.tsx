@@ -470,15 +470,42 @@ export function WeaponBuilderScreen({
     }
     patchMag(i, { ammo: AMMO.toId(label) });
   };
-  // A blank / non-positive number clears the override (auto-derive).
+  const setMagLabel = (i: number, v: string) =>
+    setMagazines((prev) =>
+      prev.map((m, k) => {
+        if (k !== i) return m;
+        const next: MagazineSpec = { ...m };
+        if (v.trim()) next.label = v;
+        else delete next.label;
+        return next;
+      }),
+    );
+  // Capacity is set by EITHER a percentage OR an absolute count — never both, so
+  // setting one clears the other. A blank / non-positive value clears (auto).
+  const setMagPct = (i: number, v: string) => {
+    const n = num(v, 0);
+    setMagazines((prev) =>
+      prev.map((m, k) => {
+        if (k !== i) return m;
+        const next: MagazineSpec = { ...m };
+        if (n > 0) {
+          next.pct = n;
+          delete next.rounds;
+        } else delete next.pct;
+        return next;
+      }),
+    );
+  };
   const setMagRounds = (i: number, v: string) => {
     const n = num(v, 0);
     setMagazines((prev) =>
       prev.map((m, k) => {
         if (k !== i) return m;
         const next: MagazineSpec = { ...m };
-        if (n > 0) next.rounds = n;
-        else delete next.rounds;
+        if (n > 0) {
+          next.rounds = n;
+          delete next.pct;
+        } else delete next.rounds;
         return next;
       }),
     );
@@ -655,7 +682,7 @@ export function WeaponBuilderScreen({
     magazines?: true;
     packs?: true;
   }
-  type MagField = 'ammo' | 'rounds' | 'cost';
+  type MagField = 'ammo' | 'label' | 'pct' | 'rounds' | 'cost';
   type PackField = 'kind' | 'size' | 'rating';
   type Row =
     | { section: number; kind: 'field'; field: FieldDef }
@@ -901,7 +928,13 @@ export function WeaponBuilderScreen({
     }
     if (section.magazines) {
       magazines.forEach((_, index) => {
-        for (const field of ['ammo', 'rounds', 'cost'] as MagField[])
+        for (const field of [
+          'ammo',
+          'label',
+          'pct',
+          'rounds',
+          'cost',
+        ] as MagField[])
           rows.push({ section: si, kind: 'magItem', index, field });
       });
       rows.push({ section: si, kind: 'magAdd' });
@@ -1121,6 +1154,28 @@ export function WeaponBuilderScreen({
                   value={AMMO.toLabel(m.ammo ?? ammo[0] ?? 'ball')}
                   isActive={isActive}
                   onChange={(v) => setMagAmmo(i, v)}
+                  onSubmit={advance}
+                />
+              );
+            if (row.field === 'label')
+              return (
+                <Field
+                  key={`mag-${i}-label`}
+                  label="· name (optional)"
+                  value={m.label ?? ''}
+                  isActive={isActive}
+                  onChange={(v) => setMagLabel(i, v)}
+                  onSubmit={advance}
+                />
+              );
+            if (row.field === 'pct')
+              return (
+                <Field
+                  key={`mag-${i}-pct`}
+                  label="· size % (0=auto)"
+                  value={String(m.pct ?? 0)}
+                  isActive={isActive}
+                  onChange={(v) => setMagPct(i, v)}
                   onSubmit={advance}
                 />
               );

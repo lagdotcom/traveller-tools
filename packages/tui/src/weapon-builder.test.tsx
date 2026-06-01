@@ -38,9 +38,11 @@ describe('Weapon builder (real Ink)', () => {
     // Tab to the Magazines section (index 8 for a firearm).
     for (let i = 0; i < 8; i++) await ui.type(TAB);
     expect(ui.frame()).toContain('Add magazine');
-    // Add a magazine — its editable rows (Standard magazine + overrides) appear.
+    // Add a magazine — its editable rows (name / size % / rounds / reload) appear.
     await ui.type(ENTER);
     await ui.waitFor('Standard magazine');
+    expect(ui.frame()).toContain('name (optional)');
+    expect(ui.frame()).toContain('size %');
     expect(ui.frame()).toContain('reload Cr');
     ui.unmount();
     expect(ui.errors()).toEqual([]);
