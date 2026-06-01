@@ -572,6 +572,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mechanism: 'repeater',
     barrel: 'handgun',
     stock: 'none',
+    ammo: ['ball', 'pellet', 'flechette', 'explosive'],
   }),
   weapon('GA-100', 'Gauss-shotgun bullpup assault weapon, Anhur Industries', {
     tl: 13,
@@ -629,8 +630,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'minimal',
       stock: 'none',
       additionalBarrels: 3, // '3x Extra Barrel, Minimal'
-      ammo: ['lowPenetration'],
+      ammo: ['lowPenetration', 'heap'],
       // reconcile: Quickdraw +12, Lo-Pen 3, Slow Loader 4
+      // TODO: Liberator Defender variant: short smg, supports ball/distraction/explosive
     },
   ),
   weapon(
@@ -644,7 +646,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'rifle',
       stock: 'full',
       accessories: ['laserPointer'],
+      ammo: ['ball', 'pellet'],
       // reconcile: Bulky, Physical Signature (normal)
+      // TODO Pointguard variant: shorter, no stock - TL10, 125m range, 3.25Kg, Cr180, Mag 3 (Cr4.5), Quickdraw +2, pellet only
     },
   ),
   weapon('Standard', 'Safety-conscious carbine, Interstellar Ordnance', {
@@ -671,6 +675,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mechanism: 'semiAuto',
     barrel: 'handgun',
     // reconcile: does not list Bulky or Lo-Pen 2
+    // TODO: suppressed variant, Cr415, Quickdraw +5, Lo-Pen 2, Phys Sig (small)
   }),
   weapon('Posi-9', 'Upmarket semi-auto pistol, Tacload Armaments', {
     tl: 9,
@@ -681,6 +686,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     features: ['advancedProjectile'],
     barrel: 'handgun',
     // reconcile: Physical Signature (normal)
+    // TODO: burst and auto variants
   }),
   weapon('Crewmate', 'Vehicle defense weapon, Tactical Systems Incorporated', {
     tl: 7,
@@ -713,6 +719,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     features: ['compact', { id: 'recoilComp', level: 2 }, 'lightweight'],
     barrel: 'assault',
     stock: 'folding',
+    ammo: ['ball', 'apAdvanced', 'enhancedWounding'],
     // reconcile: Receiver Totals Cr715.05, 2.079kg
     // reconcile: Mag 24 (did they forget the penalty from Compact?)
     // reconcile: no Lo-Pen? Physical Signature (normal)
@@ -767,11 +774,76 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // reconcile: AP 3, Emissions Signature (low)
     // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
   }),
-  // TODO: AIWS
-  // TODO: Intruder
-  // TODO: Squadmate
-  // TODO: Sentinel
-  // TODO: Shipmate
+  weapon('AIWS', 'Modular infantry weapon, Interstellar Ordnance', {
+    tl: 10,
+    receiver: 'longarm',
+    calibre: 'intermediateRifle',
+    mechanism: 'fullAuto',
+    features: ['advancedProjectile', 'highCapacity'],
+    capacityPct: 120,
+    barrel: 'rifle',
+    stock: 'full',
+    furniture: ['modularisation'],
+    accessories: ['scope'],
+    // TODO: carbine, support, assault configurations
+  }),
+  weapon('Intruder', 'Integrated AR/breaching shotgun, Tacload Armaments', {
+    tl: 8,
+    receiver: 'longarm',
+    calibre: 'intermediateRifle',
+    mechanism: 'fullAuto',
+    features: ['bullpup', 'highCapacity', 'quickdraw'],
+    barrel: 'carbine',
+    stock: 'fixed', // TODO: does this exist? Cr +10%, Weight +10%
+    secondary: {
+      tl: 8,
+      receiver: 'assault',
+      calibre: 'standardSmoothbore',
+      barrel: 'handgun',
+      // reconcile: "Accessory: Secondary Receiver (Standard Smoothbore, Complete)" Cr+10%, Weight+10%
+      // reconcile: "Accessory: Secondary Barrel (Handgun)" Cr+20%, Weight+20%
+    },
+    accessories: ['laserPointer', 'opticalSight'],
+    // reconcile: Optical Sight: Cr500, 0.5kg
+  }),
+  weapon(
+    'Squadmate',
+    'Simple and effective rifle, Tactical Systems Incorporated',
+    {
+      tl: 7,
+      receiver: 'longarm',
+      calibre: 'battleRifle',
+      mechanism: 'semiAuto',
+      barrel: 'rifle',
+      stock: 'fixed',
+      // TODO: marksman variant - accurised, longer barrel, scope - 4.825kg, Cr1280
+    },
+  ),
+  weapon('Sentinel', 'Low-G accelerator pistol, BeraTech', {
+    tl: 9,
+    receiver: 'handgun',
+    calibre: 'heavyHandgun', // "Ammunition Type: Heavy Handgun (rocket)"
+    mechanism: 'repeater',
+    features: ['highCapacity', 'vacuum'],
+    capacityPct: 140,
+    barrel: 'handgun',
+    ammo: ['ball', 'explosive'],
+  }),
+  weapon(
+    'Shipmate Handgun',
+    'Configurable low-recoil weapon, Unified Space Industries',
+    {
+      tl: 9,
+      receiver: 'handgun',
+      calibre: 'snub',
+      mechanism: 'burst',
+      autoIncrease: 2,
+      features: ['highCapacity', 'rugged', 'vacuum'],
+      barrel: 'handgun',
+      furniture: ['modularisation'],
+      // TODO 'assault weapon' and 'carbine' variants
+    },
+  ),
   // reconcile: the Ten-Six now reproduces on cost (we get Cr170.625 vs the
   // worksheet's Cr170.25 — a ~Cr0.4 rounding difference) via the FC complete
   // multi-barrel rule. The remaining differences are all explained:
