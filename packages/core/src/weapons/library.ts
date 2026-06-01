@@ -815,8 +815,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // reconcile: "Accessory: Secondary Receiver (Standard Smoothbore, Complete)" Cr+10%, Weight+10%
       // reconcile: "Accessory: Secondary Barrel (Handgun)" Cr+20%, Weight+20%
     },
-    accessories: ['laserPointer', 'opticalSight'],
-    // reconcile: Optical Sight: Cr500, 0.5kg
+    // The worked example's "Optical Sight" (Cr500/0.5kg) is the Long-Range Scope.
+    accessories: ['laserPointer', 'longRangeScope'],
   }),
   weapon(
     'Squadmate',

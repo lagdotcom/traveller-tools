@@ -1195,18 +1195,10 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     minTL: 5,
     traits: { Scope: true },
   },
-  opticalSight: {
-    label: 'Optical Sight',
-    cost: 500,
-    weight: 0.5,
-    quickdraw: 0,
-    minTL: 5,
-    traits: { Scope: true },
-  },
   longRangeScope: {
     label: 'Long-Range Scope',
     cost: 500,
-    weight: 1,
+    weight: 0.5, // FC: Cr500 / 0.5kg
     quickdraw: 0,
     minTL: 6,
     traits: { Scope: true },

@@ -145,7 +145,6 @@ export type AccessoryId =
   | 'suppressor'
   | 'suppressorExtreme'
   | 'scope'
-  | 'opticalSight'
   | 'longRangeScope'
   | 'lowLightScope'
   | 'thermalScope'
