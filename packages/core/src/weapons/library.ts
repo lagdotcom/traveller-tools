@@ -578,6 +578,79 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       accessories: ['laserPointer'],
     },
   ),
+  weapon(
+    'Hangul Liberator',
+    'Heavy-handgun multi-barrel hold-out, partial multi-barrel (Field Catalogue worked example: Cr105 / 0.92kg).',
+    {
+      tl: 6,
+      receiver: 'handgun',
+      calibre: 'heavyHandgun',
+      mechanism: 'repeater',
+      features: ['partialMultiBarrel'],
+      barrel: 'minimal',
+      additionalBarrels: 3,
+      stock: 'none',
+    },
+  ),
+  // reconcile: the Ten-Six only partially reproduces — its receiver subtotal
+  // matches (Cr131.25) but the grand total does not (we get Cr147.98 / 0.94kg vs
+  // the worksheet's Cr170.25 / 0.928875kg, Quickdraw 10 vs 7, Lo-Pen 2 vs 3).
+  // Three known causes, none an arithmetic error:
+  //  1. Weight: the worksheet bases the handgun at 0.75kg where the FC table (and
+  //     every other example) uses 0.8kg — a book inconsistency we don't chase.
+  //  2. Cost/Quickdraw: the under-barrel smoothbore is a *complete multi-barrel*
+  //     (FC p.34: +10% of the host receiver + the barrel's own cost, −1 Quickdraw
+  //     per extra barrel). We model a secondary as a simplified 10%-of-secondary
+  //     mount instead, so its cost and Quickdraw differ.
+  //  3. Secondary profile (range 2m, Spread 4): needs the per-barrel pellet range
+  //     + Pellet Spread table, which isn't implemented yet.
+  weapon(
+    'Ten-Six',
+    'Universal Security Solutions Ten-Six snub revolver with an under-barrel single-shot smoothbore (Field Catalogue worked example; see reconcile note — only partially reproduces).',
+    {
+      tl: 9,
+      receiver: 'handgun',
+      calibre: 'snub',
+      mechanism: 'repeater',
+      features: ['advancedProjectile', 'highCapacity'],
+      barrel: 'short',
+      stock: 'none',
+      secondary: {
+        tl: 9,
+        receiver: 'handgun',
+        gauss: false,
+        calibre: 'lightSmoothbore',
+        mechanism: 'singleShot',
+        autoIncrease: 0,
+        features: [],
+        barrel: 'short',
+        heavyBarrel: false,
+        additionalBarrels: 0,
+        stock: 'none',
+        furniture: [],
+        feed: 'standard',
+        capacityPct: 100,
+        accessories: [],
+        ammo: 'pellet',
+      },
+    },
+  ),
+  // No FC worksheet was supplied for the Jazail — it's a representative archaic
+  // black-powder longarm composed from the verified calibre/receiver tables (a
+  // derived design, not a worksheet oracle).
+  weapon(
+    'Jazail',
+    'Long-barrelled archaic black-powder rifle (representative build; no FC worksheet).',
+    {
+      tl: 3,
+      receiver: 'longarm',
+      calibre: 'archaicRifle',
+      mechanism: 'singleShot',
+      barrel: 'long',
+      stock: 'full',
+      ammo: 'ball',
+    },
+  ),
   energyWeapon(
     'Laser Carbine',
     'TL10 Small (Light) laser carbine, powerpack-fed (Field Catalogue energy weapon).',
