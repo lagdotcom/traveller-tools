@@ -868,7 +868,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   // range / Pellet Spread tables.
   weapon(
     'Ten-Six',
-    'Universal Security Solutions snub revolver with an under-barrel smoothbore (FC worked example).',
+    'snub revolver with an under-barrel smoothbore, Universal Security Solutions',
     {
       tl: 9,
       receiver: 'handgun',
@@ -897,10 +897,70 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       },
     },
   ),
-  // TODO: Guardian
-  // TODO: Solo
-  // TODO: Reliant
-  // TODO: Jimpy-G
+  weapon('Guardian', '100m heavy accelerator weapon, BeraTech', {
+    tl: 9,
+    receiver: 'lsw',
+    calibre: 'heavyRifle', // Heavy Rifle (Rocket)
+    mechanism: 'fullAuto',
+    features: ['vacuum'],
+    barrel: 'long',
+    stock: 'full',
+    accessories: ['laserPointer'], // book error: says 'Scope', but Cr200 0.1kg
+    ammo: ['ball', 'explosive', 'heap'],
+    // reconcile: ball - 275m, 4D, 10.3kg, Cr4520, Mag 45 (Cr270), QD -4, Auto 3, Inaccurate -1, Phys Sig (normal), Zero-G
+    // reconcile: explosive - 250m, 6D, 10.3kg, Cr4520, Mag 45 (Cr1400), QD -4, Auto 3, Inaccurate -1, Phys Sig (normal), Zero-G
+    // reconcile: HEAP - 250m, 4D, 10.3kg, Cr4520, Mag 45 (Cr2300), QD -4, AP 4, Auto 3, Inaccurate -1, Phys Sig (high), Zero-G
+  }),
+  weapon(
+    'Solo',
+    'Fully-auto anti-armour sniper rifle, Diversified Military Systems',
+    {
+      tl: 14,
+      receiver: 'longarm',
+      calibre: 'enhancedGauss',
+      mechanism: 'fullAuto',
+      features: [
+        'veryCompact',
+        'rugged',
+        'lightweight',
+        'accurised',
+        'highQuality', // book error: says Cost +100%
+      ],
+      barrel: 'long',
+      stock: 'full',
+      accessories: ['holographicSight'],
+      ammo: ['ball', 'apAdvanced'],
+      // reconcile: ball mag Cr200, advanced AP mag Cr275
+      // reconcile: Quickdraw +0
+    },
+  ),
+  weapon('Reliant', 'Light starship security machine-gun, Jervaux Aerospace', {
+    tl: 9,
+    receiver: 'lsw',
+    calibre: 'intermediateRifle', // reconcile: book has no Weight adjustment here
+    mechanism: 'fullAuto',
+    features: ['advancedProjectile', 'compact'],
+    autoIncrease: 1,
+    barrel: 'carbine',
+    heavyBarrel: true, // reconcile: book says Cr773.4375, 1.701kg
+    stock: 'folding', // reconcile: book says Cr464, 0.212625kg
+    accessories: ['scope'],
+    ammo: ['ball', 'apAdvanced'],
+    // reconcile: rounds range to 280m, 3D damage (3D-1 with AAP), Mag 50 (Cr110/180 AAP)
+    // extra: pretty sure Mag 50 is a manual override, mentioned in text
+  }),
+  weapon('Jimpy-G', 'General-purpose machinegun, generic', {
+    tl: 5,
+    receiver: 'lsw',
+    calibre: 'battleRifle',
+    mechanism: 'fullAuto',
+    barrel: 'long',
+    heavyBarrel: true, // reconcile: book says Cr900, 7.5kg
+    stock: 'full',
+    furniture: ['bipod'],
+    // reconcile: Range 375m, Mag 50 (Cr50), Quickdraw +4 (???), Slow Loader 4
+    // extra: ammo seems manual, "standard length of belt weights 1.5kg, spare barrel at 7.5kg"
+  }),
   projector('MF-61', 'Individual flame weapon, Krabbine Heavy Industries', {
     tl: 9,
     structure: 'compact',
@@ -1007,8 +1067,19 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   // TODO: Interstellar Ordnance 42mm Advanced Squad Support Weapon
   // TODO: Xeirbin Components Tactical Multirole Missile System
-  // TODO: AV-7 Missile
-  // TODO: Grenade, Anti-Armour
+  /* TODO
+    AV-7 Missile (TL10)
+    Tactical, Light, Multipurpose Anti-Vehicular
+
+    Contact Mode - Range 1km, Damage 6D, 6kg, Cr12000 - AP 12, Blast 4, Smart
+    Proximity Mode - Range 1km, Damage 4D, 6kg, Cr12000 - AP 8, Blast 12, Smart
+  */
+  /*
+    Grenade, Anti-Armour (TL6)
+
+    Hand Grenade - Range 20m, Damage 4D, 0.5kg, Cr50 - AP 8, Blast 1
+    Rifle Grenade - Range 100m, Damage 4D, 0.625kg, Cr100 - AP 8, Blast 1
+  */
   // TODO: Grenade, Mini, Multi-purpose Anti-Personnel
   // TODO: Grenade, Mine Delivery
   // TODO: Grenade, Smart-RAM, Plasma

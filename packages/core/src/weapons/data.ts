@@ -1320,13 +1320,12 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
   },
   holographicSight: {
     label: 'Holographic Sight',
-    // reconcile: prose says Cr750, the Sighting Devices table says Cr500 (kept
-    // the table value the stats list gives).
-    cost: 500,
+    cost: 750, // book error: table says Cr500
     weight: 0,
     quickdraw: 0,
     minTL: 12,
     note: 'Holographic Sight: configurable holographic sighting; can use external sensor data like an ISS.',
+    traits: { Scope: true },
   },
   bayonetLug: {
     label: 'Bayonet Lug',
