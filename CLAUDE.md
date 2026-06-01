@@ -78,6 +78,14 @@ Conventions that matter:
   every built-in builds with no error-severity issues and non-negative cargo.
 - Serialization (`library.ts`): a versioned JSON envelope; `parseShip` is
   tolerant (fills defaults, drops unknowns, accepts a legacy single `weapon`).
+- **Definition metadata.** `ShipDefinition`/`WeaponDefinition` carry `name`,
+  optional `description` and optional **`manufacturer`** (round-tripped through
+  serialize/parse; shown in the library list as `Name · Maker — description`).
+  Both builders edit all three in the **save dialog** (↑/↓ between Name /
+  Manufacturer / Description, Enter saves) — deliberately not as builder form
+  sections, to avoid shifting the position-sensitive nav tests. Built-in weapons
+  pass the maker as the helper's 4th arg (`weapon(name, desc, overrides, mfr?)`);
+  ships use `ship(name, desc, overrides, mfr?)`.
 - **Provenance.** `ComponentDef.source` tags a non-base book (e.g.
   `'High Guard'`); `evaluateShip` collects these into `sources` and the sheet
   shows a "Sources" panel of the rulebooks a design needs. Orthogonal to the
