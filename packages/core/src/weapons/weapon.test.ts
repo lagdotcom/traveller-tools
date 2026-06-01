@@ -441,9 +441,9 @@ describe('validation rules', () => {
     expect(issues.some((i) => /Incompatible features/.test(i.message))).toBe(
       true,
     );
-    expect(issues.some((i) => /must have a full stock/.test(i.message))).toBe(
-      true,
-    );
+    expect(
+      issues.some((i) => /must have a fixed or full stock/.test(i.message)),
+    ).toBe(true);
   });
 
   it('flags a Low-Quality weapon with its Deficiency points', () => {

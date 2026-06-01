@@ -689,6 +689,8 @@ export interface StockDef {
 export const STOCKS: Record<StockId, StockDef> = {
   none: { label: 'No Stock', costPct: 0, weightPct: 0 },
   folding: { label: 'Folding Stock', costPct: 0.15, weightPct: 0.05 },
+  // A fixed (non-folding) stock — same +10%/+10% as a full stock.
+  fixed: { label: 'Fixed Stock', costPct: 0.1, weightPct: 0.1 },
   full: { label: 'Full Stock', costPct: 0.1, weightPct: 0.1 },
 };
 
@@ -1189,6 +1191,14 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     label: 'Scope',
     cost: 50,
     weight: 0.2,
+    quickdraw: 0,
+    minTL: 5,
+    traits: { Scope: true },
+  },
+  opticalSight: {
+    label: 'Optical Sight',
+    cost: 500,
+    weight: 0.5,
     quickdraw: 0,
     minTL: 5,
     traits: { Scope: true },

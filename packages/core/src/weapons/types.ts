@@ -88,7 +88,7 @@ export type BarrelId =
   | 'long'
   | 'veryLong';
 
-export type StockId = 'none' | 'folding' | 'full';
+export type StockId = 'none' | 'folding' | 'fixed' | 'full';
 
 /** Rapid-fire capability (beyond an ordinary Auto score). */
 export type RapidFireMode = 'none' | 'rf' | 'vrf';
@@ -145,6 +145,7 @@ export type AccessoryId =
   | 'suppressor'
   | 'suppressorExtreme'
   | 'scope'
+  | 'opticalSight'
   | 'longRangeScope'
   | 'lowLightScope'
   | 'thermalScope'

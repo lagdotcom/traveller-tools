@@ -182,9 +182,14 @@ function validate(params: FirearmParams): Issue[] {
     if (labels.length > 1)
       issues.push(error(`Incompatible features: ${labels.join(' + ')}`));
 
-  // Bullpup requires a full stock; high-capacity is incompatible with compacting.
-  if (hasFeature(params.features, 'bullpup') && params.stock !== 'full')
-    issues.push(error('A Bullpup weapon must have a full stock'));
+  // Bullpup needs a rigid stock (the feed sits in it) — fixed or full, not
+  // folding/none. High-capacity is incompatible with compacting.
+  if (
+    hasFeature(params.features, 'bullpup') &&
+    params.stock !== 'full' &&
+    params.stock !== 'fixed'
+  )
+    issues.push(error('A Bullpup weapon must have a fixed or full stock'));
   if (
     hasFeature(params.features, 'highCapacity') &&
     (hasFeature(params.features, 'compact') ||

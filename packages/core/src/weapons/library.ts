@@ -799,7 +799,19 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       tl: 8,
       receiver: 'assault',
       calibre: 'standardSmoothbore',
+      mechanism: 'repeater',
+      autoIncrease: 0,
+      rapidFire: 'none',
+      features: [],
       barrel: 'handgun',
+      heavyBarrel: false,
+      additionalBarrels: 0,
+      stock: 'none',
+      furniture: [],
+      feed: 'fixed',
+      capacityPct: 100,
+      accessories: [],
+      ammo: ['ball'],
       // reconcile: "Accessory: Secondary Receiver (Standard Smoothbore, Complete)" Cr+10%, Weight+10%
       // reconcile: "Accessory: Secondary Barrel (Handgun)" Cr+20%, Weight+20%
     },
@@ -977,7 +989,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       delivery: 'cartridge',
       features: ['lightweight', 'bullpup'],
       barrel: 'assault',
-      stock: 'full', // worksheet says "Fixed/full stock"; no distinct 'fixed' stock exists
+      stock: 'fixed', // a fixed stock (same +10%/+10% as full)
       warhead: 'fragmentation',
       // reconcile: incapacitant gas, baton, distraction, multiple projectile
     },
