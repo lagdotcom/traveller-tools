@@ -238,6 +238,14 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   deliberate fixed-column layout.)
 - `ShipSheet` sizes its name column to the terminal width (`useStdout`) and wraps
   long names.
+- **Library screens** use `LibraryBrowser` (two panes — built-ins | saved —
+  built on the presentational `FilterList`): each pane scrolls and type-filters
+  like a select field. Tab switches pane, ↑/↓ + Enter loads, **Ctrl+O** imports,
+  **Ctrl+X** deletes a saved entry, Esc clears the filter then backs out (letters
+  go to the filter, so the commands are Ctrl-keyed). The selected entry's
+  description shows on one truncated line below (so long descriptions don't bloat
+  rows). The main menu is `@inkjs/ui` `Select` with `visibleOptionCount` for
+  scrolling.
 - The builder is sectioned (Tab between sections, ↑/↓ within). Several real-Ink
   tests (`ship-builder.test.tsx`) count Tabs/Enters to reach a section/field —
   **adding fields/sections shifts those counts**, so update the tests. Tab-based

@@ -856,20 +856,15 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // TODO 'assault weapon' and 'carbine' variants
     },
   ),
-  // reconcile: the Ten-Six now reproduces on cost (we get Cr170.625 vs the
-  // worksheet's Cr170.25 — a ~Cr0.4 rounding difference) via the FC complete
-  // multi-barrel rule. The remaining differences are all explained:
-  //  1. Weight (0.99 vs 0.928875kg): the worksheet bases the handgun at 0.75kg
-  //     where the FC table (and every other example) uses 0.8kg — a book
-  //     inconsistency we don't chase. At 0.75kg the weight matches to the gram.
-  //  2. Quickdraw (9 vs 7): unresolved; the worksheet shows more Quickdraw loss
-  //     than the rules text accounts for. (Primary Lo-Pen 3 now reproduces via
-  //     the Final Penetration table.)
-  //  3. Secondary profile range (2m): needs the per-barrel pellet *range* rule
-  //     (the Pellet Spread table is now implemented).
+  // reconcile: cost matches (Cr170.625 vs the worksheet's Cr170.25, ~Cr0.4 of
+  // rounding) and the primary damage/Lo-Pen reproduce. Still off: weight (0.99 vs
+  // 0.928875kg — the worksheet bases the handgun at 0.75kg, the FC table at 0.8kg)
+  // and Quickdraw (9 vs 7). The secondary's pellet profile (range, Spread, damage)
+  // isn't reproduced: the worksheet's smoothbore figures don't follow the pellet
+  // range / Pellet Spread tables.
   weapon(
     'Ten-Six',
-    'Universal Security Solutions Ten-Six snub revolver with an under-barrel single-shot smoothbore (FC worked example; see reconcile note — only partially reproduces).',
+    'Universal Security Solutions snub revolver with an under-barrel smoothbore (FC worked example).',
     {
       tl: 9,
       receiver: 'handgun',

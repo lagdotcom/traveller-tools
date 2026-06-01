@@ -4,16 +4,12 @@ import {
   type WeaponDefinition,
 } from '@traveller-tools/core';
 import { Box, Text, useInput } from 'ink';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Field } from '../components/Field.js';
+import { LibraryBrowser } from '../components/LibraryBrowser.js';
 import { useFiles } from '../files.js';
 import { useWeaponStore } from '../storage.js';
-
-interface Entry {
-  def: WeaponDefinition;
-  saved: boolean;
-}
 
 /** Catalogue of the built-in (worked-example) weapons + your saved designs. */
 export function WeaponLibraryScreen({
@@ -26,19 +22,15 @@ export function WeaponLibraryScreen({
   const files = useFiles();
   const store = useWeaponStore();
   const [savedVersion, setSavedVersion] = useState(0); // bump to re-read store
-  const [active, setActive] = useState(0);
   const [mode, setMode] = useState<'list' | 'import'>('list');
   const [importBuffer, setImportBuffer] = useState('');
   const [message, setMessage] = useState('');
 
-  const builtinCount = BUILTIN_WEAPONS.length;
-  const entries = useMemo<Entry[]>(() => {
-    const builtins = BUILTIN_WEAPONS.map((def) => ({ def, saved: false }));
-    const saved = store.list().map((def) => ({ def, saved: true }));
-    return [...builtins, ...saved];
+  const saved = React.useMemo(
+    () => store.list(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, savedVersion]);
-  const safeActive = Math.max(0, Math.min(active, entries.length - 1));
+    [store, savedVersion],
+  );
 
   const loadFromText = (text: string | null) => {
     if (text == null) {
@@ -75,118 +67,67 @@ export function WeaponLibraryScreen({
     else loadFromText(text);
   };
 
-  useInput((input, key) => {
-    if (mode === 'import') {
-      if (key.escape) setMode('list');
-      return;
-    }
-    if (key.escape) return onBack();
-    if (key.upArrow) setActive((i) => Math.max(0, i - 1));
-    else if (key.downArrow)
-      setActive((i) => Math.min(entries.length - 1, i + 1));
-    else if (key.return) {
-      const entry = entries[safeActive];
-      if (entry) onLoad(entry.def);
-    } else if (input === 'i') startImport();
-    else if (input === 'd') {
-      const entry = entries[safeActive];
-      if (entry?.saved) {
-        store.remove(entry.def.name);
-        setSavedVersion((v) => v + 1);
-        setActive((i) => Math.max(0, i - 1));
-        setMessage(`Deleted “${entry.def.name}”.`);
-      }
-    }
-  });
-
   if (mode === 'import') {
     return (
-      <Box flexDirection="column">
-        <Text bold color="yellow">
-          Import Weapon
-        </Text>
-        <Box marginTop={1} flexDirection="column">
-          <Field
-            label="File path"
-            value={importBuffer}
-            isActive
-            onChange={setImportBuffer}
-            onSubmit={doImport}
-          />
-          <Text dimColor>Enter to load · Esc to cancel</Text>
-        </Box>
-      </Box>
+      <ImportPrompt
+        buffer={importBuffer}
+        onChange={setImportBuffer}
+        onSubmit={doImport}
+        onCancel={() => setMode('list')}
+      />
     );
   }
 
   return (
-    <Box flexDirection="column">
-      <Text bold color="yellow">
-        Weapon Library
-      </Text>
-      <Box flexDirection="column" marginTop={1}>
-        <Text bold color="cyan">
-          Field Catalogue examples
-        </Text>
-        {entries.slice(0, builtinCount).map((entry, i) => (
-          <LibraryRow
-            key={`b-${entry.def.name}`}
-            entry={entry}
-            active={i === safeActive}
-          />
-        ))}
-
-        <Box marginTop={1}>
-          <Text bold color="cyan">
-            Saved
-          </Text>
-        </Box>
-        {entries.length === builtinCount ? (
-          <Text dimColor> (none yet — build a weapon and press Ctrl+S)</Text>
-        ) : (
-          entries
-            .slice(builtinCount)
-            .map((entry, i) => (
-              <LibraryRow
-                key={`s-${entry.def.name}`}
-                entry={entry}
-                active={builtinCount + i === safeActive}
-              />
-            ))
-        )}
-      </Box>
-
-      {message ? (
-        <Box marginTop={1}>
-          <Text color="green">{message}</Text>
-        </Box>
-      ) : null}
-
-      <Box marginTop={1}>
-        <Text dimColor>
-          ↑/↓ select · Enter load · i import · d delete (saved) · Esc menu
-        </Text>
-      </Box>
-    </Box>
+    <LibraryBrowser<WeaponDefinition>
+      title="Weapon Library"
+      builtinTitle="Field Catalogue"
+      builtins={BUILTIN_WEAPONS}
+      saved={saved}
+      savedEmpty="(none — build one and Ctrl+S)"
+      message={message}
+      onLoad={onLoad}
+      onImport={startImport}
+      onDelete={(def) => {
+        store.remove(def.name);
+        setSavedVersion((v) => v + 1);
+        setMessage(`Deleted “${def.name}”.`);
+      }}
+      onBack={onBack}
+    />
   );
 }
 
-function LibraryRow({
-  entry,
-  active,
+/** A file-path prompt for terminals without a native file picker. */
+function ImportPrompt({
+  buffer,
+  onChange,
+  onSubmit,
+  onCancel,
 }: {
-  entry: Entry;
-  active: boolean;
+  buffer: string;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
 }): React.JSX.Element {
+  useInput((_input, key) => {
+    if (key.escape) onCancel();
+  });
   return (
-    <Box>
-      <Text color={active ? 'cyan' : undefined} bold={active}>
-        {active ? '› ' : '  '}
-        {entry.def.name}
+    <Box flexDirection="column">
+      <Text bold color="yellow">
+        Import Weapon
       </Text>
-      {entry.def.description ? (
-        <Text dimColor> — {entry.def.description}</Text>
-      ) : null}
+      <Box marginTop={1} flexDirection="column">
+        <Field
+          label="File path"
+          value={buffer}
+          isActive
+          onChange={onChange}
+          onSubmit={onSubmit}
+        />
+        <Text dimColor>Enter to load · Esc to cancel</Text>
+      </Box>
     </Box>
   );
 }

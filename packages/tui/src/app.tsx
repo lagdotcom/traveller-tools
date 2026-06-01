@@ -100,6 +100,7 @@ export function App(): React.JSX.Element {
         <Text>Select a tool:</Text>
       </Box>
       <Select
+        visibleOptionCount={8}
         options={[
           { label: 'Jump & Fuel calculator', value: 'jump' },
           { label: 'Travel time (velocity) calculator', value: 'travel' },
