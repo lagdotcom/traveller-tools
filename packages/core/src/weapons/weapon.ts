@@ -104,10 +104,9 @@ function validate(params: FirearmParams): Issue[] {
   const tl = params.tl;
   const calibre = CALIBRES[params.calibre];
 
-  // Gauss rounds force a gauss receiver, and vice-versa is illegal.
-  if (calibre.gauss && !params.gauss)
-    issues.push(error(`${calibre.label} requires a gauss receiver`));
-  if (params.gauss && tl < 12) issues.push(error('Gauss weapons require TL12'));
+  // Gauss is implied by the calibre; gauss weapons are TL12+.
+  if (calibre.gauss && tl < 12)
+    issues.push(error('Gauss weapons require TL12'));
 
   // Calibre ↔ receiver minimums (anti-materiel needs an LSW; heavy AM a Heavy).
   if (calibre.minReceiver) {
@@ -259,7 +258,7 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
   const step = (label: string, cost: number, weight = 1) => {
     if (cost !== 1 || weight !== 1) chain.push({ label, cost, weight });
   };
-  if (params.gauss) step('Gauss', GAUSS_COST_MULT, GAUSS_WEIGHT_MULT);
+  if (calibre.gauss) step('Gauss', GAUSS_COST_MULT, GAUSS_WEIGHT_MULT);
   step(mechanism.label, mechanism.costMult);
   step(calibre.label, calibre.receiverCostMult, calibre.receiverWeightMult);
   for (const f of features) step(f.label, f.costMult, f.weightMult);
@@ -297,7 +296,7 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
   } else {
     capacity =
       receiver.baseCapacity * calibre.capacityMult * mechanism.capacityMult;
-    if (params.gauss) capacity *= GAUSS_CAPACITY_MULT;
+    if (calibre.gauss) capacity *= GAUSS_CAPACITY_MULT;
     for (const f of features) capacity *= f.capacityMult;
   }
   // Single-shot weapons hold one round per barrel; otherwise scale by capacity %.
@@ -538,7 +537,7 @@ function firearmProfile(
   // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,
   // less any Recoil Compensation.
   let recoil = calibre.damage.dice + auto + RECOIL_CLASS_MOD[params.receiver];
-  if (params.gauss) recoil -= 1;
+  if (calibre.gauss) recoil -= 1;
   if (calibre.traits['Zero-G']) recoil -= 2;
   recoil += featureRecoilMod;
   recoil = Math.max(0, recoil);

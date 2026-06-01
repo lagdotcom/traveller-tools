@@ -773,6 +773,15 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 2,
+      group: 'layout',
+    },
+    semiBullpup: {
+      label: 'Semi-Bullpup',
+      costMult: 1.2,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 2,
+      group: 'layout',
     },
     compact: {
       label: 'Compact',

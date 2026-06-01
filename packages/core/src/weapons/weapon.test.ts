@@ -266,16 +266,26 @@ describe('secondary weapon', () => {
 });
 
 describe('validation rules', () => {
-  it('flags a gauss round in a non-gauss receiver', () => {
-    const issues = evaluateWeapon({
+  it('implies gauss from the calibre and gates it at TL12', () => {
+    // A gauss calibre below TL12 is flagged...
+    const low = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
+      receiver: 'assault',
       calibre: 'standardGauss',
-      gauss: false,
-      tl: 12,
-    }).issues;
+      tl: 10,
+    });
     expect(
-      issues.some((i) => /requires a gauss receiver/.test(i.message)),
+      low.issues.some((i) => /Gauss weapons require TL12/.test(i.message)),
     ).toBe(true);
+    // ...and the gauss ×2 cost modifier is applied automatically (no separate flag).
+    const ok = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      receiver: 'assault',
+      calibre: 'standardGauss',
+      tl: 13,
+    });
+    expect(ok.breakdown.some((l) => l.label === 'Gauss')).toBe(true);
+    expect(ok.issues.filter((i) => i.severity === 'error')).toEqual([]);
   });
 
   it('flags anti-materiel below a light support weapon', () => {

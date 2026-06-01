@@ -155,7 +155,6 @@ const barrelStockValues = (p: FirearmParams | EnergyParams) => ({
 
 const firearmValues = (f: FirearmParams) => ({
   receiver: RECEIVER.toLabel(f.receiver),
-  gauss: f.gauss ? 'yes' : 'no',
   calibre: CALIBRE.toLabel(f.calibre),
   mechanism: MECHANISM.toLabel(f.mechanism),
   autoIncrease: String(f.autoIncrease),
@@ -246,7 +245,6 @@ function buildSecondary(v: FormValues): SecondaryWeaponParams {
   return {
     tl: num(v.tl, 0),
     receiver: RECEIVER.toId(v.secReceiver),
-    gauss: false,
     calibre: CALIBRE.toId(v.secCalibre),
     mechanism: MECHANISM.toId(v.secMechanism),
     autoIncrease: 0,
@@ -268,7 +266,6 @@ function buildFirearm(v: FormValues, lists: Lists): FirearmParams {
     kind: 'firearm',
     tl: num(v.tl, 0),
     receiver: RECEIVER.toId(v.receiver),
-    gauss: v.gauss === 'yes',
     calibre: CALIBRE.toId(v.calibre),
     mechanism: MECHANISM.toId(v.mechanism),
     autoIncrease: num(v.autoIncrease),
@@ -499,7 +496,6 @@ export function WeaponBuilderScreen({
         // The FC picks the ammunition (calibre) before the receiver.
         { key: 'calibre', label: 'Calibre / ammo', options: CALIBRE.labels },
         { key: 'receiver', label: 'Receiver', options: RECEIVER.labels },
-        { key: 'gauss', label: 'Gauss', options: YN },
       ],
     },
     {

@@ -124,6 +124,9 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   (damage with the "running out of dice" rule, range, Auto, recoil, quickdraw,
   penetration→Lo-Pen, signature, traits) happens alongside; loaded ammo modifies
   the **profile only**, not the build cost.
+- **Gauss is implied by the calibre** (no separate `gauss` field): the gauss
+  calibres carry a `gauss` flag, and `calibre.gauss` triggers the gauss ×2 cost /
+  ×1.25 weight / ×3 capacity modifier and the TL12 gate.
 - **All numbers come from the Field Catalogue** (`source: 'Field Catalogue'`). The
   user supplied **eight worked worksheets**, shipped as `BUILTIN_WEAPONS` and used
   as the test oracle. Six use the rules-text base values (seeded); the two early
@@ -185,8 +188,10 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   depth" loop on a real TTY. `Field` and `ChoiceField` use a **stable
   `useCallback` handler that reads latest props from a ref**; `useForm` returns
   **stable per-field setters**. Preserve this pattern.
-- `ChoiceField` sorts + filters its options and shows a short scrolling window
-  (don't reintroduce a single wrapping row).
+- `ChoiceField` sorts + filters its options and shows a scrolling **grid** —
+  packing as many options per line as the terminal width allows (`useStdout`),
+  snapped to whole rows. (Don't reintroduce a single wrapping row; the grid is a
+  deliberate fixed-column layout.)
 - `ShipSheet` sizes its name column to the terminal width (`useStdout`) and wraps
   long names.
 - The builder is sectioned (Tab between sections, ↑/↓ within). Several real-Ink

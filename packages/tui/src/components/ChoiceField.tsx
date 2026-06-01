@@ -1,5 +1,13 @@
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, useStdout } from 'ink';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+/** Split a list into chunks of at most `size`. */
+function chunk<T>(items: T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += size)
+    rows.push(items.slice(i, i + size));
+  return rows;
+}
 
 export interface ChoiceFieldProps {
   label: string;
@@ -80,26 +88,40 @@ export function ChoiceField(props: ChoiceFieldProps): React.JSX.Element {
   }, []);
   useInput(handle, { isActive });
 
-  // Short, vertical, scrolling window of the (filtered) options around the
-  // current one — a single horizontal row wraps badly with many/long choices.
-  const WINDOW = 6;
+  // Scrolling window of the (filtered) options around the current one, laid out
+  // as a grid: pack as many options per line as the terminal width allows (a
+  // single wrapping row wraps badly; one-per-line wastes space with many short
+  // choices), keeping a few rows visible.
+  const { stdout } = useStdout();
+  const INDENT = 24;
+  const ROWS = 4;
   const list = filterOptions(query, options);
+  // Column width fits the longest visible option + the "› " marker + a gap.
+  const longest = list.reduce((m, o) => Math.max(m, o.length), 0);
+  const cellWidth = Math.min(40, longest + 2) + 2;
+  const avail = Math.max(1, (stdout?.columns ?? 80) - INDENT - 1);
+  const columns = Math.max(1, Math.floor(avail / cellWidth));
+  const window = columns * ROWS;
+
   const currentIndex = Math.max(0, list.indexOf(value));
-  const start = Math.max(
+  // Snap the window to whole rows so the grid doesn't jitter as you scroll.
+  const currentRow = Math.floor(currentIndex / columns);
+  const startRow = Math.max(
     0,
     Math.min(
-      currentIndex - Math.floor(WINDOW / 2),
-      Math.max(0, list.length - WINDOW),
+      currentRow - Math.floor(ROWS / 2),
+      Math.max(0, Math.ceil(list.length / columns) - ROWS),
     ),
   );
-  const visible = list.slice(start, start + WINDOW);
+  const start = startRow * columns;
+  const visible = list.slice(start, start + window);
   const hiddenAbove = start;
   const hiddenBelow = list.length - (start + visible.length);
 
   return (
     <Box flexDirection="column">
       <Box>
-        <Box width={24}>
+        <Box width={INDENT}>
           <Text color={isActive ? 'cyan' : 'gray'}>
             {isActive ? '› ' : '  '}
             {label}
@@ -113,19 +135,23 @@ export function ChoiceField(props: ChoiceFieldProps): React.JSX.Element {
         </Box>
       </Box>
       {isActive && (
-        <Box marginLeft={24} flexDirection="column">
+        <Box marginLeft={INDENT} flexDirection="column">
           {list.length === 0 && <Text dimColor>(no matches)</Text>}
           {hiddenAbove > 0 && <Text dimColor>↑ {hiddenAbove} more</Text>}
-          {visible.map((option) => (
-            <Box key={option} width={40}>
-              <Text
-                color={option === value ? 'cyan' : undefined}
-                dimColor={option !== value}
-                wrap="truncate-end"
-              >
-                {option === value ? '› ' : '  '}
-                {option}
-              </Text>
+          {chunk(visible, columns).map((row, i) => (
+            <Box key={start + i * columns} flexDirection="row">
+              {row.map((option) => (
+                <Box key={option} width={cellWidth}>
+                  <Text
+                    color={option === value ? 'cyan' : undefined}
+                    dimColor={option !== value}
+                    wrap="truncate-end"
+                  >
+                    {option === value ? '› ' : '  '}
+                    {option}
+                  </Text>
+                </Box>
+              ))}
             </Box>
           ))}
           {hiddenBelow > 0 && <Text dimColor>↓ {hiddenBelow} more</Text>}

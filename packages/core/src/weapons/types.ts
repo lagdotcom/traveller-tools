@@ -97,6 +97,7 @@ export type ReceiverFeatureId =
   | 'advancedProjectile'
   | 'accurised'
   | 'bullpup'
+  | 'semiBullpup'
   | 'compact'
   | 'veryCompact'
   | 'coolingBasic'
@@ -296,8 +297,11 @@ export interface FirearmParams {
   /** Tech level the weapon is built at (gates components, sets some traits). */
   tl: number;
   receiver: ReceiverTypeId;
-  /** Electromagnetic (gauss) receiver modifier (×2 cost / ×1.25 weight). */
-  gauss: boolean;
+  /**
+   * The calibre. Gauss is implied by the calibre (the gauss calibres carry a
+   * `gauss` flag) rather than being a separate field — a gauss receiver can only
+   * fire gauss projectiles and vice-versa.
+   */
   calibre: CalibreId;
   mechanism: MechanismId;
   /** Extra Auto bought on a burst/full-auto receiver (Increased Auto table). */

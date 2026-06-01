@@ -85,7 +85,6 @@ export const DEFAULT_WEAPON_PARAMS: FirearmParams = {
   kind: 'firearm',
   tl: 8,
   receiver: 'longarm',
-  gauss: false,
   calibre: 'intermediateRifle',
   mechanism: 'semiAuto',
   autoIncrease: 0,
@@ -197,7 +196,6 @@ function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
     kind: 'firearm',
     tl: num(p.tl, d.tl),
     receiver: pick<ReceiverTypeId>(p.receiver, RECEIVERS, d.receiver),
-    gauss: bool(p.gauss, d.gauss),
     calibre: pick<CalibreId>(p.calibre, CALIBRES, d.calibre),
     mechanism: pick<MechanismId>(p.mechanism, MECHANISMS, d.mechanism),
     autoIncrease: num(p.autoIncrease, d.autoIncrease),
@@ -226,7 +224,6 @@ function normalizeSecondaryParams(
   return {
     tl: f.tl,
     receiver: f.receiver,
-    gauss: f.gauss,
     calibre: f.calibre,
     mechanism: f.mechanism,
     autoIncrease: f.autoIncrease,
@@ -529,7 +526,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   weapon('GA-100', 'Gauss-shotgun bullpup assault weapon, Anhur Industries', {
     tl: 13,
     receiver: 'assault',
-    gauss: true,
     calibre: 'gaussShotgun',
     mechanism: 'fullAuto',
     features: ['bullpup', 'quickdraw', 'highCapacity'],
@@ -541,7 +537,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   weapon('GC-24', 'Gauss handgun, Anhur Industries', {
     tl: 13,
     receiver: 'handgun',
-    gauss: true,
     calibre: 'smallGauss',
     mechanism: 'burst',
     features: ['veryCompact', 'lightweight'],
@@ -553,7 +548,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   weapon('GS-40', 'Gauss sidearm, Anhur Industries', {
     tl: 13,
     receiver: 'handgun',
-    gauss: true,
     calibre: 'smallGauss',
     mechanism: 'burst',
     barrel: 'handgun',
@@ -670,7 +664,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   weapon('IAW-12', 'Infantry Assault Weapon, Interstellar Ordnance', {
     tl: 12,
     receiver: 'assault',
-    gauss: true,
     calibre: 'smallGauss',
     mechanism: 'fullAuto',
     features: ['quickdraw', 'highCapacity'],
@@ -708,7 +701,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   weapon('GR-80', 'Gauss rifle, Anhur Industries', {
     tl: 13,
     receiver: 'longarm',
-    gauss: true,
     calibre: 'standardGauss',
     mechanism: 'fullAuto',
     features: ['bullpup'],
@@ -743,7 +735,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       secondary: {
         tl: 9,
         receiver: 'handgun',
-        gauss: false,
         calibre: 'lightSmoothbore',
         mechanism: 'singleShot',
         autoIncrease: 0,
