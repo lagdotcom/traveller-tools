@@ -129,8 +129,15 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   ×1.25 weight / ×3 capacity modifier and the TL12 gate. Gauss calibres carry base
   **Penetration +2** (intrinsic AP) which the Final Penetration table turns into an
   AP trait.
+- **Rapid-Fire / VRF** (`RAPID_FIRE` in `data.ts`, `params.rapidFire`): RF (needs
+  Auto ≥4) multiplies receiver cost ×(Auto+2) / weight ×2, adds +1 die per 3 base
+  dice, AP = base dice, Bulky; VRF (Auto ≥6) is ×5/×5, +1 die per 2 base dice,
+  Very Bulky. Both feed the Heat rate (×2 / ×3 on the base dice). The AP is granted
+  flat (max'd with any penetration-table AP). Validation flags an Auto score below
+  the threshold.
 - **Weapon Heat** (FC heating table, `RECEIVER_HEAT` in `data.ts`): an autofiring
-  firearm generates `damage dice + Auto` Heat per round; it dissipates per idle
+  firearm generates `(base dice × heat multiplier) + Auto` Heat per round (the
+  multiplier is 1 / 2 / 3 for auto / RF / VRF); it dissipates per idle
   round by receiver class + a heavy barrel (+2) + extra barrels (+1 each) + a
   cooling system (`ReceiverFeatureDef.heatDissipation`: basic 2 / advanced 5). The
   profile carries `heat` / `heatDissipation` / `heatThreshold` (overheat). The

@@ -20,6 +20,7 @@ import {
   INCREASED_AUTO,
   MECHANISMS,
   PELLET_SPREAD,
+  RAPID_FIRE,
   RECEIVER_HEAT,
   RECEIVERS,
   RECOIL_CLASS_MOD,
@@ -126,12 +127,25 @@ function validate(params: FirearmParams): Issue[] {
   }
 
   // Increased Auto only on burst/full-auto receivers.
-  if (params.autoIncrease > 0 && MECHANISMS[params.mechanism].auto === 0)
+  const mechAuto = MECHANISMS[params.mechanism].auto;
+  if (params.autoIncrease > 0 && mechAuto === 0)
     issues.push(
       error(
         'Increased Rate of Fire needs a burst-capable or fully-automatic mechanism',
       ),
     );
+
+  // RF/VRF need a high Auto score (RF ≥4, VRF ≥6).
+  if (params.rapidFire === 'rf' || params.rapidFire === 'vrf') {
+    const rf = RAPID_FIRE[params.rapidFire];
+    const auto = mechAuto > 0 ? mechAuto + Math.max(0, params.autoIncrease) : 0;
+    if (auto < rf.minAuto)
+      issues.push(
+        error(
+          `${rf.label} needs Auto ${rf.minAuto}+ (this build has Auto ${auto})`,
+        ),
+      );
+  }
 
   // Mutually-exclusive feature groups (size, weight, cooling, stealth, quality…).
   const groups = new Map<string, string[]>();
@@ -218,17 +232,24 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
 /** The catalogue rows + derived counts a firearm build is assembled from. */
 function resolveParts(params: FirearmParams) {
   const autoSteps = Math.max(0, Math.min(6, Math.floor(params.autoIncrease)));
+  const mechanism = MECHANISMS[params.mechanism] ?? MECHANISMS.semiAuto;
+  const auto = mechanism.auto > 0 ? mechanism.auto + autoSteps : 0;
   return {
     receiver: RECEIVERS[params.receiver] ?? RECEIVERS.handgun,
     calibre: CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun,
-    mechanism: MECHANISMS[params.mechanism] ?? MECHANISMS.semiAuto,
+    mechanism,
     barrel: BARRELS[params.barrel] ?? BARRELS.rifle,
     stock: STOCKS[params.stock] ?? STOCKS.none,
     feed: FEEDS[params.feed] ?? FEEDS.standard,
     ammo: AMMO_TYPES[params.ammo] ?? AMMO_TYPES.ball,
     features: resolveFeatures(params.features),
     autoSteps,
+    auto,
     incAuto: INCREASED_AUTO[autoSteps],
+    rapidFire:
+      params.rapidFire === 'rf' || params.rapidFire === 'vrf'
+        ? RAPID_FIRE[params.rapidFire]
+        : undefined,
     capPct: Number.isFinite(params.capacityPct) ? params.capacityPct : 100,
     extraBarrels: Math.max(0, Math.floor(params.additionalBarrels)),
   };
@@ -253,6 +274,7 @@ interface ReceiverBuild {
 function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
   const { receiver, calibre, mechanism, features, autoSteps, incAuto, capPct } =
     parts;
+  const { auto, rapidFire } = parts;
   const capPctSteps = (capPct - 100) / 10;
   const costCapMult =
     capPct >= 100 ? 1 + 0.1 * capPctSteps : 1 + 0.05 * capPctSteps;
@@ -268,6 +290,13 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
   for (const f of features) step(f.label, f.costMult, f.weightMult);
   if (autoSteps > 0)
     step(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight);
+  // RF cost = ×(Auto + 2); VRF cost = ×5. Both multiply the receiver weight.
+  if (rapidFire)
+    step(
+      rapidFire.label,
+      rapidFire.minAuto === 4 ? auto + 2 : 5,
+      rapidFire.weightMult,
+    );
   if (capPct !== 100) step(`Capacity ${capPct}%`, costCapMult, weightCapMult);
 
   const lines: WeaponLineItem[] = [
@@ -455,8 +484,8 @@ function firearmProfile(
   parts: Parts,
   recv: ReceiverBuild,
 ): { profile: WeaponProfile; magazineCr: number } {
-  const { receiver, calibre, mechanism, barrel, feed, ammo, features } = parts;
-  const { autoSteps, extraBarrels } = parts;
+  const { receiver, calibre, barrel, feed, ammo, features } = parts;
+  const { auto, extraBarrels, rapidFire } = parts;
 
   let damage: Damage = { ...calibre.damage };
   const traits: Traits = { ...calibre.traits };
@@ -471,8 +500,6 @@ function firearmProfile(
       mod: damage.mod - Math.floor(calibre.damage.dice / 2),
     };
 
-  // Auto / RF.
-  const auto = mechanism.auto > 0 ? mechanism.auto + autoSteps : 0;
   if (auto > 0) traits.Auto = auto;
 
   // Range: ball range × any feature range bonus (e.g. Advanced Projectile +25%)
@@ -547,6 +574,20 @@ function firearmProfile(
   else delete traits['AP'];
   if (pen.damageMod) damage = { ...damage, mod: damage.mod + pen.damageMod };
 
+  // Rapid-Fire / VRF: an extra die per N base dice, an AP score equal to the base
+  // dice (before the RF bonus), and the Bulky/Very-Bulky trait. `heatDice` (the
+  // pre-bonus dice) drives the Heat rate below.
+  const heatDice = damage.dice;
+  if (rapidFire) {
+    damage = {
+      ...damage,
+      dice: heatDice + Math.floor(heatDice / rapidFire.dicePer),
+    };
+    const baseAp = typeof traits.AP === 'number' ? traits.AP : 0;
+    traits.AP = Math.max(baseAp, heatDice);
+    traits[rapidFire.trait] = true;
+  }
+
   // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,
   // less any Recoil Compensation.
   let recoil = calibre.damage.dice + auto + RECOIL_CLASS_MOD[params.receiver];
@@ -564,11 +605,13 @@ function firearmProfile(
       100,
   );
 
-  // Heat: an autofiring weapon generates (damage dice + Auto) Heat per round.
-  // It dissipates by receiver class + a heavy barrel (+2) + extra barrels (+1
-  // each) + any cooling system; at/above the receiver's threshold, firing risks
-  // a malfunction.
-  const heatGen = auto > 0 ? damage.dice + auto : 0;
+  // Heat: an autofiring weapon generates (heat-dice × multiplier + Auto) per
+  // round — the multiplier is 1 normally, 2 for RF, 3 for VRF, off the *base*
+  // dice (before the RF damage bonus). It dissipates by receiver class + a heavy
+  // barrel (+2) + extra barrels (+1 each) + any cooling system; at/above the
+  // receiver's threshold, firing risks a malfunction.
+  const heatMult = rapidFire ? rapidFire.heatDicePerDie : 1;
+  const heatGen = auto > 0 ? heatMult * heatDice + auto : 0;
   const heatRow = RECEIVER_HEAT[params.receiver];
   const coolingDissipation = features.reduce(
     (h, f) => h + (f.heatDissipation ?? 0),

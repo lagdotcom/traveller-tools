@@ -134,6 +134,41 @@ export const MECHANISMS: Record<MechanismId, MechanismDef> = {
   },
 };
 
+/**
+ * Rapid-Fire / Very-Rapid-Fire capability (FC). RF needs Auto ≥4, VRF Auto ≥6.
+ * `costMult` for RF is the Auto score +2 (computed at evaluation); weight is a
+ * flat receiver multiplier. Each adds extra damage dice (per N base dice), an AP
+ * score equal to the base dice, a Bulky/Very-Bulky trait, and a Heat multiplier
+ * on the damage dice (Heat/round = Auto + heatDicePerDie × base dice).
+ */
+export interface RapidFireDef {
+  label: string;
+  minAuto: number;
+  weightMult: number;
+  /** +1 damage die per this many full base dice. */
+  dicePer: number;
+  heatDicePerDie: number;
+  trait: string;
+}
+export const RAPID_FIRE: Record<'rf' | 'vrf', RapidFireDef> = {
+  rf: {
+    label: 'Rapid-Fire',
+    minAuto: 4,
+    weightMult: 2,
+    dicePer: 3,
+    heatDicePerDie: 2,
+    trait: 'Bulky',
+  },
+  vrf: {
+    label: 'Very Rapid-Fire',
+    minAuto: 6,
+    weightMult: 5,
+    dicePer: 2,
+    heatDicePerDie: 3,
+    trait: 'Very Bulky',
+  },
+};
+
 /** Increased Auto Rate table: extra cost/weight per point of Auto added. */
 export const INCREASED_AUTO: Array<{ cost: number; weight: number }> = [
   { cost: 1, weight: 1 }, // +0 (no increase)

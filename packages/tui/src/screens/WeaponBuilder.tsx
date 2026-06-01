@@ -44,6 +44,7 @@ import {
   type ProjectorParams,
   type ProjectorPropellantId,
   type ProjectorStructureId,
+  type RapidFireMode,
   RECEIVER_FEATURES,
   type ReceiverFeatureId,
   type ReceiverFeatureRef,
@@ -148,6 +149,11 @@ const DELIVERY = choiceMap<DeliveryId>([
   ['ram', 'RAM'],
   ['rpg', 'RPG'],
 ]);
+const RAPIDFIRE = choiceMap<RapidFireMode>([
+  ['none', 'None'],
+  ['rf', 'Rapid-Fire (RF)'],
+  ['vrf', 'Very Rapid-Fire (VRF)'],
+]);
 const EWTYPE = choiceMap<EnergyWeaponTypeId>([
   ['laser', 'Laser'],
   ['microwave', 'Microwave'],
@@ -177,6 +183,7 @@ const firearmValues = (f: FirearmParams) => ({
   calibre: CALIBRE.toLabel(f.calibre),
   mechanism: MECHANISM.toLabel(f.mechanism),
   autoIncrease: String(f.autoIncrease),
+  rapidFire: RAPIDFIRE.toLabel(f.rapidFire),
   additionalBarrels: String(f.additionalBarrels),
   feed: FEED.toLabel(f.feed),
   capacityPct: String(f.capacityPct),
@@ -265,6 +272,7 @@ function buildSecondary(v: FormValues): SecondaryWeaponParams {
     calibre: CALIBRE.toId(v.secCalibre),
     mechanism: MECHANISM.toId(v.secMechanism),
     autoIncrease: 0,
+    rapidFire: 'none',
     features: [],
     barrel: BARREL.toId(v.secBarrel),
     heavyBarrel: false,
@@ -286,6 +294,7 @@ function buildFirearm(v: FormValues, lists: Lists): FirearmParams {
     calibre: CALIBRE.toId(v.calibre),
     mechanism: MECHANISM.toId(v.mechanism),
     autoIncrease: num(v.autoIncrease),
+    rapidFire: RAPIDFIRE.toId(v.rapidFire),
     features: lists.features,
     barrel: BARREL.toId(v.barrel),
     heavyBarrel: v.heavyBarrel === 'yes',
@@ -531,6 +540,7 @@ export function WeaponBuilderScreen({
       fields: [
         { key: 'mechanism', label: 'Mechanism', options: MECHANISM.labels },
         { key: 'autoIncrease', label: 'Increase Auto (+)' },
+        { key: 'rapidFire', label: 'Rapid-Fire', options: RAPIDFIRE.labels },
       ],
     },
     // Receiver features are added "once the receiver characteristics are known"

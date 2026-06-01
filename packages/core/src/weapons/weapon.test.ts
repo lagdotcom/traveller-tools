@@ -146,6 +146,45 @@ describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
   });
 });
 
+describe('Rapid-Fire / VRF', () => {
+  const lmg = {
+    ...DEFAULT_WEAPON_PARAMS,
+    receiver: 'lsw' as const,
+    calibre: 'battleRifle' as const, // 3D+3 base (3 dice)
+    mechanism: 'fullAuto' as const,
+    barrel: 'rifle' as const,
+  };
+
+  it('RF adds a die per 3 base dice, AP = base dice, and the book Heat (Auto+2×dice)', () => {
+    const r = evaluateWeapon({ ...lmg, autoIncrease: 1, rapidFire: 'rf' }); // Auto 4
+    expect(r.profile.auto).toBe(4);
+    expect(r.profile.damage.dice).toBe(4); // 3 + floor(3/3)
+    expect(r.profile.traits['AP']).toBe(3); // base dice
+    expect(r.profile.traits['Bulky']).toBe(true);
+    expect(r.profile.heat).toBe(10); // 4 + 2×3 (FC worked example)
+    // Cost multiplies the receiver by (Auto + 2).
+    const recv = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
+    const rfLine = r.breakdown.find((l) => l.label === 'Rapid-Fire')!;
+    expect(rfLine).toBeDefined();
+    expect(recv.costCr).toBeGreaterThan(0);
+  });
+
+  it('VRF adds a die per 2 base dice, Very Bulky, and Heat Auto+3×dice', () => {
+    const r = evaluateWeapon({ ...lmg, autoIncrease: 3, rapidFire: 'vrf' }); // Auto 6
+    expect(r.profile.auto).toBe(6);
+    expect(r.profile.damage.dice).toBe(4); // 3 + floor(3/2)
+    expect(r.profile.traits['Very Bulky']).toBe(true);
+    expect(r.profile.heat).toBe(15); // 6 + 3×3
+  });
+
+  it('flags RF below Auto 4', () => {
+    const r = evaluateWeapon({ ...lmg, rapidFire: 'rf' }); // Auto 3
+    expect(
+      r.issues.some((i) => /Rapid-Fire needs Auto 4\+/.test(i.message)),
+    ).toBe(true);
+  });
+});
+
 describe('weapon Heat', () => {
   it('an autofiring weapon generates (dice + Auto) Heat and dissipates by class', () => {
     // Eliminator: assault receiver, 2 damage dice, Auto 4 → Heat 6/round;

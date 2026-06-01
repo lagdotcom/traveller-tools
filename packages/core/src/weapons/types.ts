@@ -90,6 +90,9 @@ export type BarrelId =
 
 export type StockId = 'none' | 'folding' | 'full';
 
+/** Rapid-fire capability (beyond an ordinary Auto score). */
+export type RapidFireMode = 'none' | 'rf' | 'vrf';
+
 export type FeedId = 'fixed' | 'standard' | 'extended' | 'drum' | 'belt';
 
 /** Receiver features (multi-select; some are mutually exclusive — see rules). */
@@ -303,6 +306,12 @@ export interface FirearmParams {
   mechanism: MechanismId;
   /** Extra Auto bought on a burst/full-auto receiver (Increased Auto table). */
   autoIncrease: number;
+  /**
+   * Rapid-Fire capability layered on a high Auto score: RF (needs Auto ≥4) or VRF
+   * (Auto ≥6). Multiplies receiver cost/weight, adds extra damage dice + AP +
+   * Bulky/Very Bulky, and greatly increases Heat.
+   */
+  rapidFire: RapidFireMode;
   features: ReceiverFeatureRef[];
   barrel: BarrelId;
   /** Heavy-profile barrel (doubles barrel weight & cost). */
