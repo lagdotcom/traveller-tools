@@ -202,6 +202,28 @@ describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
   });
 });
 
+describe('smoothbore Bulky (Recoil Effects table) & gauss signature', () => {
+  it('a small-smoothbore handgun is Bulky; standard-smoothbore handgun is impossible', () => {
+    expect(evalNamed('Adjudicator').profile.traits['Bulky']).toBe(true);
+    expect(evalNamed('Bodyguard Shotgun').profile.traits['Bulky']).toBe(true);
+    const bad = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      receiver: 'handgun',
+      calibre: 'standardSmoothbore',
+      barrel: 'handgun',
+    });
+    expect(
+      bad.issues.some((i) => /can't be built on a Handgun/.test(i.message)),
+    ).toBe(true);
+  });
+
+  it('gauss weapons read Emissions (low), unshifted by a short barrel', () => {
+    expect(evalNamed('GC-24').profile.signatureKind).toBe('emissions'); // short barrel
+    expect(evalNamed('GC-24').profile.signature).toBe('low');
+    expect(evalNamed('GR-80').profile.signature).toBe('low');
+  });
+});
+
 describe('Rapid-Fire / VRF', () => {
   const lmg = {
     ...DEFAULT_WEAPON_PARAMS,

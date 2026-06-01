@@ -558,7 +558,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'rifle',
     stock: 'full',
     ammo: ['ball'],
-    // reconcile: stat line shows Damage 3D-2, Inaccurate -1, Lo-Pen 3
+    // Representative build (no FC worksheet). A book jazail (a smoothbore) would
+    // read ~3D-2 / Inaccurate -1 / Lo-Pen 3; this archaic-rifle build gives 3D-3
+    // and no Inaccurate.
   }),
   // reconcile: the worked Adjudicator lists its Handgun barrel at 0.12kg, which
   // is 15% of the 0.8kg receiver — the barrel's *cost* fraction. The FC barrel
@@ -583,7 +585,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     capacityPct: 130,
     barrel: 'assault',
     stock: 'full',
-    // reconcile: table says: 3D+5 damage, mag costs Cr55, AP 4
+    // reconcile: 3D+5 and AP 4 reproduce; magazine reads Cr34.5 vs the book's
+    // Cr55 (gauss-shotgun ammo cost).
   }),
   weapon('GC-24', 'Gauss handgun, Anhur Industries', {
     tl: 13,
@@ -594,7 +597,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     autoIncrease: 2,
     capacityPct: 120,
     barrel: 'short',
-    // reconcile: receiver totals are Cr808.5 and 0.7744kg, AP 3, Emissions Signature (low)
+    // reconcile: weight (0.7744kg), AP 3 and Emissions (low) reproduce; receiver
+    // cost reads Cr1212.75 vs the book's Cr808.5 (unresolved).
   }),
   weapon('GS-40', 'Gauss sidearm, Anhur Industries', {
     tl: 13,
@@ -602,7 +606,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     calibre: 'smallGauss',
     mechanism: 'burst',
     barrel: 'handgun',
-    // reconcile: AP 3
+    // AP 3 and Emissions (low) reproduce.
   }),
   weapon(
     'Stowaway',
@@ -647,7 +651,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       accessories: ['laserPointer'],
       ammo: ['ball', 'pellet'],
-      // reconcile: Bulky, Physical Signature (normal)
+      // reconcile: Bulky now reproduces (smoothbore Recoil table); Physical
+      // Signature reads high vs the book's normal (smoothbore signature).
       // TODO Pointguard variant: shorter, no stock - TL10, 125m range, 3.25Kg, Cr180, Mag 3 (Cr4.5), Quickdraw +2, pellet only
     },
   ),
@@ -697,8 +702,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     autoIncrease: 1,
     barrel: 'handgun',
     accessories: ['scope'],
-    // implement: Semi-Bullpup gives +20% cost, Quickdraw +2
-    // reconcile: Lo-Pen 2
+    // Semi-Bullpup (+20% cost, +2 Quickdraw) and Lo-Pen 2 both reproduce.
   }),
   weapon('Desperado', 'Generic assault submachinegun', {
     tl: 5,
@@ -707,8 +711,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mechanism: 'fullAuto',
     barrel: 'assault',
     stock: 'full',
-    // reconcile: book says +20% on Full Auto then only adds +10% lol
-    // reconcile: Inaccurate -1, no Penetration minus?
+    // reconcile: no Lo-Pen reproduces; the book's Desperado also lists Inaccurate
+    // -1 (not modelled) and seems to charge +10% for full-auto, not the +20% rule.
   }),
   weapon('Eliminator', 'Extreme close quarters smg', {
     tl: 9,
@@ -720,9 +724,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'assault',
     stock: 'folding',
     ammo: ['ball', 'apAdvanced', 'enhancedWounding'],
-    // reconcile: Receiver Totals Cr715.05, 2.079kg
-    // reconcile: Mag 24 (did they forget the penalty from Compact?)
-    // reconcile: no Lo-Pen? Physical Signature (normal)
+    // reconcile: no Lo-Pen reproduces; still off — receiver weight 1.25 vs the
+    // book's 2.079kg, Mag 18 vs 24 (the book ignores the Compact penalty), and
+    // Physical Signature low vs normal.
   }),
   weapon('IAW-12', 'Infantry Assault Weapon, Interstellar Ordnance', {
     tl: 12,
@@ -733,8 +737,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     autoIncrease: 1,
     barrel: 'assault',
     accessories: ['laserPointer'],
-    // reconcile: table has 'No Stock' as costing 15% somehow
-    // reconcile: Damage 3D-1, AP 4
+    // reconcile: Damage 3D-1, AP 4 and Emissions (low) reproduce; the book
+    // worksheet oddly charges 15% for 'No Stock'.
   }),
   weapon(
     'Planetsider',
@@ -770,8 +774,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'carbine',
     stock: 'full',
     accessories: ['multispectralScope'],
-    // reconcile: book calls it both GR-80 and GR-90 lol
-    // reconcile: AP 3, Emissions Signature (low)
+    // reconcile: Emissions (low) reproduces; AP reads 5 vs the book's 3 (standard
+    // gauss AP) — and the book calls it both GR-80 and GR-90.
     // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
   }),
   weapon('AIWS', 'Modular infantry weapon, Interstellar Ordnance', {
@@ -794,7 +798,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mechanism: 'fullAuto',
     features: ['bullpup', 'highCapacity', 'quickdraw'],
     barrel: 'carbine',
-    stock: 'fixed', // TODO: does this exist? Cr +10%, Weight +10%
+    stock: 'fixed', // a fixed stock (+10% cost / +10% weight)
     secondary: {
       tl: 8,
       receiver: 'assault',

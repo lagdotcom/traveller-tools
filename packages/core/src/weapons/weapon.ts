@@ -29,6 +29,7 @@ import {
   resolveFeature,
   resolveFeatures,
   SMOOTHBORE_CAPACITY,
+  SMOOTHBORE_RECOIL,
   SOURCE,
   STOCKS,
 } from './data.js';
@@ -128,6 +129,14 @@ function validate(params: FirearmParams): Issue[] {
   // Gauss is implied by the calibre; gauss weapons are TL12+.
   if (calibre.gauss && tl < 12)
     issues.push(error('Gauss weapons require TL12'));
+
+  // A large-calibre smoothbore can be impossible in some receivers (Recoil table).
+  if (SMOOTHBORE_RECOIL[params.calibre]?.[params.receiver] === 'impossible')
+    issues.push(
+      error(
+        `${calibre.label} can't be built on a ${RECEIVERS[params.receiver].label}`,
+      ),
+    );
 
   // Calibre ↔ receiver minimums (anti-materiel needs an LSW; heavy AM a Heavy).
   if (calibre.minReceiver) {
@@ -538,6 +547,10 @@ function firearmProfile(
   let damage: Damage = { ...calibre.damage };
   const traits: Traits = { ...calibre.traits };
 
+  // Large-calibre smoothbores gain Bulky / Very Bulky by receiver (Recoil table).
+  const sbRecoil = SMOOTHBORE_RECOIL[params.calibre]?.[params.receiver];
+  if (sbRecoil && sbRecoil !== 'impossible') traits[sbRecoil] = true;
+
   // Barrel effects on damage.
   if (barrel.allDiceToD3) damage.die = 3;
   if (barrel.reduceHighVelocityDie && calibre.highVelocity)
@@ -563,8 +576,11 @@ function firearmProfile(
     calibre.penetration + (calibre.smoothbore ? 0 : barrel.penetration);
 
   // Signature (physical for chemical guns, emissions for gauss).
+  // Gauss signature is the Emissions of the EM pulse, not a muzzle flash, so a
+  // short barrel doesn't raise it (like a laser's collimator).
   let sigIndex =
-    SIGNATURE_LEVELS.indexOf(calibre.signature) + barrel.signatureShift;
+    SIGNATURE_LEVELS.indexOf(calibre.signature) +
+    (calibre.gauss ? 0 : barrel.signatureShift);
 
   // Extra barrels and a mounted secondary (itself a complete extra barrel) each
   // cost a point of Quickdraw.

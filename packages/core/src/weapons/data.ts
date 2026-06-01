@@ -100,6 +100,31 @@ export const SMOOTHBORE_CAPACITY: Record<ReceiverTypeId, number> = {
   heavy: 10,
 };
 
+/**
+ * FC "Recoil Effects" table: the Bulky / Very Bulky trait a large-calibre
+ * smoothbore gains in a given receiver (`'impossible'` = can't be built that way).
+ * Combinations not listed impose no Bulky.
+ */
+export const SMOOTHBORE_RECOIL: Partial<
+  Record<
+    CalibreId,
+    Partial<Record<ReceiverTypeId, 'Bulky' | 'Very Bulky' | 'impossible'>>
+  >
+> = {
+  smallSmoothbore: { handgun: 'Bulky' },
+  lightSmoothbore: { handgun: 'Very Bulky', assault: 'Bulky' },
+  standardSmoothbore: {
+    handgun: 'impossible',
+    assault: 'Very Bulky',
+    longarm: 'Bulky',
+  },
+  heavySmoothbore: {
+    handgun: 'impossible',
+    assault: 'impossible',
+    longarm: 'Very Bulky',
+  },
+};
+
 /** Gauss is a receiver modifier, not a type: ×2 cost, ×1.25 weight, ×3 capacity. */
 export const GAUSS_COST_MULT = 2;
 export const GAUSS_WEIGHT_MULT = 1.25;
@@ -507,7 +532,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     capacityMult: 1,
     penetration: 2,
     signatureKind: 'emissions',
-    signature: 'normal',
+    signature: 'low',
     traits: {},
     highVelocity: false,
     gauss: true,
@@ -537,7 +562,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     capacityMult: 1,
     penetration: 2,
     signatureKind: 'emissions',
-    signature: 'high',
+    signature: 'low',
     traits: {},
     highVelocity: false,
     gauss: true,
