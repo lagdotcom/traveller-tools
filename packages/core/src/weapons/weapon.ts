@@ -95,6 +95,8 @@ export interface WeaponMagazine {
   label: string;
   /** Rounds (firearm) or shots (energy). */
   capacity: number;
+  /** The noun for `capacity` — firearms hold rounds, energy weapons shots. */
+  unit: 'rounds' | 'shots';
   /** The weapon's loaded weight with this magazine/pack fitted. */
   weightKg: number;
   /** Reload / refill price for this option (primary ammo for firearms). */
@@ -304,6 +306,7 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
         spec.label ??
         (spec.ammo ? ammo.label : isStd ? 'Standard' : `Magazine ${i + 1}`),
       capacity,
+      unit: 'rounds',
       weightKg: isStd
         ? totalWeight
         : round2(

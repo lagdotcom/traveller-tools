@@ -68,16 +68,12 @@ import React, { useState } from 'react';
 
 import { ChoiceField } from '../components/ChoiceField.js';
 import { Field } from '../components/Field.js';
+import { effective, num } from '../components/formUtils.js';
 import { IssueList } from '../components/IssueList.js';
 import { useForm } from '../components/useForm.js';
 import { WeaponSheet } from '../components/WeaponSheet.js';
 import { useFiles } from '../files.js';
 import { useWeaponStore } from '../storage.js';
-
-const num = (value: string, fallback = 0) => {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : fallback;
-};
 
 /** Build label arrays + label→id lookups for a `{ id: { label } }` record. */
 function labelMap<T extends string>(record: Record<T, { label: string }>) {
@@ -174,11 +170,13 @@ const PCLASS = choiceMap<EnergyPowerClass>([
 const YN = ['no', 'yes'];
 
 // Magazine / power-pack editors (compound list items, like ship turrets/craft).
-const MAG_REMOVE = '✗ remove';
-const PACK_KIND_LABELS = ['Powerpack', 'Cartridge'];
-const PACK_REMOVE = '✗ remove';
-const packKindLabel = (p: PackSpec) =>
-  p.kind === 'cartridge' ? 'Cartridge' : 'Powerpack';
+const REMOVE = '✗ remove';
+const PACK_KIND: Record<PackSpec['kind'], string> = {
+  powerpack: 'Powerpack',
+  cartridge: 'Cartridge',
+};
+const PACK_KIND_LABELS = Object.values(PACK_KIND);
+const packKindLabel = (p: PackSpec) => PACK_KIND[p.kind];
 /** The editable "size" of a pack: kg for a powerpack, count for a cartridge. */
 const packSize = (p: PackSpec) => (p.kind === 'cartridge' ? p.count : p.kg);
 
@@ -459,69 +457,50 @@ export function WeaponBuilderScreen({
   const [message, setMessage] = useState('');
 
   // --- Magazine editors (firearm) ---
-  const patchMag = (i: number, patch: Partial<MagazineSpec>) =>
+  /** Apply a mutation to the magazine at index `i` (copy-on-write). */
+  const editMag = (i: number, mutate: (m: MagazineSpec) => void) =>
     setMagazines((prev) =>
-      prev.map((m, k) => (k === i ? { ...m, ...patch } : m)),
+      prev.map((m, k) => {
+        if (k !== i) return m;
+        const next: MagazineSpec = { ...m };
+        mutate(next);
+        return next;
+      }),
     );
   const setMagAmmo = (i: number, label: string) => {
-    if (label === MAG_REMOVE) {
+    if (label === REMOVE)
       setMagazines((prev) => prev.filter((_, k) => k !== i));
-      return;
-    }
-    patchMag(i, { ammo: AMMO.toId(label) });
+    else editMag(i, (m) => (m.ammo = AMMO.toId(label)));
   };
   const setMagLabel = (i: number, v: string) =>
-    setMagazines((prev) =>
-      prev.map((m, k) => {
-        if (k !== i) return m;
-        const next: MagazineSpec = { ...m };
-        if (v.trim()) next.label = v;
-        else delete next.label;
-        return next;
-      }),
-    );
+    editMag(i, (m) => {
+      if (v.trim()) m.label = v;
+      else delete m.label;
+    });
   // Capacity is set by EITHER a percentage OR an absolute count — never both, so
   // setting one clears the other. A blank / non-positive value clears (auto).
-  const setMagPct = (i: number, v: string) => {
-    const n = num(v, 0);
-    setMagazines((prev) =>
-      prev.map((m, k) => {
-        if (k !== i) return m;
-        const next: MagazineSpec = { ...m };
-        if (n > 0) {
-          next.pct = n;
-          delete next.rounds;
-        } else delete next.pct;
-        return next;
-      }),
-    );
-  };
-  const setMagRounds = (i: number, v: string) => {
-    const n = num(v, 0);
-    setMagazines((prev) =>
-      prev.map((m, k) => {
-        if (k !== i) return m;
-        const next: MagazineSpec = { ...m };
-        if (n > 0) {
-          next.rounds = n;
-          delete next.pct;
-        } else delete next.rounds;
-        return next;
-      }),
-    );
-  };
-  const setMagCost = (i: number, v: string) => {
-    const n = num(v, 0);
-    setMagazines((prev) =>
-      prev.map((m, k) => {
-        if (k !== i) return m;
-        const next: MagazineSpec = { ...m };
-        if (n > 0) next.costCr = n;
-        else delete next.costCr;
-        return next;
-      }),
-    );
-  };
+  const setMagPct = (i: number, v: string) =>
+    editMag(i, (m) => {
+      const n = num(v, 0);
+      if (n > 0) {
+        m.pct = n;
+        delete m.rounds;
+      } else delete m.pct;
+    });
+  const setMagRounds = (i: number, v: string) =>
+    editMag(i, (m) => {
+      const n = num(v, 0);
+      if (n > 0) {
+        m.rounds = n;
+        delete m.pct;
+      } else delete m.rounds;
+    });
+  const setMagCost = (i: number, v: string) =>
+    editMag(i, (m) => {
+      const n = num(v, 0);
+      if (n > 0) m.costCr = n;
+      else delete m.costCr;
+    });
   const addMagazine = () => {
     const id = addMagAmmo ? AMMO.toId(addMagAmmo) : (ammo[0] ?? 'ball');
     setMagazines((prev) => [...prev, { ammo: id }]);
@@ -530,7 +509,7 @@ export function WeaponBuilderScreen({
 
   // --- Power-pack editors (energy) ---
   const setPackKind = (i: number, label: string) => {
-    if (label === PACK_REMOVE) {
+    if (label === REMOVE) {
       setPacks((prev) => prev.filter((_, k) => k !== i));
       return;
     }
@@ -539,7 +518,7 @@ export function WeaponBuilderScreen({
       prev.map((p, k) =>
         k !== i
           ? p
-          : label === 'Cartridge'
+          : label === PACK_KIND.cartridge
             ? { kind: 'cartridge', count: packSize(p), rating }
             : { kind: 'powerpack', kg: packSize(p), rating },
       ),
@@ -1153,7 +1132,7 @@ export function WeaponBuilderScreen({
                 <ChoiceField
                   key={`mag-${i}-ammo`}
                   label={`${tag} magazine`}
-                  options={[...AMMO.labels, MAG_REMOVE]}
+                  options={[...AMMO.labels, REMOVE]}
                   value={AMMO.toLabel(m.ammo ?? ammo[0] ?? 'ball')}
                   isActive={isActive}
                   onChange={(v) => setMagAmmo(i, v)}
@@ -1226,7 +1205,7 @@ export function WeaponBuilderScreen({
                 <ChoiceField
                   key={`pack-${i}-kind`}
                   label={`Pack ${i + 1}`}
-                  options={[...PACK_KIND_LABELS, PACK_REMOVE]}
+                  options={[...PACK_KIND_LABELS, REMOVE]}
                   value={packKindLabel(p)}
                   isActive={isActive}
                   onChange={(v) => setPackKind(i, v)}
@@ -1332,9 +1311,4 @@ export function WeaponBuilderScreen({
       </Box>
     </Box>
   );
-}
-
-/** Keep a list's "Add" value valid as the available options change. */
-function effective(value: string, available: string[]): string {
-  return available.includes(value) ? value : (available[0] ?? '');
 }

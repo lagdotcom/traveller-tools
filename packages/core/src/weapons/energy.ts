@@ -348,6 +348,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       return {
         label: spec.label ?? `Powerpack ${kg}kg`,
         capacity: shots,
+        unit: 'shots',
         weightKg: round2(weaponSansPack + kg),
         magazineCr: round2(POWERPACK_COST_PER_KG[spec.rating] * kg),
         primary: false,
@@ -358,6 +359,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     return {
       label: spec.label ?? `Cartridge ×${count}`,
       capacity: count,
+      unit: 'shots',
       weightKg: round2(weaponSansPack + count * cart.weight),
       magazineCr: round2(count * cart.cost),
       primary: false,
@@ -367,6 +369,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     {
       label: primaryPackLabel || 'Power source',
       capacity,
+      unit: 'shots',
       weightKg: round2(totalWeight),
       magazineCr: primaryReloadCr,
       primary: true,

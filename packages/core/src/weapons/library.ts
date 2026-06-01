@@ -277,6 +277,7 @@ const POWER_SOURCES = { powerpack: 0, cartridge: 0 };
 /** Coerce arbitrary parsed JSON into a complete, valid FirearmParams. */
 function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
   const d = DEFAULT_WEAPON_PARAMS;
+  const magazines = normalizeMagazines(p.magazines);
   return {
     kind: 'firearm',
     tl: num(p.tl, d.tl),
@@ -297,9 +298,7 @@ function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
     furniture: pickList<FurnitureId>(p.furniture, FURNITURE),
     feed: pick<FeedId>(p.feed, FEEDS, d.feed),
     capacityPct: num(p.capacityPct, d.capacityPct),
-    ...(normalizeMagazines(p.magazines)
-      ? { magazines: normalizeMagazines(p.magazines) }
-      : {}),
+    ...(magazines ? { magazines } : {}),
     accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
     ammo: normalizeAmmo(p.ammo, d.ammo),
     // A secondary weapon (one level deep — its own `secondary` is dropped).
@@ -338,6 +337,7 @@ function normalizeSecondaryParams(
 /** Coerce arbitrary parsed JSON into a complete, valid EnergyParams. */
 function normalizeEnergyParams(p: Record<string, unknown>): EnergyParams {
   const d = DEFAULT_ENERGY_PARAMS;
+  const packs = normalizePacks(p.packs);
   return {
     kind: 'energy',
     tl: num(p.tl, d.tl),
@@ -373,7 +373,7 @@ function normalizeEnergyParams(p: Record<string, unknown>): EnergyParams {
     ),
     cartridgeCount: num(p.cartridgeCount, d.cartridgeCount),
     cartridgeEjects: bool(p.cartridgeEjects, d.cartridgeEjects),
-    ...(normalizePacks(p.packs) ? { packs: normalizePacks(p.packs) } : {}),
+    ...(packs ? { packs } : {}),
   };
 }
 

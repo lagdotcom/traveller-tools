@@ -38,16 +38,12 @@ import React, { useState } from 'react';
 import { BudgetBar } from '../components/BudgetBar.js';
 import { ChoiceField } from '../components/ChoiceField.js';
 import { Field } from '../components/Field.js';
+import { effective, num } from '../components/formUtils.js';
 import { IssueList } from '../components/IssueList.js';
 import { ShipSheet } from '../components/ShipSheet.js';
 import { useForm } from '../components/useForm.js';
 import { useFiles } from '../files.js';
 import { useShipStore } from '../storage.js';
-
-const num = (value: string, fallback = 0) => {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : fallback;
-};
 
 function parseConfig(value: string): HullConfigId {
   const v = value.trim().toLowerCase();
@@ -186,8 +182,6 @@ export function ShipBuilderScreen({
   const swAvailable = SOFTWARE_IDS.filter(
     (id) => !software.some((s) => s.type === id),
   ).map(swLabel);
-  const effective = (value: string, available: string[]) =>
-    available.includes(value) ? value : (available[0] ?? '');
 
   // Craft that can be carried: library ships (saved + built-in, saved winning)
   // and catalogue vehicles. Each knows how to snapshot itself into a carried

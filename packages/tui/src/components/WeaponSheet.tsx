@@ -188,8 +188,8 @@ export function WeaponSheet({
               </Box>
               <Box width={NOTES_W} paddingLeft={1}>
                 <Text dimColor wrap="truncate-end">
-                  {m.capacity}
-                  {m.primary ? ' shots (standard)' : ' shots'}
+                  {m.capacity} {m.unit}
+                  {m.primary ? ' (standard)' : ''}
                 </Text>
               </Box>
             </Box>
