@@ -199,9 +199,14 @@ function validate(params: FirearmParams): Issue[] {
       error('High Capacity is incompatible with Compact / Very Compact'),
     );
 
-  // Accessories are built into the weapon, so a TL shortfall is an error.
-  for (const id of params.accessories)
-    pushIf(issues, tlGate(tl, ACCESSORIES[id].label, ACCESSORIES[id].minTL));
+  // Accessories are swappable gear (FC: "can usually be swapped around at will"),
+  // so a TL shortfall just means it isn't available yet — a warning, not an error.
+  // (The FC's own TL4 Crunch Gun mounts a TL5 scope.)
+  for (const id of params.accessories) {
+    const a = ACCESSORIES[id];
+    if (a?.minTL && tl < a.minTL)
+      issues.push(warning(`${a.label} requires TL${a.minTL}`));
+  }
   // Loaded ammunition is just carried — a TL shortfall only means it isn't
   // available yet, so flag it as a warning rather than invalidating the build.
   for (const id of params.ammo) {
@@ -560,6 +565,7 @@ function firearmProfile(
     barrel.quickdraw +
     feed.quickdraw -
     extraBarrels -
+    (params.heavyBarrel ? 1 : 0) - // a heavy barrel costs a point of Quickdraw
     (params.secondary ? 1 : 0);
   let featureRecoilMod = 0;
   for (const f of features) {

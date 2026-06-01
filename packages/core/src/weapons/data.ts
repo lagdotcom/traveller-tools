@@ -1192,14 +1192,16 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     cost: 50,
     weight: 0.2,
     quickdraw: 0,
-    // A plain optical scope is low-tech (no TL gate); the Crunch Gun mounts one
-    // at TL4. The electronic/long-range scopes below keep their TLs.
+    minTL: 5, // FC Sighting Devices table. (Accessory-TL is a warning, so the
+    // TL4 Crunch Gun's scope just flags rather than invalidating it.)
     traits: { Scope: true },
   },
   longRangeScope: {
     label: 'Long-Range Scope',
     cost: 500,
-    weight: 0.5, // FC: Cr500 / 0.5kg
+    // reconcile: prose says 0.5kg, the Sighting Devices table says 1kg; the
+    // Intruder worked example ("Optical Sight" Cr500/0.5kg) corroborates 0.5kg.
+    weight: 0.5,
     quickdraw: 0,
     minTL: 6,
     traits: { Scope: true },
@@ -1215,7 +1217,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
   thermalScope: {
     label: 'Thermal Scope',
     cost: 250,
-    weight: 0.5,
+    weight: 0.5, // reconcile: table says 0.5kg, prose says 0.25kg (kept the table)
     quickdraw: 0,
     minTL: 6,
     traits: { Scope: true },
@@ -1252,7 +1254,9 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
   },
   holographicSight: {
     label: 'Holographic Sight',
-    cost: 750,
+    // reconcile: prose says Cr750, the Sighting Devices table says Cr500 (kept
+    // the table value the stats list gives).
+    cost: 500,
     weight: 0,
     quickdraw: 0,
     minTL: 12,
@@ -1277,6 +1281,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     label: 'Stabilisation',
     cost: 300,
     weight: 0,
+    weightPct: 0.2, // FC: a gyrostabiliser weighs 20% of the receiver
     quickdraw: 0,
     minTL: 9,
   },
