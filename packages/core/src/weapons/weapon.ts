@@ -36,12 +36,22 @@ import {
 import { evaluateEnergyWeapon } from './energy.js';
 import { evaluateGrenade } from './grenade.js';
 import { evaluateLauncher } from './launcher.js';
+import {
+  base,
+  baseline,
+  component,
+  each,
+  noop,
+  pctComponent,
+  runBuild,
+  step,
+  when,
+} from './pipeline.js';
 import { evaluateProjector } from './projector.js';
 import {
   clampLevel,
   error,
   mergeTraits,
-  modPct,
   pctOf,
   penetrationProfile,
   pushIf,
@@ -432,9 +442,8 @@ interface ReceiverBuild {
 }
 
 /**
- * Phase 1 — the receiver. One multiplicative modifier chain yields both the
- * baseline (its running product) and the itemised breakdown (a marginal line per
- * step), so the two can never drift apart. Capacity is its own chain.
+ * Phase 1 — the receiver, declared as a pipeline. The multiplicative chain and
+ * its itemised breakdown are now one thing (the op trace), so they can't drift.
  */
 function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
   const { receiver, calibre, mechanism, features, autoSteps, incAuto, capPct } =
@@ -445,48 +454,6 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
     capPct >= 100 ? 1 + 0.1 * capPctSteps : 1 + 0.05 * capPctSteps;
   const weightCapMult = 1 + 0.05 * capPctSteps;
 
-  const chain: { label: string; cost: number; weight: number }[] = [];
-  const step = (label: string, cost: number, weight = 1) => {
-    if (cost !== 1 || weight !== 1) chain.push({ label, cost, weight });
-  };
-  if (calibre.gauss) step('Gauss', GAUSS_COST_MULT, GAUSS_WEIGHT_MULT);
-  step(mechanism.label, mechanism.costMult);
-  step(calibre.label, calibre.receiverCostMult, calibre.receiverWeightMult);
-  for (const f of features) step(f.label, f.costMult, f.weightMult);
-  if (autoSteps > 0)
-    step(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight);
-  // RF cost = ×(Auto + 2); VRF cost = ×5. Both multiply the receiver weight.
-  if (rapidFire)
-    step(
-      rapidFire.label,
-      rapidFire.minAuto === 4 ? auto + 2 : 5,
-      rapidFire.weightMult,
-    );
-  if (capPct !== 100) step(`Capacity ${capPct}%`, costCapMult, weightCapMult);
-
-  const lines: WeaponLineItem[] = [
-    {
-      label: `Receiver: ${receiver.label}`,
-      costCr: round2(receiver.baseCost),
-      weightKg: round2(receiver.baseWeight),
-    },
-  ];
-  let rc = receiver.baseCost;
-  let rw = receiver.baseWeight;
-  for (const mod of chain) {
-    lines.push({
-      label: mod.label,
-      costCr: round2(rc * mod.cost - rc),
-      weightKg: round2(rw * mod.weight - rw),
-      costMod: modPct(mod.cost),
-      weightMod: modPct(mod.weight),
-    });
-    rc *= mod.cost;
-    rw *= mod.weight;
-  }
-  const baselineCost = round2(rc);
-  const baselineWeight = round2(rw);
-
   // Single-shot holds one per barrel; otherwise the neutral count scaled by the
   // standard magazine's capacity %, unless it carries an absolute-count override.
   const capacity =
@@ -495,15 +462,40 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
       : (parts.magazines[0]?.rounds ??
         Math.round(parts.neutralCapacity * (capPct / 100)));
 
-  lines.push({
-    label: 'Receiver Totals',
-    costCr: baselineCost,
-    weightKg: baselineWeight,
-    notes: `Capacity ${capacity}`,
-  });
+  const build = runBuild([
+    base(`Receiver: ${receiver.label}`, receiver.baseCost, receiver.baseWeight),
+    when(!!calibre.gauss, step('Gauss', GAUSS_COST_MULT, GAUSS_WEIGHT_MULT)),
+    step(mechanism.label, mechanism.costMult),
+    step(calibre.label, calibre.receiverCostMult, calibre.receiverWeightMult),
+    each(features, (f) => step(f.label, f.costMult, f.weightMult)),
+    when(
+      autoSteps > 0,
+      step(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight),
+    ),
+    // RF cost = ×(Auto + 2); VRF cost = ×5. Both multiply the receiver weight.
+    when(
+      !!rapidFire,
+      step(
+        rapidFire?.label ?? '',
+        rapidFire?.minAuto === 4 ? auto + 2 : 5,
+        rapidFire?.weightMult ?? 1,
+      ),
+    ),
+    when(
+      capPct !== 100,
+      step(`Capacity ${capPct}%`, costCapMult, weightCapMult),
+    ),
+    baseline('Receiver Totals', `Capacity ${capacity}`),
+  ]);
 
   const ammoCostMult = features.reduce((m, f) => m * (f.ammoCostMult ?? 1), 1);
-  return { lines, baselineCost, baselineWeight, capacity, ammoCostMult };
+  return {
+    lines: build.lines,
+    baselineCost: build.baseCost,
+    baselineWeight: build.baseWeight,
+    capacity,
+    ammoCostMult,
+  };
 }
 
 interface ComponentBuild {
@@ -525,108 +517,98 @@ function firearmComponents(
   recv: ReceiverBuild,
 ): ComponentBuild {
   const { barrel, stock, extraBarrels } = parts;
-  const { baselineCost, baselineWeight } = recv;
-  const lines: WeaponLineItem[] = [];
-  let costCr = 0;
-  let weightKg = 0;
-  const push = (item: WeaponLineItem) => {
-    costCr += item.costCr;
-    weightKg += item.weightKg;
-    lines.push(item);
-  };
-  // A component that adds a fraction of the receiver baseline shows that %.
-  const addPct = (
-    label: string,
-    costFrac: number,
-    weightFrac: number,
-    notes?: string,
-  ) =>
-    push({
-      label,
-      costCr: round2(baselineCost * costFrac),
-      weightKg: round2(baselineWeight * weightFrac),
-      costMod: pctOf(costFrac),
-      weightMod: pctOf(weightFrac),
-      notes,
-    });
-
   const heavyMult = params.heavyBarrel ? 2 : 1;
-  const barrelCost = baselineCost * barrel.costPct * heavyMult;
-  const barrelWeight = baselineWeight * barrel.weightPct * heavyMult;
-  if (params.barrel !== 'rifle' || barrelCost > 0 || params.heavyBarrel)
-    addPct(
-      `Barrel: ${barrel.label}${params.heavyBarrel ? ' (Heavy)' : ''}`,
-      barrel.costPct * heavyMult,
-      barrel.weightPct * heavyMult,
-    );
-
-  if (params.stock !== 'none')
-    addPct(`Stock: ${stock.label}`, stock.costPct, stock.weightPct);
-
-  for (const id of params.furniture) {
-    const f = FURNITURE[id];
-    if (f) addPct(f.label, f.costPct, f.weightPct);
-  }
-
-  // Extra barrels (multi-barrel weapons): each is bought at the barrel's cost and
-  // adds half its weight; a *complete* multi-barrel (no partialMultiBarrel
-  // feature) also adds 10% of the receiver baseline per extra barrel.
-  if (extraBarrels > 0) {
-    const partial = hasFeature(params.features, 'partialMultiBarrel');
-    const recCost = partial ? 0 : baselineCost * 0.1 * extraBarrels;
-    const recWeight = partial ? 0 : baselineWeight * 0.1 * extraBarrels;
-    push({
-      label: `Extra barrels: ${barrel.label} ×${extraBarrels}${partial ? ' (partial)' : ''}`,
-      costCr: round2(recCost + barrelCost * extraBarrels),
-      weightKg: round2(recWeight + (barrelWeight / 2) * extraBarrels),
-      notes: `Quickdraw −${extraBarrels}`,
-    });
-  }
-
-  for (const id of params.accessories) {
-    const a = ACCESSORIES[id];
-    if (!a) continue;
-    // Cost may be a flat Credit amount or a % of the receiver; weight likewise.
-    const flatCost = a.cost !== undefined;
-    push({
-      label: a.label,
-      costCr: round2(a.cost ?? baselineCost * (a.costPct ?? 0)),
-      weightKg: round2(
-        a.weightPct !== undefined ? baselineWeight * a.weightPct : a.weight,
-      ),
-      costMod: flatCost ? undefined : pctOf(a.costPct ?? 0),
-      weightMod: a.weightPct !== undefined ? pctOf(a.weightPct) : undefined,
-    });
-  }
-
-  // A mounted secondary weapon (e.g. under-barrel shotgun) is a complete extra
-  // barrel/receiver. Per the FC complete-multi-barrel rule (p.34) it adds 10% of
-  // the host receiver baseline (cost & weight); the secondary's own barrel is
-  // bought at its normal cost but, as a barrel after the first, adds only half
-  // its weight; Quickdraw drops by 1 (applied in the profile). The secondary
-  // keeps its own profile as a separate data line.
+  // The secondary weapon contributes a line *and* its own profile + sources, so
+  // its op stashes those side outputs as it runs.
   let secondary: WeaponEvaluation['secondary'];
   const sources: string[] = [];
-  if (params.secondary) {
-    const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary });
-    const sc = secondaryLabel(params.secondary);
-    const secBarrel = BARRELS[params.secondary.barrel] ?? BARRELS.rifle;
-    const secHeavy = params.secondary.heavyBarrel ? 2 : 1;
-    push({
-      label: `Secondary barrel: ${sc}`,
-      costCr: round2(baselineCost * (0.1 + secBarrel.costPct * secHeavy)),
-      weightKg: round2(
-        baselineWeight * (0.1 + secBarrel.weightPct * secHeavy * 0.5),
+
+  const build = runBuild(
+    [
+      // Barrel — shown for any non-default or heavy/priced barrel.
+      when(
+        params.barrel !== 'rifle' ||
+          params.heavyBarrel ||
+          recv.baselineCost * barrel.costPct * heavyMult > 0,
+        pctComponent(
+          `Barrel: ${barrel.label}${params.heavyBarrel ? ' (Heavy)' : ''}`,
+          barrel.costPct * heavyMult,
+          barrel.weightPct * heavyMult,
+        ),
       ),
-      notes: 'complete multi-barrel: +10% receiver + barrel',
-    });
-    sources.push(...sub.sources);
-    secondary = {
-      label: sc,
-      profile: sub.profile,
-      magazineCr: sub.totals.magazineCr,
-    };
-  }
+      when(
+        params.stock !== 'none',
+        pctComponent(`Stock: ${stock.label}`, stock.costPct, stock.weightPct),
+      ),
+      each(params.furniture, (id) => {
+        const f = FURNITURE[id];
+        return f ? pctComponent(f.label, f.costPct, f.weightPct) : noop;
+      }),
+      // Extra barrels: each bought at the barrel's cost + half its weight; a
+      // *complete* multi-barrel (no partialMultiBarrel) also adds 10% of baseline.
+      when(
+        extraBarrels > 0,
+        component((b) => {
+          const partial = hasFeature(params.features, 'partialMultiBarrel');
+          const recCost = partial ? 0 : b.baseCost * 0.1 * extraBarrels;
+          const recWeight = partial ? 0 : b.baseWeight * 0.1 * extraBarrels;
+          const barrelCost = b.baseCost * barrel.costPct * heavyMult;
+          const barrelWeight = b.baseWeight * barrel.weightPct * heavyMult;
+          return {
+            label: `Extra barrels: ${barrel.label} ×${extraBarrels}${partial ? ' (partial)' : ''}`,
+            costCr: round2(recCost + barrelCost * extraBarrels),
+            weightKg: round2(recWeight + (barrelWeight / 2) * extraBarrels),
+            notes: `Quickdraw −${extraBarrels}`,
+          };
+        }),
+      ),
+      each(params.accessories, (id) => {
+        const a = ACCESSORIES[id];
+        if (!a) return noop;
+        // Cost may be a flat Credit amount or a % of the receiver; weight likewise.
+        return component((b) => ({
+          label: a.label,
+          costCr: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
+          weightKg: round2(
+            a.weightPct !== undefined ? b.baseWeight * a.weightPct : a.weight,
+          ),
+          costMod: a.cost !== undefined ? undefined : pctOf(a.costPct ?? 0),
+          weightMod: a.weightPct !== undefined ? pctOf(a.weightPct) : undefined,
+        }));
+      }),
+      // A mounted secondary weapon is a complete extra barrel/receiver (FC p.34):
+      // +10% of the host baseline (cost & weight) + the secondary's own barrel
+      // (full cost, half weight). It keeps its own profile as a separate line.
+      when(
+        !!params.secondary,
+        component((b) => {
+          const sec = params.secondary!;
+          const sub = evaluateFirearm({ kind: 'firearm', ...sec });
+          const sc = secondaryLabel(sec);
+          const secBarrel = BARRELS[sec.barrel] ?? BARRELS.rifle;
+          const secHeavy = sec.heavyBarrel ? 2 : 1;
+          sources.push(...sub.sources);
+          secondary = {
+            label: sc,
+            profile: sub.profile,
+            magazineCr: sub.totals.magazineCr,
+          };
+          return {
+            label: `Secondary barrel: ${sc}`,
+            costCr: round2(b.baseCost * (0.1 + secBarrel.costPct * secHeavy)),
+            weightKg: round2(
+              b.baseWeight * (0.1 + secBarrel.weightPct * secHeavy * 0.5),
+            ),
+            notes: 'complete multi-barrel: +10% receiver + barrel',
+          };
+        }),
+      ),
+    ],
+    { baseCost: recv.baselineCost, baseWeight: recv.baselineWeight },
+  );
+  const lines = build.lines;
+  const costCr = round2(build.cost);
+  const weightKg = round2(build.weight);
 
   return { lines, costCr, weightKg, secondary, sources };
 }
