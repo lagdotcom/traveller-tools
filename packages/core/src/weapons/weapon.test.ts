@@ -179,6 +179,37 @@ describe('multi-barrel weapons', () => {
   });
 });
 
+describe('leveled receiver features', () => {
+  it('Recoil Compensation drops Recoil and damage, and costs +10%/+5% per point', () => {
+    const base = evaluateWeapon({ ...DEFAULT_WEAPON_PARAMS });
+    const comp = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      features: ['recoilComp2'],
+    });
+    // 2 points: damage −3, Recoil −2 vs the base build.
+    expect(comp.profile.damage.mod).toBe(base.profile.damage.mod - 3);
+    expect(comp.profile.recoil).toBe(Math.max(0, base.profile.recoil - 2));
+    // Cost is the receiver baseline ×1.2 (the +20% modified-receiver line).
+    const recvLine = comp.breakdown.find((l) => l.label === 'Receiver Totals')!;
+    const baseRecv = base.breakdown.find((l) => l.label === 'Receiver Totals')!;
+    expect(recvLine.costCr).toBeCloseTo(baseRecv.costCr * 1.2, 3);
+  });
+
+  it('Armoured surfaces a Protection trait and adds +10% cost/+5% weight per point', () => {
+    const r = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      features: ['armoured2'],
+    });
+    expect(r.profile.traits['Armoured']).toBe(2);
+    const recvLine = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
+    const base = evaluateWeapon({ ...DEFAULT_WEAPON_PARAMS }).breakdown.find(
+      (l) => l.label === 'Receiver Totals',
+    )!;
+    expect(recvLine.costCr).toBeCloseTo(base.costCr * 1.2, 3);
+    expect(recvLine.weightKg).toBeCloseTo(base.weightKg * 1.1, 3);
+  });
+});
+
 describe('secondary weapon', () => {
   // A full FirearmParams doubles as a secondary spec (its `kind` is ignored).
   const sec = {
@@ -264,6 +295,28 @@ describe('validation rules', () => {
       true,
     );
     expect(issues.some((i) => /must have a full stock/.test(i.message))).toBe(
+      true,
+    );
+  });
+
+  it('flags a Low-Quality weapon with its Deficiency points', () => {
+    const issues = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      features: ['veryLowQuality'],
+    }).issues;
+    expect(
+      issues.some((i) =>
+        /Very Low Quality: apply 2 Deficiency/.test(i.message),
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects two quality grades (High + Low) as incompatible', () => {
+    const issues = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      features: ['highQuality', 'lowQuality'],
+    }).issues;
+    expect(issues.some((i) => /Incompatible features/.test(i.message))).toBe(
       true,
     );
   });

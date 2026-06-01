@@ -49,6 +49,31 @@ engine's `Issue` type and the `source`/provenance idea.
 
 `data.ts` holds every table as typed TS data tagged `source: 'Field Catalogue'`.
 
+### Receiver features (including the leveled ones)
+
+All FC receiver features live in the one `RECEIVER_FEATURES` table and are picked
+from the builder's multi-select (shared by firearms, energy weapons and
+launchers). The **leveled** features are modelled as discrete, mutually-exclusive
+list entries rather than numeric fields, so the same multiplicative chain handles
+them with no extra plumbing:
+
+- **Recoil Compensation** — `recoilComp1` / `recoilComp2` (group `recoil`): +10% /
+  +20% cost, +5% / +10% weight, reducing Recoil by 1 / 2 and damage by −1 / −3.
+- **Disguised** — `disguised1`–`disguised4` (group `disguise`): +50% cost per −1
+  detection DM (the DM itself is a play stat, carried in the label).
+- **Low Quality** — `lowQuality` … `pieceOfJunk` (group `quality`, shared with
+  High Quality): −10% to −80% cost. Each leaves **Deficiency points** the design
+  must satisfy with negative traits (Inaccurate / Unreliable / Ramshackle /
+  Hazardous) — which traits is the player's choice per the FC, so `evaluateWeapon`
+  flags the points as a warning rather than auto-applying a guess.
+- **Armoured** — `armoured1`–`armoured3` (group `armour`): +10% cost / +5% weight
+  per Protection point, surfaced as an `Armoured N` trait.
+- **Bulwarked** — `bulwarked1`–`bulwarked3` (group `bulwark`): +20% cost / +10%
+  weight per point (each grants Malfunction DM+1), surfaced as a `Bulwarked N` trait.
+
+Armoured/Bulwarked are offered to 3 points (ample for personal weapons); higher
+points follow the same per-point formula.
+
 ## Validation oracle & the rules-vs-worksheet conflicts
 
 The user supplied **eight worked worksheets**, shipped as `BUILTIN_WEAPONS` and

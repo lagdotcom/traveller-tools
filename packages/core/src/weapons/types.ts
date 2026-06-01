@@ -111,7 +111,25 @@ export type ReceiverFeatureId =
   | 'underwater'
   | 'stealthBasic'
   | 'stealthExtreme'
-  | 'partialMultiBarrel';
+  | 'partialMultiBarrel'
+  // Leveled features modelled as discrete, mutually-exclusive list entries.
+  | 'recoilComp1'
+  | 'recoilComp2'
+  | 'disguised1'
+  | 'disguised2'
+  | 'disguised3'
+  | 'disguised4'
+  | 'lowQuality'
+  | 'veryLowQuality'
+  | 'extremelyLowQuality'
+  | 'appallingQuality'
+  | 'pieceOfJunk'
+  | 'armoured1'
+  | 'armoured2'
+  | 'armoured3'
+  | 'bulwarked1'
+  | 'bulwarked2'
+  | 'bulwarked3';
 
 /** Furniture add-ons beyond the stock choice (multi-select). */
 export type FurnitureId =

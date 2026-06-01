@@ -70,6 +70,12 @@ function validateEnergy(params: EnergyParams): Issue[] {
         def.label,
       );
     pushIf(issues, tlGate(tl, def.label, def.minTL));
+    if (def.deficiency)
+      issues.push(
+        warning(
+          `${def.label}: apply ${def.deficiency} Deficiency point${def.deficiency === 1 ? '' : 's'} as Inaccurate / Unreliable / Ramshackle / Hazardous traits (player's choice).`,
+        ),
+      );
   }
   for (const labels of groups.values())
     if (labels.length > 1)

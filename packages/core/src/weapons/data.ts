@@ -737,6 +737,12 @@ export interface ReceiverFeatureDef {
   rangeMult?: number;
   /** Multiplier applied to ammunition cost (extreme stealth ×20). */
   ammoCostMult?: number;
+  /** Flat damage modifier (Recoil Compensation: −1 at 1pt, −3 at 2pts). */
+  damageMod?: number;
+  /** Recoil modifier (Recoil Compensation reduces Recoil by up to 2). */
+  recoilMod?: number;
+  /** Low-Quality Deficiency points the design must satisfy (flagged, not auto-applied). */
+  deficiency?: number;
   traits?: Traits;
   /** Mutually-exclusive group (only one feature per group). */
   group?: string;
@@ -813,6 +819,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      group: 'quality',
     },
     lightweight: {
       label: 'Lightweight',
@@ -884,6 +891,169 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+    },
+    // --- Recoil Compensation (group 'recoil'): +10% cost / +5% wt per point;
+    // reduces Recoil by up to 2 at the cost of −1 damage (1pt) / −3 (2pts). ---
+    recoilComp1: {
+      label: 'Recoil Compensation (1 pt)',
+      costMult: 1.1,
+      weightMult: 1.05,
+      capacityMult: 1,
+      quickdraw: 0,
+      damageMod: -1,
+      recoilMod: -1,
+      group: 'recoil',
+    },
+    recoilComp2: {
+      label: 'Recoil Compensation (2 pts)',
+      costMult: 1.2,
+      weightMult: 1.1,
+      capacityMult: 1,
+      quickdraw: 0,
+      damageMod: -3,
+      recoilMod: -2,
+      group: 'recoil',
+    },
+    // --- Disguised (group 'disguise'): each −1 detection DM adds 50% cost. The
+    // detection DM is a play stat, noted in the label; cost is what we model. ---
+    disguised1: {
+      label: 'Disguised (DM-1)',
+      costMult: 1.5,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      group: 'disguise',
+    },
+    disguised2: {
+      label: 'Disguised (DM-2)',
+      costMult: 2,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      group: 'disguise',
+    },
+    disguised3: {
+      label: 'Disguised (DM-3)',
+      costMult: 2.5,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      group: 'disguise',
+    },
+    disguised4: {
+      label: 'Disguised (DM-4)',
+      costMult: 3,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      group: 'disguise',
+    },
+    // --- Low Quality (group 'quality', shared with High Quality): a cost
+    // reduction plus Deficiency points the design must satisfy with negative
+    // traits (Inaccurate/Unreliable/Ramshackle/Hazardous). Which traits is the
+    // player's choice per the FC, so we flag the points rather than auto-apply. ---
+    lowQuality: {
+      label: 'Low Quality',
+      costMult: 0.9,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      deficiency: 1,
+      group: 'quality',
+    },
+    veryLowQuality: {
+      label: 'Very Low Quality',
+      costMult: 0.8,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      deficiency: 2,
+      group: 'quality',
+    },
+    extremelyLowQuality: {
+      label: 'Extremely Low Quality',
+      costMult: 0.6,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      deficiency: 3,
+      group: 'quality',
+    },
+    appallingQuality: {
+      label: 'Appalling Quality',
+      costMult: 0.4,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      deficiency: 5,
+      group: 'quality',
+    },
+    pieceOfJunk: {
+      label: 'Piece of Junk',
+      costMult: 0.2,
+      weightMult: 1,
+      capacityMult: 1,
+      quickdraw: 0,
+      deficiency: 8,
+      group: 'quality',
+    },
+    // --- Armoured (group 'armour'): +10% cost / +5% wt per point of Protection.
+    // Levels 1–3 cover personal weapons; higher points follow the same formula. ---
+    armoured1: {
+      label: 'Armoured (1 pt)',
+      costMult: 1.1,
+      weightMult: 1.05,
+      capacityMult: 1,
+      quickdraw: 0,
+      traits: { Armoured: 1 },
+      group: 'armour',
+    },
+    armoured2: {
+      label: 'Armoured (2 pts)',
+      costMult: 1.2,
+      weightMult: 1.1,
+      capacityMult: 1,
+      quickdraw: 0,
+      traits: { Armoured: 2 },
+      group: 'armour',
+    },
+    armoured3: {
+      label: 'Armoured (3 pts)',
+      costMult: 1.3,
+      weightMult: 1.15,
+      capacityMult: 1,
+      quickdraw: 0,
+      traits: { Armoured: 3 },
+      group: 'armour',
+    },
+    // --- Bulwarked (group 'bulwark'): +20% cost / +10% wt per point; each point
+    // grants DM+1 on the Malfunction table (surfaced as a trait). ---
+    bulwarked1: {
+      label: 'Bulwarked (1 pt)',
+      costMult: 1.2,
+      weightMult: 1.1,
+      capacityMult: 1,
+      quickdraw: 0,
+      traits: { Bulwarked: 1 },
+      group: 'bulwark',
+    },
+    bulwarked2: {
+      label: 'Bulwarked (2 pts)',
+      costMult: 1.4,
+      weightMult: 1.2,
+      capacityMult: 1,
+      quickdraw: 0,
+      traits: { Bulwarked: 2 },
+      group: 'bulwark',
+    },
+    bulwarked3: {
+      label: 'Bulwarked (3 pts)',
+      costMult: 1.6,
+      weightMult: 1.3,
+      capacityMult: 1,
+      quickdraw: 0,
+      traits: { Bulwarked: 3 },
+      group: 'bulwark',
     },
   };
 

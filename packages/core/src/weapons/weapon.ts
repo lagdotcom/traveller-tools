@@ -38,6 +38,7 @@ import {
   pushIf,
   round2,
   tlGate,
+  warning,
 } from './shared.js';
 import {
   type Damage,
@@ -128,7 +129,7 @@ function validate(params: FirearmParams): Issue[] {
       ),
     );
 
-  // Mutually-exclusive feature groups (size, weight, cooling, stealth).
+  // Mutually-exclusive feature groups (size, weight, cooling, stealth, quality…).
   const groups = new Map<string, string[]>();
   for (const id of params.features) {
     const def = RECEIVER_FEATURES[id];
@@ -137,6 +138,14 @@ function validate(params: FirearmParams): Issue[] {
         def.label,
       );
     pushIf(issues, tlGate(tl, def.label, def.minTL));
+    // Low Quality leaves Deficiency points the design must satisfy with negative
+    // traits — the choice is the player's, so flag it rather than auto-applying.
+    if (def.deficiency)
+      issues.push(
+        warning(
+          `${def.label}: apply ${def.deficiency} Deficiency point${def.deficiency === 1 ? '' : 's'} as Inaccurate / Unreliable / Ramshackle / Hazardous traits (player's choice).`,
+        ),
+      );
   }
   for (const labels of groups.values())
     if (labels.length > 1)
@@ -471,9 +480,12 @@ function firearmProfile(
 
   let quickdraw =
     receiver.quickdraw + barrel.quickdraw + feed.quickdraw - extraBarrels;
+  let featureRecoilMod = 0;
   for (const f of features) {
     quickdraw += f.quickdraw;
     if (f.signatureShift) sigIndex += f.signatureShift;
+    if (f.damageMod) damage = { ...damage, mod: damage.mod + f.damageMod };
+    if (f.recoilMod) featureRecoilMod += f.recoilMod;
     mergeTraits(traits, f.traits);
   }
   for (const id of params.furniture) quickdraw += FURNITURE[id]?.quickdraw ?? 0;
@@ -510,10 +522,12 @@ function firearmProfile(
   if (penetration < 0) traits['Lo-Pen'] = -penetration;
   else delete traits['Lo-Pen'];
 
-  // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods.
+  // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,
+  // less any Recoil Compensation.
   let recoil = calibre.damage.dice + auto + RECOIL_CLASS_MOD[params.receiver];
   if (params.gauss) recoil -= 1;
   if (calibre.traits['Zero-G']) recoil -= 2;
+  recoil += featureRecoilMod;
   recoil = Math.max(0, recoil);
 
   // Loaded magazine price: rounds × (Cr/100) × any ammo cost multiplier.
