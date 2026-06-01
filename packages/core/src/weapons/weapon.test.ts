@@ -222,22 +222,28 @@ describe('secondary weapon', () => {
     ammo: 'pellet' as const,
   };
 
-  it('mounts at 10% of the secondary and exposes its own profile', () => {
+  it('adds a complete extra barrel (FC rule) and exposes its own profile', () => {
     const standalone = evaluateWeapon(sec);
     const primary = evaluateWeapon({ ...DEFAULT_WEAPON_PARAMS });
     const withSec = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
       secondary: sec,
     });
-    // The mount adds 10% of the secondary's cost/weight to the primary.
+    // Complete multi-barrel: +10% of the host receiver baseline, plus the
+    // secondary's own barrel (short = 10% cost, 5% weight at half-weight).
+    const baseline = primary.breakdown.find(
+      (l) => l.label === 'Receiver Totals',
+    )!;
     expect(withSec.totals.costCr).toBeCloseTo(
-      primary.totals.costCr + standalone.totals.costCr * 0.1,
+      primary.totals.costCr + baseline.costCr * (0.1 + 0.1),
       3,
     );
     expect(withSec.totals.weightKg).toBeCloseTo(
-      primary.totals.weightKg + standalone.totals.weightKg * 0.1,
+      primary.totals.weightKg + baseline.weightKg * (0.1 + 0.1 * 0.5),
       3,
     );
+    // Each extra barrel costs a point of Quickdraw.
+    expect(withSec.profile.quickdraw).toBe(primary.profile.quickdraw - 1);
     // The secondary keeps its own profile (a separate data line).
     expect(withSec.secondary?.profile.damage).toEqual(
       standalone.profile.damage,

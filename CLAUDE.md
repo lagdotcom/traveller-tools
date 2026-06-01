@@ -139,9 +139,12 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   Ten-Six worked example can't match on weight because the book inconsistently
   bases the handgun receiver at 0.75kg there vs the table's 0.8kg.
 - **Secondary weapons.** `FirearmParams.secondary` is an under-barrel weapon
-  (`SecondaryWeaponParams` = a firearm minus `kind`/`secondary`). Mounting it adds
-  10% of its cost/weight to the host; it keeps its own profile, surfaced as
-  `WeaponEvaluation.secondary` (a second data line on the sheet). One level deep.
+  (`SecondaryWeaponParams` = a firearm minus `kind`/`secondary`). It's treated as a
+  **complete extra barrel** (FC complete-multi-barrel rule, p.34): mounting adds
+  10% of the **host receiver baseline** (cost & weight) plus the secondary's own
+  barrel (full cost, half weight), and costs −1 Quickdraw. It keeps its own
+  profile, surfaced as `WeaponEvaluation.secondary` (a second data line on the
+  sheet). One level deep. (The Ten-Six worked example reproduces on cost this way.)
 - **Adding a component:** add the id to the union + a row in the relevant
   `data.ts` (firearm) / `energyData.ts` / `projectorData.ts` / `launcherData.ts` /
   `grenadeData.ts` record; update the relevant

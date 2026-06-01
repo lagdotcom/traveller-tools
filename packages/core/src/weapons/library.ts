@@ -592,16 +592,14 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'none',
     },
   ),
-  // reconcile: the Ten-Six only partially reproduces — its receiver subtotal
-  // matches (Cr131.25) but the grand total does not (we get Cr147.98 / 0.94kg vs
-  // the worksheet's Cr170.25 / 0.928875kg, Quickdraw 10 vs 7, Lo-Pen 2 vs 3).
-  // Three known causes, none an arithmetic error:
-  //  1. Weight: the worksheet bases the handgun at 0.75kg where the FC table (and
-  //     every other example) uses 0.8kg — a book inconsistency we don't chase.
-  //  2. Cost/Quickdraw: the under-barrel smoothbore is a *complete multi-barrel*
-  //     (FC p.34: +10% of the host receiver + the barrel's own cost, −1 Quickdraw
-  //     per extra barrel). We model a secondary as a simplified 10%-of-secondary
-  //     mount instead, so its cost and Quickdraw differ.
+  // reconcile: the Ten-Six now reproduces on cost (we get Cr170.625 vs the
+  // worksheet's Cr170.25 — a ~Cr0.4 rounding difference) via the FC complete
+  // multi-barrel rule. The remaining differences are all explained:
+  //  1. Weight (0.99 vs 0.928875kg): the worksheet bases the handgun at 0.75kg
+  //     where the FC table (and every other example) uses 0.8kg — a book
+  //     inconsistency we don't chase. At 0.75kg the weight matches to the gram.
+  //  2. Quickdraw (9 vs 7) and primary Lo-Pen (2 vs 3): unresolved; the worksheet
+  //     shows more Quickdraw/penetration loss than the rules text accounts for.
   //  3. Secondary profile (range 2m, Spread 4): needs the per-barrel pellet range
   //     + Pellet Spread table, which isn't implemented yet.
   weapon(

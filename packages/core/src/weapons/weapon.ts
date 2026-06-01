@@ -410,19 +410,26 @@ function firearmComponents(
     });
   }
 
-  // A mounted secondary weapon (e.g. under-barrel shotgun): designed as its own
-  // weapon, but mounting it costs/weighs 10% of its values. It keeps its own
-  // profile (a separate data line); its full build is not added to this weapon.
+  // A mounted secondary weapon (e.g. under-barrel shotgun) is a complete extra
+  // barrel/receiver. Per the FC complete-multi-barrel rule (p.34) it adds 10% of
+  // the host receiver baseline (cost & weight); the secondary's own barrel is
+  // bought at its normal cost but, as a barrel after the first, adds only half
+  // its weight; Quickdraw drops by 1 (applied in the profile). The secondary
+  // keeps its own profile as a separate data line.
   let secondary: WeaponEvaluation['secondary'];
   const sources: string[] = [];
   if (params.secondary) {
     const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary });
     const sc = secondaryLabel(params.secondary);
+    const secBarrel = BARRELS[params.secondary.barrel] ?? BARRELS.rifle;
+    const secHeavy = params.secondary.heavyBarrel ? 2 : 1;
     push({
-      label: `Secondary mount: ${sc}`,
-      costCr: round2(sub.totals.costCr * 0.1),
-      weightKg: round2(sub.totals.weightKg * 0.1),
-      notes: '10% of the secondary',
+      label: `Secondary barrel: ${sc}`,
+      costCr: round2(baselineCost * (0.1 + secBarrel.costPct * secHeavy)),
+      weightKg: round2(
+        baselineWeight * (0.1 + secBarrel.weightPct * secHeavy * 0.5),
+      ),
+      notes: 'complete multi-barrel: +10% receiver + barrel',
     });
     sources.push(...sub.sources);
     secondary = {
@@ -478,8 +485,14 @@ function firearmProfile(
   let sigIndex =
     SIGNATURE_LEVELS.indexOf(calibre.signature) + barrel.signatureShift;
 
+  // Extra barrels and a mounted secondary (itself a complete extra barrel) each
+  // cost a point of Quickdraw.
   let quickdraw =
-    receiver.quickdraw + barrel.quickdraw + feed.quickdraw - extraBarrels;
+    receiver.quickdraw +
+    barrel.quickdraw +
+    feed.quickdraw -
+    extraBarrels -
+    (params.secondary ? 1 : 0);
   let featureRecoilMod = 0;
   for (const f of features) {
     quickdraw += f.quickdraw;
