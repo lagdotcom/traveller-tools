@@ -856,7 +856,10 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       receiver: 'minimal',
       damageDice: 2,
       barrel: 'minimal',
-      // TODO: 'Accessory: Weak Energy Cartridge x3'
+      // Fed by 3 disposable weak energy cartridges (3 × 0.01 = 0.03kg).
+      powerSource: 'cartridge',
+      cartridgeRating: 'weak',
+      cartridgeCount: 3,
     },
   ),
   energyWeapon('M-84', 'Battlefield configurable laser weapon', {
@@ -867,7 +870,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mods: ['efficientBeam', 'improvedFocus'],
     barrel: 'carbine',
     stock: 'folding',
-    // TODO: 'internalPowerpack' accessory — needs its cost/weight from the FC.
+    // Internal powerpack: 0.1kg → Power 70 at TL11 (perKg 700). The standard
+    // belt pack (1kg) and backpack (3kg) are larger options.
+    powerSource: 'powerpack',
+    powerpackRating: 'standard',
+    powerpackKg: 0.1,
   }),
   // TODO: Nefertem
   // TODO: Krabbine Heavy Industries IP-2 Standoff Incendiary Weapon

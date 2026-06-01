@@ -123,6 +123,36 @@ describe('energy weapon — power source mismatches', () => {
     expect(under.profile.damage.dice).toBe(3);
   });
 
+  it('loaded cartridges weigh their own mass (BL-3: 3 × weak = 0.03kg)', () => {
+    const r = evaluateWeapon(
+      energy({
+        tl: 9,
+        receiver: 'minimal',
+        damageDice: 2,
+        powerSource: 'cartridge',
+        cartridgeRating: 'weak',
+        cartridgeCount: 3,
+      }),
+    );
+    const holder = r.breakdown.find((l) => /Cartridge holder/.test(l.label))!;
+    expect(holder.weightKg).toBeCloseTo(0.03, 3);
+  });
+
+  it('an internal powerpack gives Power = weight × per-kg (0.1kg → 70 at TL11)', () => {
+    const r = evaluateWeapon(
+      energy({
+        tl: 11,
+        receiver: 'medium',
+        damageDice: 5,
+        powerSource: 'powerpack',
+        powerpackRating: 'standard',
+        powerpackKg: 0.1,
+      }),
+    );
+    // 0.1kg × 700 power/kg = 70 power; 5D delivered → floor(70/5) = 14 shots.
+    expect(r.profile.capacity).toBe(14);
+  });
+
   it('a non-ejecting cartridge holder is Hazardous −2', () => {
     const r = evaluateWeapon(
       energy({

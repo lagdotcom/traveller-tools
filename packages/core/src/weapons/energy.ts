@@ -227,11 +227,12 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       issues.push(error('Energy-weapon cartridges require TL9+'));
     capacity = Math.max(0, Math.floor(params.cartridgeCount));
     const cart = ENERGY_CARTRIDGE[params.cartridgeRating];
-    // Disposable holder: weighs cartridges + 20%; build cost is one cartridge.
+    // Loaded cartridges weigh their own mass (BL-3: 3 × weak 0.01 = 0.03kg); the
+    // build cost is one cartridge (the rest are the reload price).
     add(
       `Cartridge holder: ${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} ×${capacity}`,
       cart.cost,
-      capacity * cart.weight * 1.2,
+      capacity * cart.weight,
       `${capacity} shots`,
     );
     magazineCr = round2(capacity * cart.cost);

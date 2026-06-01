@@ -103,6 +103,12 @@ export const POWERPACK_RATINGS: Array<{
   { tl: 12, perKg: 1000, cartridgeMax: 'heavy' },
 ];
 
+/**
+ * Standard powerpack form factors (weight in kg); total Power = weight × the
+ * TL's power-per-kg (e.g. an internal pack at TL11 = 0.1 × 700 = Power 70).
+ */
+export const POWERPACK_SIZES = { internal: 0.1, belt: 1, backpack: 3 } as const;
+
 /** Power-points-per-kg available at a tech level (uses the highest TL band ≤ tl). */
 export function powerPerKg(tl: number): number {
   let perKg = 0;
