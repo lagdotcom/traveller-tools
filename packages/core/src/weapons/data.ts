@@ -1192,7 +1192,8 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     cost: 50,
     weight: 0.2,
     quickdraw: 0,
-    minTL: 5,
+    // A plain optical scope is low-tech (no TL gate); the Crunch Gun mounts one
+    // at TL4. The electronic/long-range scopes below keep their TLs.
     traits: { Scope: true },
   },
   longRangeScope: {
