@@ -17,14 +17,13 @@ export function filterByLabel<T extends FilterItem>(
 }
 
 /**
- * A titled, scrolling, filterable single-column list (presentational). Input is
- * handled by the parent, which owns the query/index and which list has focus.
+ * A titled, scrolling single-column list (presentational). The parent owns the
+ * filter query and which row is active; `index` < 0 means no row is highlighted.
  */
 export function FilterList({
   title,
   items,
   index,
-  query,
   isActive,
   height,
   width,
@@ -33,7 +32,6 @@ export function FilterList({
   title: string;
   items: FilterItem[];
   index: number;
-  query: string;
   isActive: boolean;
   height: number;
   width: number;
@@ -58,17 +56,12 @@ export function FilterList({
       <Text bold color={isActive ? 'cyan' : 'gray'}>
         {title} ({items.length})
       </Text>
-      {/* The filter line shows on the focused pane (always rendered to keep the
-          two panes vertically aligned). */}
-      <Text dimColor wrap="truncate-end">
-        {isActive ? `/${query}` : ' '}
-      </Text>
-      {start > 0 ? <Text dimColor>↑ {start} more</Text> : <Text> </Text>}
+      {start > 0 ? <Text dimColor>↑ {start} more</Text> : null}
       {items.length === 0 ? (
         <Text dimColor>{emptyText}</Text>
       ) : (
         visible.map((it, i) => {
-          const selected = start + i === current;
+          const selected = index >= 0 && start + i === current;
           return (
             <Text
               key={it.key}

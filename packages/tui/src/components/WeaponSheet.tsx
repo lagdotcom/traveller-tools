@@ -90,11 +90,13 @@ export function WeaponSheet({
   const columns = stdout?.columns ?? 80;
   const COST_W = 11;
   const WEIGHT_W = 10;
-  const NOTES_W = 18;
+  // Give the notes column whatever's left after a comfortable label column, so
+  // line-item notes ("100 shots @ 3 power", "complete multi-barrel…") aren't cut.
   const labelWidth = Math.max(
     20,
-    columns - 4 - COST_W - WEIGHT_W - NOTES_W, // 4 = border (2) + paddingX (2)
+    Math.floor((columns - 4 - COST_W - WEIGHT_W) * 0.45),
   );
+  const NOTES_W = Math.max(18, columns - 4 - COST_W - WEIGHT_W - labelWidth);
 
   return (
     <Box
