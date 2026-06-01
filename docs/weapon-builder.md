@@ -139,7 +139,11 @@ Key differences from a slug thrower:
 - **Modifications** (energy-exclusive, TL-gated): Efficient Beam Generation,
   Improved Beam Focus (+3 to a ≥2D laser), Intensified Pulse (Pen +1), Variable
   Intensity.
-- All energy receivers grant **Zero-G** and base **Penetration −1**; recoil is 0.
+- All energy receivers grant **Zero-G** and base **Penetration −1** (→ **Lo-Pen 2**
+  via the Final Penetration table); recoil is 0. Energy receivers also carry a base
+  **Quickdraw** mirroring the firearm class the FC maps them to (minimal/small =
+  pistol +4, medium = longarm 0, large = support −4 — the Nefertem, a small laser,
+  reads +4 from its receiver).
 
 **Unverified value.** The supplied FC text gives **no base Signature** for
 directed-energy weapons, so `evaluateEnergyWeapon` shows an Emissions signature but

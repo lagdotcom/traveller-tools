@@ -972,7 +972,19 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     powerpackRating: 'standard',
     powerpackKg: 0.1,
   }),
-  // TODO: Nefertem
+  energyWeapon('Nefertem', 'Compact TL9 laser pistol', {
+    tl: 9,
+    receiver: 'small',
+    damageDice: 3,
+    barrel: 'assault',
+    stock: 'none',
+    // Body Cr960 / 1.95kg (Small Cr800/1.5 + Assault barrel); + a 1kg light
+    // powerpack. Small receiver → Quickdraw +4 (pistol-class); base pen −1 →
+    // Lo-Pen 2.
+    powerSource: 'powerpack',
+    powerpackRating: 'light',
+    powerpackKg: 1,
+  }),
   // TODO: Krabbine Heavy Industries IP-2 Standoff Incendiary Weapon
   // TODO: Spigot Mortar, General Purpose
   launcher(

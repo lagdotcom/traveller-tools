@@ -19,6 +19,24 @@ const energy = (overrides: Partial<EnergyParams>): EnergyParams => ({
 const errors = (r: { issues: { severity: string; message: string }[] }) =>
   r.issues.filter((i) => i.severity === 'error');
 
+describe('Nefertem — small TL9 laser pistol (the built-in)', () => {
+  it('matches the worked body (Cr960/1.95kg), receiver Quickdraw +4 and Lo-Pen 2', () => {
+    const r = evaluateWeapon(
+      BUILTIN_WEAPONS.find((w) => w.name === 'Nefertem')!.params,
+    );
+    // Body = Small receiver Cr800/1.5kg + Assault barrel.
+    const recv = r.breakdown.find((l) => /Receiver/.test(l.label))!;
+    const barrel = r.breakdown.find((l) => /Barrel/.test(l.label))!;
+    expect(recv.costCr + barrel.costCr).toBeCloseTo(960, 3);
+    expect(recv.weightKg + barrel.weightKg).toBeCloseTo(1.95, 3);
+    // Small (pistol-class) receiver +4, Assault barrel +2 → Quickdraw +6.
+    expect(r.profile.quickdraw).toBe(6);
+    // Energy base Penetration −1 → Lo-Pen 2 (Final Penetration table).
+    expect(r.profile.traits['Lo-Pen']).toBe(2);
+    expect(errors(r)).toEqual([]);
+  });
+});
+
 describe('energy weapon — receiver baseline & totals', () => {
   it('TL12 Medium (Standard) laser rifle with improved focus', () => {
     const r = evaluateWeapon(
@@ -47,7 +65,7 @@ describe('energy weapon — receiver baseline & totals', () => {
     expect(r.profile.recoil).toBe(0);
     expect(r.profile.auto).toBe(0);
     expect(r.profile.traits['Zero-G']).toBe(true);
-    expect(r.profile.traits['Lo-Pen']).toBe(1); // base Penetration −1
+    expect(r.profile.traits['Lo-Pen']).toBe(2); // base Penetration −1 → Lo-Pen 2
     // TL12 powerpack = 1000 power/kg × 2kg ÷ 5 power/shot = 400 shots.
     expect(r.profile.capacity).toBe(400);
     expect(errors(r)).toEqual([]);

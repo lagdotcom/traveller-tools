@@ -34,6 +34,7 @@ import {
   clampLevel,
   error,
   mergeTraits,
+  penetrationProfile,
   pushIf,
   round2,
   tlGate,
@@ -282,7 +283,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   // it adds no signature shift; only stealth features/accessories move it.
   let sigIndex = SIGNATURE_LEVELS.indexOf('normal');
 
-  let quickdraw = barrel.quickdraw + (params.heavyBarrel ? -1 : 0);
+  let quickdraw =
+    receiver.quickdraw + barrel.quickdraw + (params.heavyBarrel ? -1 : 0);
   for (const f of features) {
     quickdraw += f.quickdraw;
     if (f.signatureShift) sigIndex += f.signatureShift;
@@ -299,7 +301,12 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     mergeTraits(traits, a.traits);
   }
 
-  if (penetration < 0) traits['Lo-Pen'] = -penetration;
+  // Final Penetration table: −1 base → Lo-Pen 2; Intensified Pulse can push it
+  // positive → AP (with the table's damage penalty).
+  const pen = penetrationProfile(penetration, damage.dice);
+  if (pen.loPen) traits['Lo-Pen'] = pen.loPen;
+  if (pen.ap) traits['AP'] = pen.ap;
+  if (pen.damageMod) damage = { ...damage, mod: damage.mod + pen.damageMod };
 
   const profile: WeaponProfile = {
     tl: params.tl,

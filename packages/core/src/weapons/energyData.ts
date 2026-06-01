@@ -42,6 +42,13 @@ export interface EnergyReceiverDef {
   baseRange: number;
   /** Highest power class (and thus damage) the receiver can deliver. */
   maxPower: EnergyPowerClass;
+  /**
+   * Base Quickdraw. The FC energy receiver table omits it, but says small/minimal
+   * receivers configure as pistols, medium as longarms and large as support
+   * weapons — so these mirror the firearm receiver Quickdraw (the Nefertem, a
+   * small laser, reads +4). minimal/large are derived from that mapping.
+   */
+  quickdraw: number;
 }
 
 export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
@@ -51,6 +58,7 @@ export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
     baseWeight: 0.5,
     baseRange: 50,
     maxPower: 'weak',
+    quickdraw: 4,
   },
   small: {
     label: 'Small',
@@ -58,6 +66,7 @@ export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
     baseWeight: 1.5,
     baseRange: 100,
     maxPower: 'light',
+    quickdraw: 4,
   },
   medium: {
     label: 'Medium',
@@ -65,6 +74,7 @@ export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
     baseWeight: 3,
     baseRange: 200,
     maxPower: 'standard',
+    quickdraw: 0,
   },
   large: {
     label: 'Large',
@@ -72,6 +82,7 @@ export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
     baseWeight: 8,
     baseRange: 500,
     maxPower: 'heavy',
+    quickdraw: -4,
   },
 };
 
