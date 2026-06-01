@@ -104,8 +104,12 @@ export const POWERPACK_RATINGS: Array<{
 ];
 
 /**
- * Standard powerpack form factors (weight in kg); total Power = weight × the
- * TL's power-per-kg (e.g. an internal pack at TL11 = 0.1 × 700 = Power 70).
+ * Powerpack weight (kg) → total Power is weight × the TL's power-per-kg (e.g. an
+ * internal 0.1kg pack at TL11 = 0.1 × 700 = Power 70). The `internal` pack is a
+ * weapon's own; `belt`/`backpack` are larger packs that, on a weapon like the
+ * M-84, are *swappable hardware accessories* (alternate power sources) — modelling
+ * a weapon carrying several interchangeable packs is deferred (TODO), so for now
+ * the build just takes one `powerpackKg`.
  */
 export const POWERPACK_SIZES = { internal: 0.1, belt: 1, backpack: 3 } as const;
 
