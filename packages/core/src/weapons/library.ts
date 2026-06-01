@@ -52,7 +52,9 @@ import type {
   GrenadeTypeId,
   LauncherParams,
   LauncherReceiverId,
+  MagazineSpec,
   MechanismId,
+  PackSpec,
   ProjectorFuelId,
   ProjectorParams,
   ProjectorPropellantId,
@@ -216,6 +218,46 @@ function normalizeFeatures(v: unknown): ReceiverFeatureRef[] {
   return out;
 }
 
+/** Coerce a magazine-options list; drops malformed entries, undefined if empty. */
+function normalizeMagazines(v: unknown): MagazineSpec[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: MagazineSpec[] = [];
+  for (const item of v) {
+    if (!isObject(item)) continue;
+    const spec: MagazineSpec = {};
+    if (typeof item.label === 'string') spec.label = item.label;
+    if (typeof item.pct === 'number' && Number.isFinite(item.pct))
+      spec.pct = item.pct;
+    if (typeof item.rounds === 'number' && Number.isFinite(item.rounds))
+      spec.rounds = item.rounds;
+    if (typeof item.costCr === 'number' && Number.isFinite(item.costCr))
+      spec.costCr = item.costCr;
+    out.push(spec);
+  }
+  return out.length ? out : undefined;
+}
+
+/** Coerce an energy power-source-options list (powerpack / cartridge). */
+function normalizePacks(v: unknown): PackSpec[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: PackSpec[] = [];
+  for (const item of v) {
+    if (!isObject(item)) continue;
+    const rating = pick<EnergyPowerClass>(
+      item.rating,
+      ENERGY_POWER_CLASS_DICE,
+      'standard' as EnergyPowerClass,
+    );
+    const label = typeof item.label === 'string' ? item.label : undefined;
+    if (item.kind === 'cartridge') {
+      out.push({ kind: 'cartridge', label, count: num(item.count, 1), rating });
+    } else {
+      out.push({ kind: 'powerpack', label, kg: num(item.kg, 1), rating });
+    }
+  }
+  return out.length ? out : undefined;
+}
+
 /** Coerce ammunition into a non-empty list, tolerating a legacy single string. */
 function normalizeAmmo(v: unknown, fallback: AmmoTypeId[]): AmmoTypeId[] {
   const arr = Array.isArray(v) ? v : typeof v === 'string' ? [v] : [];
@@ -251,6 +293,9 @@ function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
     furniture: pickList<FurnitureId>(p.furniture, FURNITURE),
     feed: pick<FeedId>(p.feed, FEEDS, d.feed),
     capacityPct: num(p.capacityPct, d.capacityPct),
+    ...(normalizeMagazines(p.magazines)
+      ? { magazines: normalizeMagazines(p.magazines) }
+      : {}),
     accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
     ammo: normalizeAmmo(p.ammo, d.ammo),
     // A secondary weapon (one level deep — its own `secondary` is dropped).
@@ -280,6 +325,7 @@ function normalizeSecondaryParams(
     furniture: f.furniture,
     feed: f.feed,
     capacityPct: f.capacityPct,
+    ...(f.magazines ? { magazines: f.magazines } : {}),
     accessories: f.accessories,
     ammo: f.ammo,
   };
@@ -323,6 +369,7 @@ function normalizeEnergyParams(p: Record<string, unknown>): EnergyParams {
     ),
     cartridgeCount: num(p.cartridgeCount, d.cartridgeCount),
     cartridgeEjects: bool(p.cartridgeEjects, d.cartridgeEjects),
+    ...(normalizePacks(p.packs) ? { packs: normalizePacks(p.packs) } : {}),
   };
 }
 
@@ -907,9 +954,10 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'full',
     accessories: ['laserPointer'], // book error: says 'Scope', but Cr200 0.1kg
     ammo: ['ball', 'explosive', 'heap'],
-    // reconcile: ball - 275m, 4D, 10.3kg, Cr4520, Mag 45 (Cr270), QD -4, Auto 3, Inaccurate -1, Phys Sig (normal), Zero-G
-    // reconcile: explosive - 250m, 6D, 10.3kg, Cr4520, Mag 45 (Cr1400), QD -4, Auto 3, Inaccurate -1, Phys Sig (normal), Zero-G
-    // reconcile: HEAP - 250m, 4D, 10.3kg, Cr4520, Mag 45 (Cr2300), QD -4, AP 4, Auto 3, Inaccurate -1, Phys Sig (high), Zero-G
+    // Book lists Mag 45 (a rocket-calibre quirk we don't derive); ball reload Cr270.
+    magazines: [{ rounds: 45, costCr: 270 }],
+    // reconcile: ball - 275m, 4D, QD -4, Inaccurate -1, Phys Sig (normal), Zero-G (rocket calibre not modelled)
+    // reconcile: explosive Mag Cr1400, HEAP Mag Cr2300 (per-ammo reload overrides not yet supported)
   }),
   weapon(
     'Solo',
@@ -930,7 +978,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       accessories: ['holographicSight'],
       ammo: ['ball', 'apAdvanced'],
-      // reconcile: ball mag Cr200, advanced AP mag Cr275
+      // Book ball reload Cr200 (the derived Cr22.5 misses a gauss ammo premium).
+      magazines: [{ costCr: 200 }],
+      // reconcile: advanced AP mag Cr275 (per-ammo reload override not yet supported)
       // reconcile: Quickdraw +0
     },
   ),
@@ -946,8 +996,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'folding', // reconcile: book says Cr464, 0.212625kg
     accessories: ['scope'],
     ammo: ['ball', 'apAdvanced'],
-    // reconcile: rounds range to 280m, 3D damage (3D-1 with AAP), Mag 50 (Cr110/180 AAP)
-    // extra: pretty sure Mag 50 is a manual override, mentioned in text
+    // Mag 50 is a manual override (mentioned in the text), ball reload Cr110.
+    magazines: [{ rounds: 50, costCr: 110 }],
+    // reconcile: AAP mag Cr180 (per-ammo reload override not yet supported)
   }),
   weapon('Jimpy-G', 'General-purpose machinegun, generic', {
     tl: 5,
@@ -958,8 +1009,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     heavyBarrel: true, // reconcile: book says Cr900, 7.5kg
     stock: 'full',
     furniture: ['bipod'],
-    // reconcile: Range 375m, Mag 50 (Cr50), Quickdraw +4 (???), Slow Loader 4
-    // extra: ammo seems manual, "standard length of belt weights 1.5kg, spare barrel at 7.5kg"
+    // Belt feed: Mag 50 is a manual override (the text's belt length), reload Cr50.
+    magazines: [{ rounds: 50, costCr: 50 }],
+    // reconcile: Range 375m, Quickdraw +4 (???), Slow Loader 4 (belt feed not modelled)
   }),
   projector('MF-61', 'Individual flame weapon, Krabbine Heavy Industries', {
     tl: 9,

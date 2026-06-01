@@ -169,6 +169,34 @@ export function WeaponSheet({
         </Box>
       </Box>
 
+      {evaluation.magazines && evaluation.magazines.length > 1 ? (
+        <Box marginTop={1} flexDirection="column">
+          <Text bold>Magazines</Text>
+          {evaluation.magazines.map((m, i) => (
+            <Box key={i}>
+              <Box width={labelWidth}>
+                <Text wrap="truncate-end">
+                  {m.primary ? '▸ ' : '  '}
+                  {m.label}
+                </Text>
+              </Box>
+              <Box width={COST_W} justifyContent="flex-end">
+                <Text>{cr(m.magazineCr)}</Text>
+              </Box>
+              <Box width={WEIGHT_W} justifyContent="flex-end">
+                <Text>{kg(m.weightKg)}</Text>
+              </Box>
+              <Box width={NOTES_W} paddingLeft={1}>
+                <Text dimColor wrap="truncate-end">
+                  {m.capacity}
+                  {m.primary ? ' shots (standard)' : ' shots'}
+                </Text>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      ) : null}
+
       {evaluation.notes && evaluation.notes.length > 0 ? (
         <Box marginTop={1} flexDirection="column">
           <Text bold>Notes</Text>

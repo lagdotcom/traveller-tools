@@ -166,6 +166,51 @@ describe('multiple supported ammo types', () => {
   });
 });
 
+describe('magazine options', () => {
+  it('overrides the standard magazine count/cost without touching the build', () => {
+    // Reliant lists Mag 50 (Cr110 ball) — a manual count the % rule wouldn't give.
+    const r = evalNamed('Reliant');
+    expect(r.profile.capacity).toBe(50);
+    expect(r.totals.magazineCr).toBe(110);
+    // The build cost/weight are unchanged by a count override (no extra rows).
+    expect(r.magazines).toBeUndefined();
+  });
+
+  it('lists alternative magazines, scaling weight by the capacity rule', () => {
+    const base = { ...DEFAULT_WEAPON_PARAMS, receiver: 'lsw' as const };
+    const single = evaluateWeapon(base);
+    const r = evaluateWeapon({
+      ...base,
+      magazines: [
+        { pct: 100, label: 'Box' },
+        { pct: 150, label: 'Drum' },
+        { rounds: 10, label: 'Stick' },
+      ],
+    });
+    expect(r.magazines?.map((m) => m.label)).toEqual(['Box', 'Drum', 'Stick']);
+    const [box, drum] = r.magazines!;
+    // The standard (first) row equals the headline build.
+    expect(box!.primary).toBe(true);
+    expect(box!.weightKg).toBeCloseTo(single.totals.weightKg, 3);
+    // A 150% drum holds more and weighs more (capacity-% weight rule).
+    expect(drum!.capacity).toBeGreaterThan(box!.capacity);
+    expect(drum!.weightKg).toBeGreaterThan(box!.weightKg);
+  });
+
+  it('round-trips magazine options through serialization', () => {
+    const params: WeaponParams = {
+      ...DEFAULT_WEAPON_PARAMS,
+      magazines: [{ pct: 100 }, { rounds: 50, costCr: 25, label: 'Drum' }],
+    };
+    const back = parseWeapon(serializeWeapon({ name: 'M', params })).params;
+    if (back.kind !== 'firearm') throw new Error('expected firearm');
+    expect(back.magazines).toEqual([
+      { pct: 100 },
+      { rounds: 50, costCr: 25, label: 'Drum' },
+    ]);
+  });
+});
+
 // The FC "Final Penetration" table maps net penetration → Lo-Pen / AP.
 describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
   it('handgun-calibre weapons read Lo-Pen 2', () => {

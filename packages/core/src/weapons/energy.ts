@@ -49,7 +49,7 @@ import {
   type WeaponLineItem,
   type WeaponProfile,
 } from './types.js';
-import type { WeaponEvaluation } from './weapon.js';
+import type { WeaponEvaluation, WeaponMagazine } from './weapon.js';
 
 /** Strongest cartridge power class available at a tech level (null below TL9). */
 function cartridgeMaxAt(tl: number): string | null {
@@ -201,6 +201,11 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   let capacity = 0;
   let magazineCr = 0;
   let deliveredDice = dice;
+  // The primary power source's weight/label/refill, so alternative packs can be
+  // shown as their own rows (weapon weight − this pack + the alternative).
+  let primaryPackWeight = 0;
+  let primaryPackLabel = '';
+  let primaryReloadCr = 0;
 
   if (params.powerSource === 'powerpack') {
     const perKg = powerPerKg(params.tl);
@@ -208,6 +213,11 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       issues.push(error('Energy-weapon powerpacks require TL8+'));
     const kg = Math.max(0, params.powerpackKg);
     capacity = dice > 0 ? Math.floor((perKg * kg) / dice) : 0;
+    primaryPackWeight = kg;
+    primaryPackLabel = `Powerpack: ${ENERGY_POWER_CLASS_LABEL[params.powerpackRating]} ${kg}kg`;
+    primaryReloadCr = round2(
+      POWERPACK_COST_PER_KG[params.powerpackRating] * kg,
+    );
     add(
       `Powerpack: ${ENERGY_POWER_CLASS_LABEL[params.powerpackRating]} ${kg}kg`,
       POWERPACK_COST_PER_KG[params.powerpackRating] * kg,
@@ -238,6 +248,9 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       `${capacity} shots`,
     );
     magazineCr = round2(capacity * cart.cost);
+    primaryPackWeight = capacity * cart.weight;
+    primaryPackLabel = `Cartridge: ${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} ×${capacity}`;
+    primaryReloadCr = magazineCr;
     const cartDice = ENERGY_POWER_CLASS_DICE[params.cartridgeRating];
     if (cartDice > dice) {
       // An over-powered cartridge stresses the weapon → Unreliable.
@@ -323,6 +336,44 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     traits,
   };
 
+  // Power-source options: the primary (built-in) plus any alternative packs. The
+  // weapon weight for an alternative is the loaded weight less the primary pack
+  // plus the alternative's mass.
+  const weaponSansPack = round2(totalWeight - primaryPackWeight);
+  const altPacks: WeaponMagazine[] = (params.packs ?? []).map((spec) => {
+    if (spec.kind === 'powerpack') {
+      const kg = Math.max(0, spec.kg);
+      const shots =
+        deliveredDice > 0 ? Math.floor((powerPerKg(params.tl) * kg) / dice) : 0;
+      return {
+        label: spec.label ?? `Powerpack ${kg}kg`,
+        capacity: shots,
+        weightKg: round2(weaponSansPack + kg),
+        magazineCr: round2(POWERPACK_COST_PER_KG[spec.rating] * kg),
+        primary: false,
+      };
+    }
+    const cart = ENERGY_CARTRIDGE[spec.rating];
+    const count = Math.max(0, Math.floor(spec.count));
+    return {
+      label: spec.label ?? `Cartridge ×${count}`,
+      capacity: count,
+      weightKg: round2(weaponSansPack + count * cart.weight),
+      magazineCr: round2(count * cart.cost),
+      primary: false,
+    };
+  });
+  const magazines: WeaponMagazine[] = [
+    {
+      label: primaryPackLabel || 'Power source',
+      capacity,
+      weightKg: round2(totalWeight),
+      magazineCr: primaryReloadCr,
+      primary: true,
+    },
+    ...altPacks,
+  ];
+
   return {
     profile,
     breakdown,
@@ -338,5 +389,6 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       furniture: params.furniture,
       features: params.features,
     }),
+    ...(altPacks.length > 0 ? { magazines } : {}),
   };
 }

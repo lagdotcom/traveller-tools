@@ -235,3 +235,35 @@ describe('energy weapon — serialization & built-ins', () => {
     expect(() => evaluateWeapon(params)).not.toThrow();
   });
 });
+
+describe('alternative power packs', () => {
+  it('lists the primary source plus each alternative pack', () => {
+    const r = evaluateWeapon(
+      energy({
+        powerSource: 'powerpack',
+        powerpackKg: 1,
+        packs: [
+          { kind: 'powerpack', kg: 3, rating: 'standard', label: 'Backpack' },
+        ],
+      }),
+    );
+    expect(r.magazines).toHaveLength(2);
+    expect(r.magazines![0]!.primary).toBe(true);
+    const backpack = r.magazines![1]!;
+    expect(backpack.label).toBe('Backpack');
+    // A 3kg pack holds more shots and weighs more than the 1kg primary.
+    expect(backpack.capacity).toBeGreaterThan(r.magazines![0]!.capacity);
+    expect(backpack.weightKg).toBeGreaterThan(r.magazines![0]!.weightKg);
+  });
+
+  it('round-trips power-pack options through serialization', () => {
+    const params = energy({
+      packs: [{ kind: 'cartridge', count: 5, rating: 'standard' }],
+    });
+    const back = parseWeapon(serializeWeapon({ name: 'E', params })).params;
+    if (back.kind !== 'energy') throw new Error('expected energy');
+    expect(back.packs).toEqual([
+      { kind: 'cartridge', count: 5, rating: 'standard' },
+    ]);
+  });
+});

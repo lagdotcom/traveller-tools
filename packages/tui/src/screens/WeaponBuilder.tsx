@@ -34,8 +34,10 @@ import {
   LAUNCHER_RECEIVERS,
   type LauncherParams,
   type LauncherReceiverId,
+  type MagazineSpec,
   type MechanismId,
   MECHANISMS,
+  type PackSpec,
   parseWeapon,
   PROJECTOR_FUELS,
   PROJECTOR_PROPELLANTS,
@@ -262,6 +264,10 @@ interface Lists {
   accessories: AccessoryId[];
   mods: EnergyModId[];
   ammo: AmmoTypeId[];
+  // Carried through unedited so loaded designs keep their magazine / power-pack
+  // options (the builder edits the standard magazine via Capacity %).
+  magazines?: MagazineSpec[];
+  packs?: PackSpec[];
 }
 
 // --- Per-class param builders (form values + selections → WeaponParams) -----
@@ -304,6 +310,9 @@ function buildFirearm(v: FormValues, lists: Lists): FirearmParams {
     furniture: lists.furniture,
     feed: FEED.toId(v.feed),
     capacityPct: num(v.capacityPct, 100),
+    ...(lists.magazines && lists.magazines.length > 0
+      ? { magazines: lists.magazines }
+      : {}),
     accessories: lists.accessories,
     ammo: lists.ammo,
     ...(v.secEnabled === 'yes' ? { secondary: buildSecondary(v) } : {}),
@@ -330,6 +339,7 @@ function buildEnergy(v: FormValues, lists: Lists): EnergyParams {
     cartridgeRating: PCLASS.toId(v.cartridgeRating),
     cartridgeCount: num(v.cartridgeCount, 10),
     cartridgeEjects: v.cartridgeEjects === 'yes',
+    ...(lists.packs && lists.packs.length > 0 ? { packs: lists.packs } : {}),
   };
 }
 
@@ -781,7 +791,16 @@ export function WeaponBuilderScreen({
     if (idx >= 0) setActive(idx);
   };
 
-  const selected: Lists = { features, furniture, accessories, mods, ammo };
+  const selected: Lists = {
+    features,
+    furniture,
+    accessories,
+    mods,
+    ammo,
+    magazines:
+      startParams.kind === 'firearm' ? startParams.magazines : undefined,
+    packs: startParams.kind === 'energy' ? startParams.packs : undefined,
+  };
   const params: WeaponParams =
     weaponClass === 'energy'
       ? buildEnergy(form.values, selected)

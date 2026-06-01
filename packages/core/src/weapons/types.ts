@@ -327,8 +327,19 @@ export interface FirearmParams {
   stock: StockId;
   furniture: FurnitureId[];
   feed: FeedId;
-  /** Actual magazine size as a percentage of base capacity (50–150). */
+  /**
+   * Actual magazine size as a percentage of base capacity (50–150). Retained as
+   * the fallback for the standard magazine when `magazines` is not given.
+   */
   capacityPct: number;
+  /**
+   * The interchangeable magazine options the weapon is sold with. The **first**
+   * is the standard magazine, baked into the build cost/weight (its `pct` is the
+   * effective `capacityPct`); the rest are alternative magazines, each shown as
+   * its own capacity / reload / loaded-weight row. Absent ≡ a single standard
+   * magazine derived from `capacityPct`.
+   */
+  magazines?: MagazineSpec[];
   accessories: AccessoryId[];
   /**
    * Ammunition types the weapon is shown firing — one profile row per type (the
@@ -347,6 +358,45 @@ export interface FirearmParams {
 
 /** A secondary weapon: a firearm spec without its own class tag or secondary. */
 export type SecondaryWeaponParams = Omit<FirearmParams, 'kind' | 'secondary'>;
+
+/**
+ * One magazine option. The FC bakes a *standard* magazine into the weapon's
+ * loaded weight/cost (via the capacity % rule); alternative magazines are sold
+ * separately. Capacity is normally a percentage of base, but the book sometimes
+ * prints an absolute round count or magazine price that doesn't derive cleanly —
+ * `rounds`/`costCr` are manual overrides for those listed values.
+ */
+export interface MagazineSpec {
+  /** Display name (e.g. "Standard", "Drum", "Extended"). */
+  label?: string;
+  /** Capacity as a % of base (50–150). Ignored when `rounds` is given. */
+  pct?: number;
+  /** Absolute round count — a manual override for a book-listed magazine size. */
+  rounds?: number;
+  /** Manual reload-price override (Cr) for a book-listed magazine cost. */
+  costCr?: number;
+}
+
+/**
+ * One power-source option for an energy weapon — a rechargeable powerpack (sized
+ * in kg) or a holder of disposable cartridges. Listed as alternatives beyond the
+ * weapon's primary source (e.g. the M-84's internal / belt / backpack packs).
+ */
+export type PackSpec =
+  | {
+      kind: 'powerpack';
+      label?: string;
+      /** Powerpack mass in kg (shots = power-per-kg × kg ÷ damage dice). */
+      kg: number;
+      rating: EnergyPowerClass;
+    }
+  | {
+      kind: 'cartridge';
+      label?: string;
+      /** Number of cartridges in the holder. */
+      count: number;
+      rating: EnergyPowerClass;
+    };
 
 /**
  * A Directed Energy Weapon (laser / microwave). Shares barrels, stocks,
@@ -382,6 +432,12 @@ export interface EnergyParams {
   cartridgeCount: number;
   /** Cartridges eject after firing; non-ejecting holders gain Hazardous -2. */
   cartridgeEjects: boolean;
+  /**
+   * Alternative power sources beyond the primary one (defined by the fields
+   * above). Each is shown as its own shots / reload / weight row — e.g. a weapon
+   * sold with internal, belt and backpack packs.
+   */
+  packs?: PackSpec[];
 }
 
 /**

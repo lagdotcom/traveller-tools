@@ -53,6 +53,7 @@ import {
   type AmmoTypeId,
   type Damage,
   type FirearmParams,
+  type MagazineSpec,
   type SecondaryWeaponParams,
   SIGNATURE_LEVELS,
   type Traits,
@@ -81,6 +82,25 @@ export interface WeaponEvaluation {
   }[];
   /** A mounted secondary weapon's own profile, shown as a second data line. */
   secondary?: { label: string; profile: WeaponProfile; magazineCr: number };
+  /**
+   * The interchangeable magazine / power-source options (firearms & energy). The
+   * first is the standard one baked into the build; the rest are alternatives.
+   * Present only when more than one option exists.
+   */
+  magazines?: WeaponMagazine[];
+}
+
+/** One magazine / power-source row: capacity, loaded weight, reload price. */
+export interface WeaponMagazine {
+  label: string;
+  /** Rounds (firearm) or shots (energy). */
+  capacity: number;
+  /** The weapon's loaded weight with this magazine/pack fitted. */
+  weightKg: number;
+  /** Reload / refill price for this option (primary ammo for firearms). */
+  magazineCr: number;
+  /** The standard magazine baked into the headline build. */
+  primary: boolean;
 }
 
 // --- Small helpers ----------------------------------------------------------
@@ -265,6 +285,43 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     return { ammo: id, label: ammo.label, profile, magazineCr };
   });
   const primary = ammoProfiles[0]!;
+  const totalWeight = round2(recv.baselineWeight + comp.weightKg);
+
+  // Magazine options: the first is the standard one (its weight/cost are the
+  // headline); each alternative scales loaded weight by the capacity-% weight
+  // rule and prices its reload off the primary ammunition.
+  const { calibre, neutralCapacity, capPct: stdPct } = parts;
+  const primaryAmmo = AMMO_TYPES[ammoIds[0]!] ?? AMMO_TYPES.ball;
+  const capWeightMult = (pct: number) => 1 + 0.05 * ((pct - 100) / 10);
+  const reloadFor = (cap: number) =>
+    round2(
+      (cap *
+        calibre.ammoCostPer100 *
+        recv.ammoCostMult *
+        primaryAmmo.costMult) /
+        100,
+    );
+  const magazines: WeaponMagazine[] = parts.magazines.map((spec, i) => {
+    const isStd = i === 0;
+    const specPct = spec.pct ?? (isStd ? stdPct : 100);
+    const capacity =
+      params.mechanism === 'singleShot'
+        ? 1
+        : (spec.rounds ?? Math.round(neutralCapacity * (specPct / 100)));
+    return {
+      label: spec.label ?? (isStd ? 'Standard' : `Magazine ${i + 1}`),
+      capacity,
+      weightKg: isStd
+        ? totalWeight
+        : round2(
+            (totalWeight * capWeightMult(specPct)) / capWeightMult(stdPct),
+          ),
+      magazineCr: spec.costCr ?? reloadFor(capacity),
+      primary: isStd,
+    };
+  });
+  // A standard-magazine cost override is the headline reload price too.
+  const headlineMagCr = parts.magazines[0]?.costCr ?? primary.magazineCr;
 
   return {
     profile: primary.profile,
@@ -272,8 +329,8 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     issues: validate(params),
     totals: {
       costCr: round2(recv.baselineCost + comp.costCr),
-      weightKg: round2(recv.baselineWeight + comp.weightKg),
-      magazineCr: primary.magazineCr,
+      weightKg: totalWeight,
+      magazineCr: headlineMagCr,
     },
     sources: [...new Set([SOURCE, ...comp.sources])],
     notes: collectNotes({
@@ -283,6 +340,7 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     }),
     ammoProfiles,
     ...(comp.secondary ? { secondary: comp.secondary } : {}),
+    ...(magazines.length > 1 ? { magazines } : {}),
   };
 }
 
@@ -291,14 +349,47 @@ function resolveParts(params: FirearmParams) {
   const autoSteps = Math.max(0, Math.min(6, Math.floor(params.autoIncrease)));
   const mechanism = MECHANISMS[params.mechanism] ?? MECHANISMS.semiAuto;
   const auto = mechanism.auto > 0 ? mechanism.auto + autoSteps : 0;
+  const receiver = RECEIVERS[params.receiver] ?? RECEIVERS.handgun;
+  const calibre = CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun;
+  const features = resolveFeatures(params.features);
+
+  // Capacity-neutral base count (before the capacity-% setting): single-shot
+  // holds one per barrel; smoothbores use fixed per-receiver sizes; otherwise it
+  // is the receiver base × calibre × mechanism × gauss × feature multipliers.
+  let neutralCapacity: number;
+  if (params.mechanism === 'singleShot') neutralCapacity = 1;
+  else if (calibre.smoothbore)
+    neutralCapacity = SMOOTHBORE_CAPACITY[params.receiver];
+  else {
+    neutralCapacity =
+      receiver.baseCapacity * calibre.capacityMult * mechanism.capacityMult;
+    if (calibre.gauss) neutralCapacity *= GAUSS_CAPACITY_MULT;
+    for (const f of features) neutralCapacity *= f.capacityMult;
+  }
+
+  // The magazine options; the first is the standard one baked into the build.
+  const magazines: MagazineSpec[] =
+    params.magazines && params.magazines.length > 0
+      ? params.magazines
+      : [
+          {
+            pct: Number.isFinite(params.capacityPct) ? params.capacityPct : 100,
+          },
+        ];
+  // A `rounds` override sets the displayed count only; the cost/weight chain
+  // still follows the standard magazine's percentage (default 100%).
+  const capPct =
+    magazines[0]?.pct ??
+    (Number.isFinite(params.capacityPct) ? params.capacityPct : 100);
+
   return {
-    receiver: RECEIVERS[params.receiver] ?? RECEIVERS.handgun,
-    calibre: CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun,
+    receiver,
+    calibre,
     mechanism,
     barrel: BARRELS[params.barrel] ?? BARRELS.rifle,
     stock: STOCKS[params.stock] ?? STOCKS.none,
     feed: FEEDS[params.feed] ?? FEEDS.standard,
-    features: resolveFeatures(params.features),
+    features,
     autoSteps,
     auto,
     incAuto: INCREASED_AUTO[autoSteps],
@@ -306,7 +397,9 @@ function resolveParts(params: FirearmParams) {
       params.rapidFire === 'rf' || params.rapidFire === 'vrf'
         ? RAPID_FIRE[params.rapidFire]
         : undefined,
-    capPct: Number.isFinite(params.capacityPct) ? params.capacityPct : 100,
+    capPct,
+    magazines,
+    neutralCapacity,
     extraBarrels: Math.max(0, Math.floor(params.additionalBarrels)),
   };
 }
@@ -378,21 +471,13 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
   const baselineCost = round2(rc);
   const baselineWeight = round2(rw);
 
-  let capacity: number;
-  if (calibre.smoothbore) {
-    // Large-calibre smoothbores use fixed per-receiver values (no mechanism cap).
-    capacity = SMOOTHBORE_CAPACITY[params.receiver];
-  } else {
-    capacity =
-      receiver.baseCapacity * calibre.capacityMult * mechanism.capacityMult;
-    if (calibre.gauss) capacity *= GAUSS_CAPACITY_MULT;
-    for (const f of features) capacity *= f.capacityMult;
-  }
-  // Single-shot weapons hold one round per barrel; otherwise scale by capacity %.
-  capacity =
+  // Single-shot holds one per barrel; otherwise the neutral count scaled by the
+  // standard magazine's capacity %, unless it carries an absolute-count override.
+  const capacity =
     params.mechanism === 'singleShot'
       ? 1
-      : Math.round(capacity * (capPct / 100));
+      : (parts.magazines[0]?.rounds ??
+        Math.round(parts.neutralCapacity * (capPct / 100)));
 
   lines.push({
     label: 'Receiver Totals',
