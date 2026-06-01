@@ -171,7 +171,7 @@ describe('energy weapon — signature', () => {
 
 describe('energy weapon — serialization & built-ins', () => {
   it('round-trips an energy design through serialize/parse', () => {
-    const def = BUILTIN_WEAPONS.find((w) => w.name === 'Laser Rifle')!;
+    const def = BUILTIN_WEAPONS.find((w) => w.name === 'M-84')!;
     const parsed = parseWeapon(serializeWeapon(def));
     expect(parsed.params).toEqual(def.params);
   });

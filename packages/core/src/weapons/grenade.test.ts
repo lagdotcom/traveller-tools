@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  BUILTIN_WEAPONS,
   DEFAULT_GRENADE_PARAMS,
   evaluateWeapon,
   type GrenadeParams,
@@ -60,10 +59,15 @@ describe('grenade — validation', () => {
 });
 
 describe('grenade — serialization', () => {
-  it('round-trips the built-in fragmentation grenade', () => {
-    const def = BUILTIN_WEAPONS.find(
-      (w) => w.name === 'Fragmentation Grenade',
-    )!;
+  it('round-trips a fragmentation grenade design', () => {
+    const def = {
+      name: 'Fragmentation Grenade',
+      params: {
+        ...DEFAULT_GRENADE_PARAMS,
+        type: 'fragmentation',
+        size: 'hand',
+      },
+    } as const;
     const parsed = parseWeapon(serializeWeapon(def));
     expect(parsed.params).toEqual(def.params);
   });

@@ -385,10 +385,13 @@ export interface ProjectorParams {
   fuelKg: number;
   /** Kilograms of propellant carried (attacks = kg × attacks-per-kg). */
   propellantKg: number;
-  /** Armoured capability: Protection points (+10% cost / +5% weight each). */
-  armour: number;
-  /** Bulwarked capability: points (+20% cost / +10% weight each). */
-  bulwark: number;
+  /**
+   * Receiver features — projectors take the capability features (Armoured /
+   * Bulwarked) from the shared list, applied as a multiplicative cost/weight chain.
+   */
+  features: ReceiverFeatureRef[];
+  /** An optional mounted secondary weapon (e.g. the Cryojet's breaching shotgun). */
+  secondary?: SecondaryWeaponParams;
 }
 
 /**

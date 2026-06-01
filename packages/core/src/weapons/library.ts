@@ -132,8 +132,7 @@ export const DEFAULT_PROJECTOR_PARAMS: ProjectorParams = {
   fuel: 'jellied',
   fuelKg: 4,
   propellantKg: 2,
-  armour: 0,
-  bulwark: 0,
+  features: [],
 };
 
 /** A valid starting launcher: a TL6 single-shot light tube grenade launcher. */
@@ -329,8 +328,10 @@ function normalizeProjectorParams(p: Record<string, unknown>): ProjectorParams {
     fuel: pick<ProjectorFuelId>(p.fuel, PROJECTOR_FUELS, d.fuel),
     fuelKg: num(p.fuelKg, d.fuelKg),
     propellantKg: num(p.propellantKg, d.propellantKg),
-    armour: num(p.armour, d.armour),
-    bulwark: num(p.bulwark, d.bulwark),
+    features: normalizeFeatures(p.features),
+    ...(isObject(p.secondary)
+      ? { secondary: normalizeSecondaryParams(p.secondary) }
+      : {}),
   };
 }
 
@@ -802,7 +803,10 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     fuelKg: 4,
     fuel: 'advanced',
     propellant: 'generated',
-    features: ['armoured2', 'bulwarked3'],
+    features: [
+      { id: 'armoured', level: 2 },
+      { id: 'bulwarked', level: 3 },
+    ],
   }),
   projector('Cryojet', 'Breaching aid, Unified Space Industries', {
     tl: 10,
@@ -811,13 +815,26 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     fuelKg: 9,
     fuel: 'cryogenic',
     propellant: 'generated',
-    features: ['armoured2', 'bulwarked2'],
+    features: [
+      { id: 'armoured', level: 2 },
+      { id: 'bulwarked', level: 2 },
+    ],
     secondary: {
       tl: 10,
       receiver: 'longarm',
       calibre: 'heavySmoothbore',
       mechanism: 'repeater',
+      autoIncrease: 0,
+      features: [],
       barrel: 'assault',
+      heavyBarrel: false,
+      additionalBarrels: 0,
+      stock: 'full',
+      furniture: [],
+      feed: 'fixed',
+      capacityPct: 100,
+      accessories: [],
+      ammo: 'ball',
     },
   }),
   energyWeapon(
@@ -835,10 +852,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     tl: 11,
     receiver: 'medium',
     damageDice: 5,
-    features: ['efficientBeamGeneration', 'improvedBeamFocus'],
+    // efficientBeamGeneration / improvedBeamFocus map to the existing beam mods.
+    mods: ['efficientBeam', 'improvedFocus'],
     barrel: 'carbine',
     stock: 'folding',
-    accessories: ['internalPowerpack'],
+    // TODO: 'internalPowerpack' accessory — needs its cost/weight from the FC.
   }),
   // TODO: Nefertem
   // TODO: Krabbine Heavy Industries IP-2 Standoff Incendiary Weapon
@@ -857,7 +875,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       delivery: 'cartridge',
       features: ['lightweight', 'bullpup'],
       barrel: 'assault',
-      stock: 'fixed',
+      stock: 'full', // worksheet says "Fixed/full stock"; no distinct 'fixed' stock exists
       warhead: 'fragmentation',
       // reconcile: incapacitant gas, baton, distraction, multiple projectile
     },

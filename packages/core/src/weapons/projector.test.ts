@@ -47,7 +47,7 @@ describe('projector — frame, fuel & propellant maths', () => {
     // and Bulwarked 3 (×1.6/×1.3): 728×1.92 = 1397.76, 5.28×1.43 = 7.5504.
     expect(r.totals.costCr).toBeCloseTo(1397.76, 2);
     expect(r.totals.weightKg).toBeCloseTo(7.5504, 4);
-    expect(r.profile.traits['Armour']).toBe(2);
+    expect(r.profile.traits['Armoured']).toBe(2);
     expect(r.profile.traits['Bulwarked']).toBe(3);
   });
 
@@ -119,7 +119,7 @@ describe('projector — validation', () => {
 
 describe('projector — serialization', () => {
   it('round-trips the built-in flamethrower', () => {
-    const def = BUILTIN_WEAPONS.find((w) => w.name === 'Flamethrower')!;
+    const def = BUILTIN_WEAPONS.find((w) => w.name === 'MF-61')!;
     const parsed = parseWeapon(serializeWeapon(def));
     expect(parsed.params).toEqual(def.params);
   });

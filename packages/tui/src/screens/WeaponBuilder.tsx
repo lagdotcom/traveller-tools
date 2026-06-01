@@ -208,8 +208,6 @@ const projectorValues = (pr: ProjectorParams) => ({
   pFuel: PFUEL.toLabel(pr.fuel),
   fuelKg: String(pr.fuelKg),
   propellantKg: String(pr.propellantKg),
-  armour: String(pr.armour),
-  bulwark: String(pr.bulwark),
 });
 
 const launcherValues = (l: LauncherParams) => ({
@@ -325,7 +323,7 @@ function buildEnergy(v: FormValues, lists: Lists): EnergyParams {
   };
 }
 
-function buildProjector(v: FormValues): ProjectorParams {
+function buildProjector(v: FormValues, lists: Lists): ProjectorParams {
   return {
     kind: 'projector',
     tl: num(v.tl, 0),
@@ -334,8 +332,8 @@ function buildProjector(v: FormValues): ProjectorParams {
     fuel: PFUEL.toId(v.pFuel),
     fuelKg: num(v.fuelKg, 0),
     propellantKg: num(v.propellantKg, 0),
-    armour: num(v.armour, 0),
-    bulwark: num(v.bulwark, 0),
+    features: lists.features,
+    ...(v.secEnabled === 'yes' ? { secondary: buildSecondary(v) } : {}),
   };
 }
 
@@ -379,14 +377,17 @@ export function WeaponBuilderScreen({
   type FormKey = keyof typeof form.values;
 
   const [name, setName] = useState(initial?.name ?? 'Untitled Weapon');
-  // Features are shared by firearm + energy + launcher (all reuse RECEIVER_FEATURES);
-  // furniture/accessories are firearm/energy only. Seed each from the start params.
+  // Features are shared by firearm + energy + launcher + projector (all reuse
+  // RECEIVER_FEATURES); furniture/accessories are firearm/energy only. Seed each
+  // from the start params.
   const listSeed: FirearmParams | EnergyParams =
     startParams.kind === 'firearm' || startParams.kind === 'energy'
       ? startParams
       : DEFAULT_WEAPON_PARAMS;
   const [features, setFeatures] = useState<ReceiverFeatureRef[]>(
-    startParams.kind === 'launcher' ? startParams.features : listSeed.features,
+    startParams.kind === 'launcher' || startParams.kind === 'projector'
+      ? startParams.features
+      : listSeed.features,
   );
   const [furniture, setFurniture] = useState<FurnitureId[]>(listSeed.furniture);
   const [accessories, setAccessories] = useState<AccessoryId[]>(
@@ -651,11 +652,21 @@ export function WeaponBuilderScreen({
         { key: 'propellantKg', label: 'Propellant (kg)' },
       ],
     },
+    // Hardening (Armoured / Bulwarked) comes from the shared features list.
+    { label: 'Features', list: 'features' },
     {
-      label: 'Hardening',
+      label: 'Secondary',
       fields: [
-        { key: 'armour', label: 'Armoured (Protection pts)' },
-        { key: 'bulwark', label: 'Bulwarked (pts)' },
+        { key: 'secEnabled', label: 'Secondary weapon', options: YN },
+        { key: 'secReceiver', label: '· Receiver', options: RECEIVER.labels },
+        { key: 'secCalibre', label: '· Calibre', options: CALIBRE.labels },
+        {
+          key: 'secMechanism',
+          label: '· Mechanism',
+          options: MECHANISM.labels,
+        },
+        { key: 'secBarrel', label: '· Barrel', options: BARREL.labels },
+        { key: 'secAmmo', label: '· Loaded ammo', options: AMMO.labels },
       ],
     },
   ];
@@ -745,7 +756,7 @@ export function WeaponBuilderScreen({
     weaponClass === 'energy'
       ? buildEnergy(form.values, selected)
       : weaponClass === 'projector'
-        ? buildProjector(form.values)
+        ? buildProjector(form.values, selected)
         : weaponClass === 'launcher'
           ? buildLauncher(form.values, selected)
           : weaponClass === 'grenade'

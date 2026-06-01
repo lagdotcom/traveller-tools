@@ -9,26 +9,28 @@
  * attack) or propellant (kg × attacks-per-kg) runs out first.
  */
 import type { Issue } from '../design/index.js';
-import { SOURCE } from './data.js';
+import { CALIBRES, MECHANISMS, resolveFeatures, SOURCE } from './data.js';
 import {
-  ARMOURED_COST_PER_PT,
-  ARMOURED_WEIGHT_PER_PT,
-  BULWARKED_COST_PER_PT,
-  BULWARKED_WEIGHT_PER_PT,
   PROJECTOR_FUELS,
   PROJECTOR_HAZARDOUS,
   PROJECTOR_PROPELLANTS,
   PROJECTOR_STRUCTURES,
 } from './projectorData.js';
-import { pushIf, round2, tlGate, warning } from './shared.js';
+import { modPct, pushIf, round2, tlGate, warning } from './shared.js';
 import type {
   Damage,
   ProjectorParams,
+  SecondaryWeaponParams,
   Traits,
   WeaponLineItem,
   WeaponProfile,
 } from './types.js';
-import type { WeaponEvaluation } from './weapon.js';
+import { evaluateFirearm, type WeaponEvaluation } from './weapon.js';
+
+/** Short label for a mounted secondary weapon (calibre · mechanism). */
+function secondaryLabel(p: SecondaryWeaponParams): string {
+  return `${CALIBRES[p.calibre]?.label ?? p.calibre} · ${MECHANISMS[p.mechanism]?.label ?? p.mechanism}`;
+}
 
 function validateProjector(params: ProjectorParams): Issue[] {
   const issues: Issue[] = [];
@@ -97,32 +99,53 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
   ];
 
   // Base build cost (frame + any machinery) and loaded weight, before the
-  // Armoured/Bulwarked capability features multiply them.
-  const baseCost = frameCost + machinery;
-  const baseWeight = totalWeight;
-  const armour = Math.max(0, Math.floor(params.armour));
-  const bulwark = Math.max(0, Math.floor(params.bulwark));
-  const costMult =
-    (1 + ARMOURED_COST_PER_PT * armour) * (1 + BULWARKED_COST_PER_PT * bulwark);
-  const weightMult =
-    (1 + ARMOURED_WEIGHT_PER_PT * armour) *
-    (1 + BULWARKED_WEIGHT_PER_PT * bulwark);
-  if (armour > 0)
+  // capability features (Armoured / Bulwarked) multiply them.
+  let runCost = frameCost + machinery;
+  let runWeight = totalWeight;
+  const features = resolveFeatures(params.features);
+  const featureTraits: Traits = {};
+  for (const f of features) {
+    if (f.costMult === 1 && f.weightMult === 1) continue;
     breakdown.push({
-      label: `Armoured (Armour +${armour})`,
-      costCr: round2(baseCost * ARMOURED_COST_PER_PT * armour),
-      weightKg: round2(baseWeight * ARMOURED_WEIGHT_PER_PT * armour),
+      label: f.label,
+      costCr: round2(runCost * f.costMult - runCost),
+      weightKg: round2(runWeight * f.weightMult - runWeight),
+      costMod: modPct(f.costMult),
+      weightMod: modPct(f.weightMult),
     });
-  if (bulwark > 0)
-    breakdown.push({
-      label: `Bulwarked (${bulwark})`,
-      costCr: round2(baseCost * BULWARKED_COST_PER_PT * bulwark),
-      weightKg: round2(baseWeight * BULWARKED_WEIGHT_PER_PT * bulwark),
-    });
-
-  const totalCost = round2(baseCost * costMult);
-  const finalWeight = round2(baseWeight * weightMult);
+    runCost *= f.costMult;
+    runWeight *= f.weightMult;
+    Object.assign(featureTraits, f.traits);
+  }
+  let totalCost = round2(runCost);
+  let finalWeight = round2(runWeight);
   const magazineCr = round2(fuelCost + propConsumable);
+  const sourceSet = sources;
+
+  // A mounted secondary weapon (e.g. the Cryojet's breaching shotgun) is a
+  // complete separate weapon bolted on: its full cost/weight add to the projector
+  // (no shared receiver to discount against). It keeps its own profile/data line.
+  // reconcile: no worked projector-secondary cost is in the supplied text, so the
+  // full-cost mounting is flagged rather than verified.
+  let secondary: WeaponEvaluation['secondary'];
+  if (params.secondary) {
+    const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary });
+    const label = secondaryLabel(params.secondary);
+    breakdown.push({
+      label: `Secondary weapon: ${label}`,
+      costCr: sub.totals.costCr,
+      weightKg: sub.totals.weightKg,
+      notes: 'complete mounted weapon (cost unverified)',
+    });
+    totalCost = round2(totalCost + sub.totals.costCr);
+    finalWeight = round2(finalWeight + sub.totals.weightKg);
+    for (const s of sub.sources) sourceSet.add(s);
+    secondary = {
+      label,
+      profile: sub.profile,
+      magazineCr: sub.totals.magazineCr,
+    };
+  }
 
   // --- Profile ---
   const damage: Damage = fuel.damage ?? { dice: 0, die: 6, mod: 0 };
@@ -134,9 +157,8 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     Hazardous: PROJECTOR_HAZARDOUS,
     Blast: structure.blast,
     ...fuel.traits,
+    ...featureTraits,
   };
-  if (armour > 0) traits.Armour = armour;
-  if (bulwark > 0) traits.Bulwarked = bulwark;
 
   const profile: WeaponProfile = {
     tl: params.tl,
@@ -160,6 +182,7 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     breakdown,
     issues,
     totals: { costCr: totalCost, weightKg: finalWeight, magazineCr },
-    sources: [...sources],
+    sources: [...sourceSet],
+    ...(secondary ? { secondary } : {}),
   };
 }

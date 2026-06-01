@@ -127,7 +127,9 @@ describe('launcher — validation', () => {
 
 describe('launcher — serialization', () => {
   it('round-trips the built-in grenade launcher', () => {
-    const def = BUILTIN_WEAPONS.find((w) => w.name === 'Grenade Launcher')!;
+    const def = BUILTIN_WEAPONS.find(
+      (w) => w.name === 'Light Munition Launcher',
+    )!;
     const parsed = parseWeapon(serializeWeapon(def));
     expect(parsed.params).toEqual(def.params);
   });
