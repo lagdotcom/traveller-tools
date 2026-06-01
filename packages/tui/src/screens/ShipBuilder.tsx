@@ -62,8 +62,14 @@ const plantByLabel = (label: string): PowerPlantId =>
   PLANT_IDS.find((id) => POWER_PLANTS[id].name === label) ?? 'fusionTL12';
 
 /** Initial text-field values for the builder form, from a set of ship params. */
-function formValues(p: ShipParams) {
+function formValues(
+  p: ShipParams,
+  meta: { name: string; manufacturer: string; description: string },
+) {
   return {
+    name: meta.name,
+    manufacturer: meta.manufacturer,
+    description: meta.description,
     hull: String(p.hullTons),
     tl: String(p.tl),
     config: p.hullConfig,
@@ -145,13 +151,15 @@ export function ShipBuilderScreen({
   const store = useShipStore();
   const files = useFiles();
   const startParams = initial?.params ?? DEFAULT_SHIP_PARAMS;
-  const form = useForm(formValues(startParams));
+  const form = useForm(
+    formValues(startParams, {
+      name: initial?.name ?? 'Untitled Ship',
+      manufacturer: initial?.manufacturer ?? '',
+      description: initial?.description ?? '',
+    }),
+  );
   type FormKey = keyof typeof form.values;
 
-  const [name, setName] = useState(initial?.name ?? 'Untitled Ship');
-  const [manufacturer, setManufacturer] = useState(initial?.manufacturer ?? '');
-  const [description, setDescription] = useState(initial?.description ?? '');
-  const [saveField, setSaveField] = useState(0); // 0=name 1=manufacturer 2=desc
   const [systems, setSystems] = useState<SystemEntry[]>(startParams.systems);
   const [software, setSoftware] = useState<SoftwareEntry[]>(
     startParams.software,
@@ -165,10 +173,7 @@ export function ShipBuilderScreen({
   const [addNestedName, setAddNestedName] = useState('');
   const [active, setActive] = useState(0);
   // Library actions: save, export JSON, import JSON (paste).
-  const [mode, setMode] = useState<'edit' | 'save' | 'export' | 'import'>(
-    'edit',
-  );
-  const [saveName, setSaveName] = useState('');
+  const [mode, setMode] = useState<'edit' | 'export' | 'import'>('edit');
   const [importBuffer, setImportBuffer] = useState('');
   const [message, setMessage] = useState('');
 
@@ -375,6 +380,14 @@ export function ShipBuilderScreen({
         },
       ],
     },
+    {
+      label: 'Identity',
+      fields: [
+        { key: 'name', label: 'Name' },
+        { key: 'manufacturer', label: 'Manufacturer' },
+        { key: 'description', label: 'Description' },
+      ],
+    },
   ];
 
   const rows: Row[] = [];
@@ -422,10 +435,7 @@ export function ShipBuilderScreen({
   useInput((input, key) => {
     // Library shortcuts are available from edit mode.
     if (mode === 'edit' && key.ctrl && input === 's') {
-      setSaveName(name);
-      setSaveField(0);
-      setMessage('');
-      setMode('save');
+      doSave();
       return;
     }
     if (mode === 'edit' && key.ctrl && input === 'e') {
@@ -439,14 +449,9 @@ export function ShipBuilderScreen({
       return;
     }
 
-    // Save/export overlays: Esc returns to editing; the name Field (save mode)
-    // handles its own typing, so swallow other keys here.
+    // Export/import overlays: Esc returns to editing; swallow other keys here.
     if (mode !== 'edit') {
       if (key.escape) setMode('edit');
-      else if (mode === 'save' && key.downArrow)
-        setSaveField((f) => Math.min(2, f + 1));
-      else if (mode === 'save' && key.upArrow)
-        setSaveField((f) => Math.max(0, f - 1));
       return;
     }
 
@@ -461,18 +466,9 @@ export function ShipBuilderScreen({
   });
 
   const doSave = () => {
-    const finalName = saveName.trim() || 'Untitled Ship';
-    const mfr = manufacturer.trim();
-    const desc = description.trim();
-    store.save({
-      name: finalName,
-      ...(mfr ? { manufacturer: mfr } : {}),
-      ...(desc ? { description: desc } : {}),
-      params,
-    });
-    setName(finalName);
+    store.save(currentDef);
     setMode('edit');
-    setMessage(`Saved “${finalName}”.`);
+    setMessage(`Saved “${name}”.`);
   };
 
   // Parse imported JSON text and load it (or report why it failed).
@@ -648,10 +644,13 @@ export function ShipBuilderScreen({
     crewType: form.values.crewType as CrewType,
     standardDesign: form.values.standard === 'yes',
   };
+  const name = form.values.name.trim() || 'Untitled Ship';
+  const manufacturer = form.values.manufacturer.trim();
+  const description = form.values.description.trim();
   const currentDef: ShipDefinition = {
     name,
-    ...(manufacturer.trim() ? { manufacturer: manufacturer.trim() } : {}),
-    ...(description.trim() ? { description: description.trim() } : {}),
+    ...(manufacturer ? { manufacturer } : {}),
+    ...(description ? { description } : {}),
     params,
   };
   const {
@@ -709,33 +708,6 @@ export function ShipBuilderScreen({
       <Text bold color="yellow">
         Ship Builder — {name}
       </Text>
-
-      {mode === 'save' && (
-        <Box marginTop={1} flexDirection="column">
-          <Field
-            label="Save as"
-            value={saveName}
-            isActive={saveField === 0}
-            onChange={setSaveName}
-            onSubmit={doSave}
-          />
-          <Field
-            label="Manufacturer"
-            value={manufacturer}
-            isActive={saveField === 1}
-            onChange={setManufacturer}
-            onSubmit={doSave}
-          />
-          <Field
-            label="Description"
-            value={description}
-            isActive={saveField === 2}
-            onChange={setDescription}
-            onSubmit={doSave}
-          />
-          <Text dimColor>↑/↓ between fields · Enter saves · Esc cancels</Text>
-        </Box>
-      )}
 
       <Box marginTop={1}>
         {sectionDefs.map((section, index) => (

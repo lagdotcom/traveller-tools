@@ -33,6 +33,16 @@ describe('Weapon builder (real Ink)', () => {
     expect(ui.errors()).toEqual([]);
   });
 
+  it('exposes name / manufacturer / description as ordinary fields', async () => {
+    const ui = await openBuilder();
+    // Tab to the last (Identity) section: 9 firearm sections precede it.
+    for (let i = 0; i < 9; i++) await ui.type(TAB);
+    expect(ui.frame()).toContain('Manufacturer');
+    expect(ui.frame()).toContain('Description');
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('switches sections with Tab', async () => {
     const ui = await openBuilder();
     expect(ui.frame()).toContain('Tech level');

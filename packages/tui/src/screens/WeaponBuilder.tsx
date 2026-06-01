@@ -239,9 +239,15 @@ const grenadeValues = (g: GrenadeParams) => ({
  * seeds its own fields; the other classes fall back to their defaults, so
  * switching class mid-edit is lossless for the side you started on.
  */
-function formValues(p: WeaponParams) {
+function formValues(
+  p: WeaponParams,
+  meta: { name: string; manufacturer: string; description: string },
+) {
   const bs = p.kind === 'firearm' || p.kind === 'energy' ? p : undefined;
   return {
+    name: meta.name,
+    manufacturer: meta.manufacturer,
+    description: meta.description,
     weaponClass: WCLASS.toLabel(p.kind),
     tl: String(p.tl),
     ...barrelStockValues(bs ?? DEFAULT_WEAPON_PARAMS),
@@ -393,13 +399,14 @@ export function WeaponBuilderScreen({
   const files = useFiles();
   const store = useWeaponStore();
   const startParams = initial?.params ?? DEFAULT_WEAPON_PARAMS;
-  const form = useForm(formValues(startParams));
+  const form = useForm(
+    formValues(startParams, {
+      name: initial?.name ?? 'Untitled Weapon',
+      manufacturer: initial?.manufacturer ?? '',
+      description: initial?.description ?? '',
+    }),
+  );
   type FormKey = keyof typeof form.values;
-
-  const [name, setName] = useState(initial?.name ?? 'Untitled Weapon');
-  const [manufacturer, setManufacturer] = useState(initial?.manufacturer ?? '');
-  const [description, setDescription] = useState(initial?.description ?? '');
-  const [saveField, setSaveField] = useState(0); // 0=name 1=manufacturer 2=desc
   // Features are shared by firearm + energy + launcher + projector (all reuse
   // RECEIVER_FEATURES); furniture/accessories are firearm/energy only. Seed each
   // from the start params.
@@ -428,10 +435,7 @@ export function WeaponBuilderScreen({
   const [addMod, setAddMod] = useState('');
   const [addAmmo, setAddAmmo] = useState('');
   const [active, setActive] = useState(0);
-  const [mode, setMode] = useState<'edit' | 'save' | 'export' | 'import'>(
-    'edit',
-  );
-  const [saveName, setSaveName] = useState(name);
+  const [mode, setMode] = useState<'edit' | 'export' | 'import'>('edit');
   const [importBuffer, setImportBuffer] = useState('');
   const [message, setMessage] = useState('');
 
@@ -762,8 +766,19 @@ export function WeaponBuilderScreen({
     },
   ];
 
-  const sectionDefs =
-    weaponClass === 'energy'
+  // Name / manufacturer / description are ordinary text fields in a trailing
+  // Identity section (shared by every class).
+  const identitySection: { label: string; fields?: FieldDef[]; list?: ListId } =
+    {
+      label: 'Identity',
+      fields: [
+        { key: 'name', label: 'Name' },
+        { key: 'manufacturer', label: 'Manufacturer' },
+        { key: 'description', label: 'Description' },
+      ],
+    };
+  const sectionDefs = [
+    ...(weaponClass === 'energy'
       ? energySections
       : weaponClass === 'projector'
         ? projectorSections
@@ -771,7 +786,9 @@ export function WeaponBuilderScreen({
           ? launcherSections
           : weaponClass === 'grenade'
             ? grenadeSections
-            : firearmSections;
+            : firearmSections),
+    identitySection,
+  ];
 
   const rows: Row[] = [];
   sectionDefs.forEach((section, si) => {
@@ -814,10 +831,13 @@ export function WeaponBuilderScreen({
           : weaponClass === 'grenade'
             ? buildGrenade(form.values)
             : buildFirearm(form.values, selected);
+  const name = form.values.name.trim() || 'Untitled Weapon';
+  const manufacturer = form.values.manufacturer.trim();
+  const description = form.values.description.trim();
   const currentDef: WeaponDefinition = {
     name,
-    ...(manufacturer.trim() ? { manufacturer: manufacturer.trim() } : {}),
-    ...(description.trim() ? { description: description.trim() } : {}),
+    ...(manufacturer ? { manufacturer } : {}),
+    ...(description ? { description } : {}),
     params,
   };
   const evaluation = evaluateWeapon(params);
@@ -859,26 +879,14 @@ export function WeaponBuilderScreen({
   };
 
   const doSave = () => {
-    const finalName = saveName.trim() || 'Untitled Weapon';
-    const mfr = manufacturer.trim();
-    const desc = description.trim();
-    store.save({
-      name: finalName,
-      ...(mfr ? { manufacturer: mfr } : {}),
-      ...(desc ? { description: desc } : {}),
-      params,
-    });
-    setName(finalName);
+    store.save(currentDef);
     setMode('edit');
-    setMessage(`Saved “${finalName}”.`);
+    setMessage(`Saved “${name}”.`);
   };
 
   useInput((input, key) => {
     if (mode === 'edit' && key.ctrl && input === 's') {
-      setSaveName(name);
-      setSaveField(0);
-      setMessage('');
-      setMode('save');
+      doSave();
       return;
     }
     if (mode === 'edit' && key.ctrl && input === 'e') {
@@ -891,10 +899,6 @@ export function WeaponBuilderScreen({
     }
     if (mode !== 'edit') {
       if (key.escape) setMode('edit');
-      else if (mode === 'save' && key.downArrow)
-        setSaveField((f) => Math.min(2, f + 1));
-      else if (mode === 'save' && key.upArrow)
-        setSaveField((f) => Math.max(0, f - 1));
       return;
     }
     if (key.escape) onBack();
@@ -906,40 +910,6 @@ export function WeaponBuilderScreen({
       );
     else if (key.tab) gotoSection((activeSection + 1) % sectionDefs.length);
   });
-
-  if (mode === 'save') {
-    return (
-      <Box flexDirection="column">
-        <Text bold color="yellow">
-          Save Weapon
-        </Text>
-        <Box marginTop={1} flexDirection="column">
-          <Field
-            label="Name"
-            value={saveName}
-            isActive={saveField === 0}
-            onChange={setSaveName}
-            onSubmit={doSave}
-          />
-          <Field
-            label="Manufacturer"
-            value={manufacturer}
-            isActive={saveField === 1}
-            onChange={setManufacturer}
-            onSubmit={doSave}
-          />
-          <Field
-            label="Description"
-            value={description}
-            isActive={saveField === 2}
-            onChange={setDescription}
-            onSubmit={doSave}
-          />
-          <Text dimColor>↑/↓ between fields · Enter saves · Esc cancels</Text>
-        </Box>
-      </Box>
-    );
-  }
 
   if (mode === 'export') {
     return (
