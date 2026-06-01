@@ -228,6 +228,8 @@ function normalizeMagazines(v: unknown): MagazineSpec[] | undefined {
     if (!isObject(item)) continue;
     const spec: MagazineSpec = {};
     if (typeof item.label === 'string') spec.label = item.label;
+    if (typeof item.ammo === 'string' && item.ammo in AMMO_TYPES)
+      spec.ammo = item.ammo as AmmoTypeId;
     if (typeof item.pct === 'number' && Number.isFinite(item.pct))
       spec.pct = item.pct;
     if (typeof item.rounds === 'number' && Number.isFinite(item.rounds))
@@ -1038,10 +1040,13 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       accessories: ['laserPointer'], // book error: says 'Scope', but Cr200 0.1kg
       ammo: ['ball', 'explosive', 'heap'],
-      // Book lists Mag 45 (a rocket-calibre quirk we don't derive); ball reload Cr270.
-      magazines: [{ rounds: 45, costCr: 270 }],
+      // Book lists Mag 45 (a rocket-calibre quirk we don't derive), one per ammo.
+      magazines: [
+        { ammo: 'ball', rounds: 45, costCr: 270 },
+        { ammo: 'explosive', rounds: 45, costCr: 1400 },
+        { ammo: 'heap', rounds: 45, costCr: 2300 },
+      ],
       // reconcile: ball - 275m, 4D, QD -4, Inaccurate -1, Phys Sig (normal), Zero-G (rocket calibre not modelled)
-      // reconcile: explosive Mag Cr1400, HEAP Mag Cr2300 (per-ammo reload overrides not yet supported)
     },
     'BeraTech',
   ),
@@ -1064,9 +1069,12 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       accessories: ['holographicSight'],
       ammo: ['ball', 'apAdvanced'],
-      // Book ball reload Cr200 (the derived Cr22.5 misses a gauss ammo premium).
-      magazines: [{ costCr: 200 }],
-      // reconcile: advanced AP mag Cr275 (per-ammo reload override not yet supported)
+      // Book reloads: ball Cr200, advanced AP Cr275 (the derived prices miss a
+      // gauss ammo premium); capacity 45 derives correctly.
+      magazines: [
+        { ammo: 'ball', costCr: 200 },
+        { ammo: 'apAdvanced', costCr: 275 },
+      ],
       // reconcile: Quickdraw +0
     },
     'Diversified Military Systems',
@@ -1086,9 +1094,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'folding', // reconcile: book says Cr464, 0.212625kg
       accessories: ['scope'],
       ammo: ['ball', 'apAdvanced'],
-      // Mag 50 is a manual override (mentioned in the text), ball reload Cr110.
-      magazines: [{ rounds: 50, costCr: 110 }],
-      // reconcile: AAP mag Cr180 (per-ammo reload override not yet supported)
+      // Mag 50 is a manual override (mentioned in the text); ball Cr110, AAP Cr180.
+      magazines: [
+        { ammo: 'ball', rounds: 50, costCr: 110 },
+        { ammo: 'apAdvanced', rounds: 50, costCr: 180 },
+      ],
     },
     'Jervaux Aerospace',
   ),

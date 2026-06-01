@@ -187,12 +187,32 @@ describe('manufacturer metadata', () => {
 
 describe('magazine options', () => {
   it('overrides the standard magazine count/cost without touching the build', () => {
-    // Reliant lists Mag 50 (Cr110 ball) — a manual count the % rule wouldn't give.
+    // Reliant lists Mag 50 (a manual count the % rule wouldn't give), one per
+    // ammo: ball Cr110, advanced AP Cr180.
     const r = evalNamed('Reliant');
     expect(r.profile.capacity).toBe(50);
     expect(r.totals.magazineCr).toBe(110);
-    // The build cost/weight are unchanged by a count override (no extra rows).
-    expect(r.magazines).toBeUndefined();
+    // A single absolute count without alternatives produces no extra rows.
+    const single = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      magazines: [{ rounds: 42 }],
+    });
+    expect(single.profile.capacity).toBe(42);
+    expect(single.magazines).toBeUndefined();
+  });
+
+  it('prices each magazine off the ammo it embeds', () => {
+    // The embedded ammo also fixes that type's reload on the profile row.
+    const r = evalNamed('Reliant');
+    const byAmmo = Object.fromEntries(
+      r.ammoProfiles!.map((a) => [a.ammo, a.magazineCr]),
+    );
+    expect(byAmmo.ball).toBe(110);
+    expect(byAmmo.apAdvanced).toBe(180);
+    expect(r.magazines?.map((m) => [m.label, m.magazineCr])).toEqual([
+      ['Ball', 110],
+      ['Armour-Piercing (Advanced)', 180],
+    ]);
   });
 
   it('lists alternative magazines, scaling weight by the capacity rule', () => {

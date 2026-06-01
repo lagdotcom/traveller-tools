@@ -367,8 +367,15 @@ export type SecondaryWeaponParams = Omit<FirearmParams, 'kind' | 'secondary'>;
  * `rounds`/`costCr` are manual overrides for those listed values.
  */
 export interface MagazineSpec {
-  /** Display name (e.g. "Standard", "Drum", "Extended"). */
+  /** Display name (e.g. "Standard", "Drum", "Extended"). Defaults to the ammo. */
   label?: string;
+  /**
+   * The ammunition the magazine is loaded with — its reload price is computed
+   * from this type (and it labels the row). Defaults to the weapon's primary
+   * ammo. A magazine that embeds a type also fixes that type's reload price on
+   * the matching profile row.
+   */
+  ammo?: AmmoTypeId;
   /** Capacity as a % of base (50–150). Ignored when `rounds` is given. */
   pct?: number;
   /** Absolute round count — a manual override for a book-listed magazine size. */

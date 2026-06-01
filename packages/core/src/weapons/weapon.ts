@@ -277,30 +277,19 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const recv = firearmReceiver(params, parts);
   const comp = firearmComponents(params, parts, recv);
 
-  // The build is fixed; each loaded ammunition type yields its own profile row.
-  const ammoIds = params.ammo.length > 0 ? params.ammo : ['ball' as AmmoTypeId];
-  const ammoProfiles = ammoIds.map((id) => {
-    const ammo = AMMO_TYPES[id] ?? AMMO_TYPES.ball;
-    const { profile, magazineCr } = firearmProfile(params, parts, recv, ammo);
-    return { ammo: id, label: ammo.label, profile, magazineCr };
-  });
-  const primary = ammoProfiles[0]!;
   const totalWeight = round2(recv.baselineWeight + comp.weightKg);
+  const { calibre, neutralCapacity, capPct: stdPct } = parts;
+  const capWeightMult = (pct: number) => 1 + 0.05 * ((pct - 100) / 10);
+  // Loaded-magazine price for `cap` rounds of a given ammo type.
+  const reloadFor = (cap: number, ammo: AmmoTypeDef) =>
+    round2(
+      (cap * calibre.ammoCostPer100 * recv.ammoCostMult * ammo.costMult) / 100,
+    );
 
   // Magazine options: the first is the standard one (its weight/cost are the
   // headline); each alternative scales loaded weight by the capacity-% weight
-  // rule and prices its reload off the primary ammunition.
-  const { calibre, neutralCapacity, capPct: stdPct } = parts;
-  const primaryAmmo = AMMO_TYPES[ammoIds[0]!] ?? AMMO_TYPES.ball;
-  const capWeightMult = (pct: number) => 1 + 0.05 * ((pct - 100) / 10);
-  const reloadFor = (cap: number) =>
-    round2(
-      (cap *
-        calibre.ammoCostPer100 *
-        recv.ammoCostMult *
-        primaryAmmo.costMult) /
-        100,
-    );
+  // rule and prices its reload off the ammo it is loaded with.
+  const ammoIds = params.ammo.length > 0 ? params.ammo : ['ball' as AmmoTypeId];
   const magazines: WeaponMagazine[] = parts.magazines.map((spec, i) => {
     const isStd = i === 0;
     const specPct = spec.pct ?? (isStd ? stdPct : 100);
@@ -308,20 +297,44 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
       params.mechanism === 'singleShot'
         ? 1
         : (spec.rounds ?? Math.round(neutralCapacity * (specPct / 100)));
+    const ammoId = spec.ammo ?? ammoIds[0]!;
+    const ammo = AMMO_TYPES[ammoId] ?? AMMO_TYPES.ball;
     return {
-      label: spec.label ?? (isStd ? 'Standard' : `Magazine ${i + 1}`),
+      label:
+        spec.label ??
+        (spec.ammo ? ammo.label : isStd ? 'Standard' : `Magazine ${i + 1}`),
       capacity,
       weightKg: isStd
         ? totalWeight
         : round2(
             (totalWeight * capWeightMult(specPct)) / capWeightMult(stdPct),
           ),
-      magazineCr: spec.costCr ?? reloadFor(capacity),
+      magazineCr: spec.costCr ?? reloadFor(capacity, ammo),
       primary: isStd,
     };
   });
-  // A standard-magazine cost override is the headline reload price too.
-  const headlineMagCr = parts.magazines[0]?.costCr ?? primary.magazineCr;
+  // A magazine that embeds an ammo type fixes that type's reload price on the
+  // matching profile row (the standard magazine sets the primary ammo's price).
+  const reloadByAmmo = new Map<AmmoTypeId, number>();
+  parts.magazines.forEach((spec, i) => {
+    const ammoId = spec.ammo ?? (i === 0 ? ammoIds[0]! : undefined);
+    if (ammoId !== undefined && !reloadByAmmo.has(ammoId))
+      reloadByAmmo.set(ammoId, magazines[i]!.magazineCr);
+  });
+
+  // The build is fixed; each loaded ammunition type yields its own profile row.
+  const ammoProfiles = ammoIds.map((id) => {
+    const ammo = AMMO_TYPES[id] ?? AMMO_TYPES.ball;
+    const { profile, magazineCr } = firearmProfile(params, parts, recv, ammo);
+    return {
+      ammo: id,
+      label: ammo.label,
+      profile,
+      magazineCr: reloadByAmmo.get(id) ?? magazineCr,
+    };
+  });
+  const primary = ammoProfiles[0]!;
+  const headlineMagCr = primary.magazineCr;
 
   return {
     profile: primary.profile,

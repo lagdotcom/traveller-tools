@@ -146,13 +146,16 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   error) — it just isn't available yet; accessories built into the weapon stay
   errors.
 - **Multiple magazines / power packs.** `FirearmParams.magazines?: MagazineSpec[]`
-  (`{label?, pct?, rounds?, costCr?}`): the **first** is the standard magazine baked
-  into the build (its `pct` is the effective `capacityPct`); the rest are
+  (`{label?, ammo?, pct?, rounds?, costCr?}`): the **first** is the standard magazine
+  baked into the build (its `pct` is the effective `capacityPct`); the rest are
   interchangeable alternatives, each a capacity / reload / loaded-weight row
-  (`WeaponEvaluation.magazines`, emitted only when >1 option). `rounds`/`costCr`
-  override a **book-listed** count or magazine price the % rule can't derive (the
-  count override doesn't touch the cost/weight chain) — e.g. Reliant Mag 50
-  (Cr110), Jimpy-G Mag 50 (Cr50), Guardian Mag 45 (Cr270), Solo ball reload Cr200.
+  (`WeaponEvaluation.magazines`, emitted only when >1 option). A magazine **embeds an
+  ammo type** (`ammo`, default the primary) — its reload prices off that ammo and it
+  also fixes that type's reload on the matching `ammoProfiles` row, so per-ammo book
+  prices (Guardian ball Cr270 / explosive Cr1400 / HEAP Cr2300; Solo & Reliant
+  ball/advanced-AP) are exact. `rounds`/`costCr` override a **book-listed** count or
+  magazine price the % rule can't derive (the count override doesn't touch the
+  cost/weight chain).
   Energy weapons have the analogue `EnergyParams.packs?: PackSpec[]` (extra
   powerpacks/cartridges beyond the primary). The FC gives **no per-round weight**
   — magazine mass is only the capacity-% weight adjustment, so alternative-mag
