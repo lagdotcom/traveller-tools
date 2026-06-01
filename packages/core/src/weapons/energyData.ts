@@ -46,7 +46,7 @@ export interface EnergyReceiverDef {
    * Base Quickdraw. The FC energy receiver table omits it, but says small/minimal
    * receivers configure as pistols, medium as longarms and large as support
    * weapons — so these mirror the firearm receiver Quickdraw (the Nefertem, a
-   * small laser, reads +4). minimal/large are derived from that mapping.
+   * small laser, reads +4; the worked large laser reads −8). minimal is derived.
    */
   quickdraw: number;
 }
@@ -82,7 +82,7 @@ export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
     baseWeight: 8,
     baseRange: 500,
     maxPower: 'heavy',
-    quickdraw: -4,
+    quickdraw: -8, // support-class (the worked large laser reads −8 from its receiver)
   },
 };
 

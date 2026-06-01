@@ -663,10 +663,13 @@ export const BARRELS: Record<BarrelId, BarrelDef> = {
     costPct: 0.5,
     weightPct: 0.75,
     rangeMult: 1.1,
-    quickdraw: 0,
+    quickdraw: -1, // worked large laser: a long barrel gives a further −1 Quickdraw
     penetration: 0,
     signatureShift: 0,
   },
+  // reconcile: a long barrel is −1 Quickdraw (above); the 13mm Crunch Gun
+  // worksheet's very-long barrel applies no Quickdraw penalty (its −8 is the LSW
+  // receiver −4 + bipod −4), so Very Long is left at 0 despite being longer.
   veryLong: {
     label: 'Very Long',
     costPct: 1,
