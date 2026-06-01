@@ -146,6 +146,33 @@ describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
   });
 });
 
+describe('weapon Heat', () => {
+  it('an autofiring weapon generates (dice + Auto) Heat and dissipates by class', () => {
+    // Eliminator: assault receiver, 2 damage dice, Auto 4 → Heat 6/round;
+    // assault dissipation 4, overheat threshold 15.
+    const r = evalNamed('Eliminator');
+    expect(r.profile.heat).toBe(r.profile.damage.dice + r.profile.auto);
+    expect(r.profile.heatDissipation).toBe(4);
+    expect(r.profile.heatThreshold).toBe(15);
+  });
+
+  it('a cooling system and a heavy barrel raise dissipation', () => {
+    const r = evaluateWeapon({
+      ...DEFAULT_WEAPON_PARAMS,
+      receiver: 'lsw',
+      mechanism: 'fullAuto',
+      heavyBarrel: true,
+      features: ['coolingAdvanced'],
+    });
+    // LSW base 8 + heavy barrel 2 + advanced cooling 5 = 15.
+    expect(r.profile.heatDissipation).toBe(15);
+  });
+
+  it('a non-auto weapon generates no Heat', () => {
+    expect(evalNamed('Adjudicator').profile.heat).toBe(0);
+  });
+});
+
 describe('Inaccurate trait', () => {
   it('smoothbores read Inaccurate −1, but snub (low-recoil) reads −2', () => {
     // Adjudicator is a small-smoothbore revolver.

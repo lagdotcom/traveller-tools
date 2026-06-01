@@ -129,6 +129,13 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   ×1.25 weight / ×3 capacity modifier and the TL12 gate. Gauss calibres carry base
   **Penetration +2** (intrinsic AP) which the Final Penetration table turns into an
   AP trait.
+- **Weapon Heat** (FC heating table, `RECEIVER_HEAT` in `data.ts`): an autofiring
+  firearm generates `damage dice + Auto` Heat per round; it dissipates per idle
+  round by receiver class + a heavy barrel (+2) + extra barrels (+1 each) + a
+  cooling system (`ReceiverFeatureDef.heatDissipation`: basic 2 / advanced 5). The
+  profile carries `heat` / `heatDissipation` / `heatThreshold` (overheat). The
+  `CHILL_CAN` (TL10 / 1kg / Cr50 / 100-Heat sink) pairs with Advanced Cooling.
+  RF/VRF (which multiply the heat dice) aren't implemented yet.
 - **Final Penetration table** (`penetrationProfile` in `shared.ts`): a weapon's
   net penetration (clamped ±4) maps to **Lo-Pen** (−pen+1, so −1→Lo-Pen 2 … −4→5)
   or **AP** (positive pen → AP scaled by full damage dice, with a damage penalty).

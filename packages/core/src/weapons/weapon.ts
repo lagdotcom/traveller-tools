@@ -20,6 +20,7 @@ import {
   INCREASED_AUTO,
   MECHANISMS,
   PELLET_SPREAD,
+  RECEIVER_HEAT,
   RECEIVERS,
   RECOIL_CLASS_MOD,
   resolveFeature,
@@ -563,6 +564,22 @@ function firearmProfile(
       100,
   );
 
+  // Heat: an autofiring weapon generates (damage dice + Auto) Heat per round.
+  // It dissipates by receiver class + a heavy barrel (+2) + extra barrels (+1
+  // each) + any cooling system; at/above the receiver's threshold, firing risks
+  // a malfunction.
+  const heatGen = auto > 0 ? damage.dice + auto : 0;
+  const heatRow = RECEIVER_HEAT[params.receiver];
+  const coolingDissipation = features.reduce(
+    (h, f) => h + (f.heatDissipation ?? 0),
+    0,
+  );
+  const heatDissipation =
+    heatRow.dissipation +
+    (params.heavyBarrel ? 2 : 0) +
+    extraBarrels +
+    coolingDissipation;
+
   const profile: WeaponProfile = {
     tl: params.tl,
     damage,
@@ -573,7 +590,9 @@ function firearmProfile(
     penetration,
     signatureKind: calibre.signatureKind,
     signature: clampLevel(sigIndex),
-    heat: 0,
+    heat: heatGen,
+    heatDissipation,
+    heatThreshold: heatRow.overheat,
     capacity: recv.capacity,
     traits,
   };

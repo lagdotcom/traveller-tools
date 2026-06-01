@@ -51,7 +51,12 @@ function ProfileBlock({
         <Text>Signature {sig} </Text>
         <Text dimColor>· </Text>
         <Text>Magazine {profile.capacity} </Text>
-        {profile.heat > 0 ? <Text dimColor>· Heat {profile.heat}</Text> : null}
+        {profile.heat > 0 ? (
+          <Text dimColor>
+            · Heat {profile.heat}/rd (−{profile.heatDissipation ?? 0} idle,
+            overheat {profile.heatThreshold ?? 0})
+          </Text>
+        ) : null}
       </Box>
       <Text>
         <Text dimColor>Traits: </Text>

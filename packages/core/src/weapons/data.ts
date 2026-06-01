@@ -175,10 +175,10 @@ export interface CalibreDef {
 }
 
 /**
- * reconcile: the rules table prints "—" for handgun-calibre penetration, but
- * three worksheets (revolver, PDW, Stowaway) only yield their shown Lo-Pen 2
- * with a base Penetration −1 for pistol rounds, matching the prose ("penetrate
- * armour very poorly"). Seeded as −1.
+ * reconcile: the rules table prints "—" for handgun-calibre penetration. Under
+ * the Final Penetration table, the worksheets' shown Lo-Pen 2 corresponds to a
+ * net penetration of −1 — i.e. base 0 once a handgun/short barrel's −1 is applied
+ * (PDW, Stowaway, Crewmate). So pistol calibres are seeded at base 0, not −1.
  */
 export const CALIBRES: Record<CalibreId, CalibreDef> = {
   archaicPistol: {
@@ -761,6 +761,8 @@ export interface ReceiverFeatureDef {
   recoilMod?: number;
   /** Low-Quality Deficiency points the design must satisfy (flagged, not auto-applied). */
   deficiency?: number;
+  /** Heat removed per round (cooling systems). */
+  heatDissipation?: number;
   traits?: Traits;
   /** Mutually-exclusive group (only one feature per group). */
   group?: string;
@@ -863,6 +865,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 2,
       capacityMult: 1,
       quickdraw: 0,
+      heatDissipation: 2, // removes 2 Heat/round
       group: 'cooling',
     },
     coolingAdvanced: {
@@ -871,6 +874,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1.2,
       capacityMult: 1,
       quickdraw: 0,
+      heatDissipation: 5, // removes 5 Heat/round (needs a heat sink, e.g. a chill can)
       group: 'cooling',
     },
     highCapacity: {
@@ -1328,4 +1332,35 @@ export const RECOIL_CLASS_MOD: Record<ReceiverTypeId, number> = {
   longarm: -6,
   lsw: -8,
   heavy: -8,
+};
+
+// --- Weapon Heat (FC "Weapon Heating Effects" table) ------------------------
+
+export interface HeatProfile {
+  /** Heat dissipated per idle round by the bare receiver. */
+  dissipation: number;
+  /** At/above this Heat, any shot risks a malfunction (12+, no DM). */
+  overheat: number;
+  /** Danger threshold (9+, DM-2). */
+  danger: number;
+  /** Disaster threshold (6+, DM-4). */
+  disaster: number;
+}
+
+/** Per-receiver heat dissipation + malfunction thresholds. */
+export const RECEIVER_HEAT: Record<ReceiverTypeId, HeatProfile> = {
+  handgun: { dissipation: 2, overheat: 10, danger: 15, disaster: 20 },
+  assault: { dissipation: 4, overheat: 15, danger: 30, disaster: 45 },
+  longarm: { dissipation: 6, overheat: 20, danger: 40, disaster: 60 },
+  lsw: { dissipation: 8, overheat: 25, danger: 50, disaster: 75 },
+  heavy: { dissipation: 10, overheat: 30, danger: 60, disaster: 90 },
+};
+
+/** A heat sink: discardable when full. (FC gear — pairs with Advanced Cooling.) */
+export const CHILL_CAN = {
+  label: 'Chill Can',
+  minTL: 10,
+  weight: 1,
+  cost: 50,
+  heatCapacity: 100,
 };

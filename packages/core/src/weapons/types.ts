@@ -456,8 +456,12 @@ export interface WeaponProfile {
   penetration: number;
   signatureKind: SignatureKind;
   signature: SignatureLevel;
-  /** Heat generated per round (RF/VRF weapons only; 0 otherwise). */
+  /** Heat generated per (auto)fire round (0 if the weapon doesn't autofire). */
   heat: number;
+  /** Heat dissipated per idle round (receiver + heavy barrel + cooling + barrels). */
+  heatDissipation?: number;
+  /** Overheating threshold: at/above this Heat, firing risks a malfunction. */
+  heatThreshold?: number;
   /** Magazine capacity (rounds). */
   capacity: number;
   traits: Traits;
