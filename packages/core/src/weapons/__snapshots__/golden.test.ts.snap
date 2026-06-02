@@ -382,6 +382,62 @@ exports[`golden master — built-in weapon evaluations > reproduces AIWS 1`] = `
 }
 `;
 
+exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
+{
+  "breakdown": [
+    {
+      "costCr": 1000,
+      "label": "Receiver: Reusable · Single Shot, Heavy",
+      "weightKg": 15,
+    },
+    {
+      "costCr": 1000,
+      "label": "Receiver Totals",
+      "notes": "Capacity 1",
+      "weightKg": 15,
+    },
+    {
+      "costCr": 0,
+      "label": "Munition: Fragmentation (RAM) ×1",
+      "notes": "Cr90 to load",
+      "weightKg": 0.5,
+    },
+  ],
+  "issues": [],
+  "notes": [],
+  "profile": {
+    "auto": 0,
+    "capacity": 1,
+    "damage": {
+      "dice": 5,
+      "die": 6,
+      "mod": 0,
+    },
+    "heat": 0,
+    "penetration": 0,
+    "quickdraw": 0,
+    "range": 300,
+    "recoil": 0,
+    "signature": "normal",
+    "signatureKind": "physical",
+    "tl": 9,
+    "traits": {
+      "Blast": 9,
+      "Bulky": true,
+      "Lo-Pen": 2,
+    },
+  },
+  "sources": [
+    "Field Catalogue",
+  ],
+  "totals": {
+    "costCr": 1000,
+    "magazineCr": 90,
+    "weightKg": 15.5,
+  },
+}
+`;
+
 exports[`golden master — built-in weapon evaluations > reproduces Adjudicator 1`] = `
 {
   "ammoProfiles": [
@@ -2609,6 +2665,69 @@ exports[`golden master — built-in weapon evaluations > reproduces IAW-12 1`] =
 }
 `;
 
+exports[`golden master — built-in weapon evaluations > reproduces IP-2 1`] = `
+{
+  "breakdown": [
+    {
+      "costCr": 200,
+      "label": "Receiver: Tube · Single Shot, Light",
+      "weightKg": 1.5,
+    },
+    {
+      "costCr": 200,
+      "label": "Receiver Totals",
+      "notes": "Capacity 1",
+      "weightKg": 1.5,
+    },
+    {
+      "costCr": 0,
+      "label": "Munition: Incendiary, Antipersonnel (RPG) ×1",
+      "notes": "Cr375 to load",
+      "weightKg": 2.5,
+    },
+  ],
+  "issues": [
+    {
+      "message": "RPG rounds carry a larger warhead than the hand-grenade payload; its damage/blast aren't in the supplied text and are shown as the payload's.",
+      "severity": "warning",
+    },
+  ],
+  "notes": [],
+  "profile": {
+    "auto": 0,
+    "capacity": 1,
+    "damage": {
+      "dice": 2,
+      "die": 6,
+      "mod": 0,
+    },
+    "heat": 0,
+    "penetration": 0,
+    "quickdraw": 0,
+    "range": 500,
+    "recoil": 0,
+    "signature": "normal",
+    "signatureKind": "physical",
+    "tl": 8,
+    "traits": {
+      "Blast": 15,
+      "Bulky": true,
+      "Burn": 2,
+      "Inaccurate": -2,
+      "Incendiary": 1,
+    },
+  },
+  "sources": [
+    "Field Catalogue",
+  ],
+  "totals": {
+    "costCr": 200,
+    "magazineCr": 375,
+    "weightKg": 4,
+  },
+}
+`;
+
 exports[`golden master — built-in weapon evaluations > reproduces Intruder 1`] = `
 {
   "ammoProfiles": [
@@ -3042,7 +3161,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Liberator De
 }
 `;
 
-exports[`golden master — built-in weapon evaluations > reproduces Light Munition Launcher 1`] = `
+exports[`golden master — built-in weapon evaluations > reproduces Light Munitions Launcher 1`] = `
 {
   "breakdown": [
     {
@@ -3086,9 +3205,9 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     },
     {
       "costCr": 0,
-      "label": "Munition: Fragmentation (Cartridge) ×3",
-      "notes": "Cr225 to load",
-      "weightKg": 1.5,
+      "label": "Munition: Multiple Projectile (Cartridge) ×3",
+      "notes": "Cr112.5 to load",
+      "weightKg": 2.7,
     },
   ],
   "issues": [],
@@ -3100,7 +3219,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     "auto": 0,
     "capacity": 3,
     "damage": {
-      "dice": 5,
+      "dice": 6,
       "die": 6,
       "mod": 0,
     },
@@ -3111,11 +3230,11 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     "recoil": 0,
     "signature": "normal",
     "signatureKind": "physical",
-    "tl": 8,
+    "tl": 7,
     "traits": {
-      "Blast": 9,
       "Bulky": true,
-      "Lo-Pen": 2,
+      "Lo-Pen": 3,
+      "Spread": 4,
     },
   },
   "sources": [
@@ -3123,8 +3242,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
   ],
   "totals": {
     "costCr": 975,
-    "magazineCr": 225,
-    "weightKg": 4.3,
+    "magazineCr": 112.5,
+    "weightKg": 5.5,
   },
 }
 `;
@@ -4376,6 +4495,68 @@ exports[`golden master — built-in weapon evaluations > reproduces Solo 1`] = `
 }
 `;
 
+exports[`golden master — built-in weapon evaluations > reproduces Spigot Mortar 1`] = `
+{
+  "breakdown": [
+    {
+      "costCr": 500,
+      "label": "Receiver: Reusable · Single Shot, Light",
+      "weightKg": 10,
+    },
+    {
+      "costCr": 500,
+      "label": "Receiver Totals",
+      "notes": "Capacity 1",
+      "weightKg": 10,
+    },
+    {
+      "costCr": 0,
+      "label": "Munition: Anti-Armour (RPG) ×1",
+      "notes": "Cr250 to load",
+      "weightKg": 2.5,
+    },
+  ],
+  "issues": [
+    {
+      "message": "RPG rounds carry a larger warhead than the hand-grenade payload; its damage/blast aren't in the supplied text and are shown as the payload's.",
+      "severity": "warning",
+    },
+  ],
+  "notes": [],
+  "profile": {
+    "auto": 0,
+    "capacity": 1,
+    "damage": {
+      "dice": 4,
+      "die": 6,
+      "mod": 0,
+    },
+    "heat": 0,
+    "penetration": 0,
+    "quickdraw": 0,
+    "range": 500,
+    "recoil": 0,
+    "signature": "normal",
+    "signatureKind": "physical",
+    "tl": 6,
+    "traits": {
+      "AP": 8,
+      "Blast": 1,
+      "Bulky": true,
+      "Inaccurate": -2,
+    },
+  },
+  "sources": [
+    "Field Catalogue",
+  ],
+  "totals": {
+    "costCr": 500,
+    "magazineCr": 250,
+    "weightKg": 12.5,
+  },
+}
+`;
+
 exports[`golden master — built-in weapon evaluations > reproduces Squadmate 1`] = `
 {
   "ammoProfiles": [
@@ -4737,6 +4918,91 @@ exports[`golden master — built-in weapon evaluations > reproduces Stowaway 1`]
     "costCr": 1358.28,
     "magazineCr": 72,
     "weightKg": 0.6336,
+  },
+}
+`;
+
+exports[`golden master — built-in weapon evaluations > reproduces TMMS 1`] = `
+{
+  "breakdown": [
+    {
+      "costCr": 750,
+      "label": "Receiver: Reusable · Magazine-Fed, Light",
+      "weightKg": 12,
+    },
+    {
+      "costCr": 375,
+      "costMod": "+50%",
+      "label": "Guidance",
+      "weightKg": 0,
+      "weightMod": "—",
+    },
+    {
+      "costCr": 562.5,
+      "costMod": "+50%",
+      "label": "Lightweight",
+      "weightKg": -2.4,
+      "weightMod": "−20%",
+    },
+    {
+      "costCr": 675,
+      "costMod": "+40%",
+      "label": "Very Compact",
+      "weightKg": -1.92,
+      "weightMod": "−20%",
+    },
+    {
+      "costCr": 2362.5,
+      "label": "Receiver Totals",
+      "notes": "Capacity 2",
+      "weightKg": 7.68,
+    },
+    {
+      "costCr": 0,
+      "label": "Munition: AV-7 Missile ×2",
+      "notes": "Cr24000 to load",
+      "weightKg": 12,
+    },
+  ],
+  "issues": [
+    {
+      "message": "AV-7 Missile has 2 firing modes (Contact, Proximity); the profile shows the primary mode (Contact).",
+      "severity": "warning",
+    },
+  ],
+  "notes": [
+    "Lightweight: the +50% cost may instead be taken as the Hazardous (−1) trait.",
+  ],
+  "profile": {
+    "auto": 0,
+    "capacity": 2,
+    "damage": {
+      "dice": 6,
+      "die": 6,
+      "mod": 0,
+    },
+    "heat": 0,
+    "penetration": 0,
+    "quickdraw": 0,
+    "range": 1000,
+    "recoil": 0,
+    "signature": "normal",
+    "signatureKind": "physical",
+    "tl": 10,
+    "traits": {
+      "AP": 12,
+      "Blast": 4,
+      "Bulky": true,
+      "Smart": true,
+    },
+  },
+  "sources": [
+    "Field Catalogue",
+  ],
+  "totals": {
+    "costCr": 2362.5,
+    "magazineCr": 24000,
+    "weightKg": 19.68,
   },
 }
 `;
