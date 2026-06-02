@@ -1233,22 +1233,47 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   // TODO: Interstellar Ordnance 42mm Advanced Squad Support Weapon
   // TODO: Xeirbin Components Tactical Multirole Missile System
-  /* TODO
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const MUNITIONS = [
+  /*
     AV-7 Missile (TL10)
     Tactical, Light, Multipurpose Anti-Vehicular
 
-    Contact Mode - Range 1km, Damage 6D, 6kg, Cr12000 - AP 12, Blast 4, Smart
-    Proximity Mode - Range 1km, Damage 4D, 6kg, Cr12000 - AP 8, Blast 12, Smart
+    Contact Mode - 1km, Damage 6D, 6kg, Cr12000 - AP 12, Blast 4, Smart
+    Proximity Mode - 1km, Damage 4D, 6kg, Cr12000 - AP 8, Blast 12, Smart
   */
   /*
     Grenade, Anti-Armour (TL6)
 
-    Hand Grenade - Range 20m, Damage 4D, 0.5kg, Cr50 - AP 8, Blast 1
-    Rifle Grenade - Range 100m, Damage 4D, 0.625kg, Cr100 - AP 8, Blast 1
+    Hand Grenade - 20m, Damage 4D, 0.5kg, Cr50 - AP 8, Blast 1
+    Rifle Grenade - 100m, Damage 4D, 0.625kg, Cr100 - AP 8, Blast 1
   */
-  // TODO: Grenade, Mini, Multi-purpose Anti-Personnel
-  // TODO: Grenade, Mine Delivery
-  // TODO: Grenade, Smart-RAM, Plasma
-  // TODO: Rifle Grenade, Guided
-  // TODO: Rocket-Propelled Grenade, Anti-Armour
+  /*
+    Grenade, Mini, Multi-purpose Anti-Personnel (TL9)
+
+    Multipurpose Mini-Grenade - 30m, Damage 1D or 3D or Typical Distraction, 0.3kg, Cr35 - Blast 4, Lo-Pen 2
+  */
+  /*
+    Grenade, Mine Delivery (TL9)
+
+    Mine-Delivery Grenade - 200m, Damage as payload, 0.6kg, Cr15 plus payload
+  */
+  /*
+    Grenade, Smart-RAM, Plasma (TL12)
+
+    Plasma Smart-RAM Grenade - 300m, Damage 8D, 0.8kg, Cr200 - Blast 6, Incendiary 4, Lo-Pen 2, Smart
+  */
+  /*
+    Rifle Grenade, Guided (TL8)
+
+    Guided Rifle Grenade - 100m, Damage as payload, weight varies, Cr50, Smart
+    (add 'terminal seeking' for Cr+100)
+  */
+  /*
+    Rocket-Propelled Grenade, Anti-Armour (TL6)
+
+    Anti-Armour RPG - 500m, Damage 5D, 5kg, Cr150 - AP 10, Blast 4, Inaccurate -2
+  */
 ];
