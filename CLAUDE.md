@@ -126,6 +126,18 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   walk an explicit pipeline returning the same _shape_ as
   `evaluateShip` — `{ profile, breakdown, issues, totals, sources }` — reusing the
   engine's `Issue` type and the `source` provenance idea, but **not** `summarize`.
+- **The pipeline kernel (`pipeline.ts`).** A build is a fold over typed ops on a
+  `{cost, weight, baseCost, baseWeight, lines}` accumulator — **the breakdown is
+  the op trace**, so lines can't drift from the maths. Ops: `base` (set + line),
+  `step` (multiplicative, marginal line + %, no-op at ×1), `mul` (silent multiply
+  — energy folds features/mods into one line), `baseline` (freeze the baseline +
+  marker line), `pctComponent` (% of baseline, with %s), `component` (a thunk that
+  builds a line from `baseCost`), plus `when`/`each`/`seq`/`noop`. The firearm,
+  energy, launcher and projector evaluators all declare their cost/weight via
+  `runBuild([...])`; grenade is a pure lookup (no pipeline). **`golden.test.ts`**
+  snapshots every built-in's full evaluation — the refactor was byte-identical
+  (only `notes: undefined` keys dropped); update it with `vitest -u` only when a
+  rule genuinely changes.
 - **Pipeline:** receiver baseline (gauss → mechanism → calibre → features →
   Increased-Auto → capacity %, all multiplicative) then Phase B (barrel / stock /
   furniture / feed / accessories as % of baseline, or flat Cr). Profile derivation

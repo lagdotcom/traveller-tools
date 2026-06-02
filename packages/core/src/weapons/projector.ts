@@ -16,19 +16,19 @@ import {
   resolveFeatures,
   SOURCE,
 } from './data.js';
+import { component, each, runBuild, step, when } from './pipeline.js';
 import {
   PROJECTOR_FUELS,
   PROJECTOR_HAZARDOUS,
   PROJECTOR_PROPELLANTS,
   PROJECTOR_STRUCTURES,
 } from './projectorData.js';
-import { modPct, pushIf, round2, tlGate, warning } from './shared.js';
+import { pushIf, round2, tlGate, warning } from './shared.js';
 import type {
   Damage,
   ProjectorParams,
   SecondaryWeaponParams,
   Traits,
-  WeaponLineItem,
   WeaponProfile,
 } from './types.js';
 import { evaluateFirearm, type WeaponEvaluation } from './weapon.js';
@@ -81,77 +81,64 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
   const fuelCost = round2(fuel.costPerKg * fuelKg);
   const propConsumable = round2(prop.costPerKg * propKg);
 
-  const breakdown: WeaponLineItem[] = [
-    {
+  // The frame + fuel + propellant are three base lines; the capability features
+  // (Armoured / Bulwarked) then multiply the running total, and a mounted
+  // secondary weapon adds its full cost/weight — all declared as a pipeline.
+  const features = resolveFeatures(params.features);
+  const featureTraits: Traits = {};
+  for (const f of features)
+    if (!(f.costMult === 1 && f.weightMult === 1))
+      Object.assign(featureTraits, f.traits);
+
+  let secondary: WeaponEvaluation['secondary'];
+  const build = runBuild([
+    component(() => ({
       label: `Structure: ${structure.label} (Blast ${structure.blast})`,
       costCr: frameCost,
       weightKg: frameWeight,
       notes: `${attacks} attacks`,
-    },
-    {
+    })),
+    component(() => ({
       label: `Fuel: ${fuel.label} ${fuelKg}kg`,
       costCr: 0,
       weightKg: fuelKg,
       notes: `Cr${fuelCost} to fill`,
-    },
-    {
+    })),
+    component(() => ({
       label: `Propellant: ${prop.label} ${propKg}kg`,
       costCr: machinery,
       weightKg: propKg,
       notes: machinery
         ? `Cr${machinery} machinery · Cr${propConsumable} to fill`
         : `Cr${propConsumable} to fill`,
-    },
-  ];
-
-  // Base build cost (frame + any machinery) and loaded weight, before the
-  // capability features (Armoured / Bulwarked) multiply them.
-  let runCost = frameCost + machinery;
-  let runWeight = totalWeight;
-  const features = resolveFeatures(params.features);
-  const featureTraits: Traits = {};
-  for (const f of features) {
-    if (f.costMult === 1 && f.weightMult === 1) continue;
-    breakdown.push({
-      label: f.label,
-      costCr: round2(runCost * f.costMult - runCost),
-      weightKg: round2(runWeight * f.weightMult - runWeight),
-      costMod: modPct(f.costMult),
-      weightMod: modPct(f.weightMult),
-    });
-    runCost *= f.costMult;
-    runWeight *= f.weightMult;
-    Object.assign(featureTraits, f.traits);
-  }
-  let totalCost = round2(runCost);
-  let finalWeight = round2(runWeight);
+    })),
+    each(features, (f) => step(f.label, f.costMult, f.weightMult)),
+    // reconcile: no worked projector-secondary cost is in the supplied text, so
+    // the full-cost mounting is flagged rather than verified.
+    when(
+      !!params.secondary,
+      component(() => {
+        const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary! });
+        const label = secondaryLabel(params.secondary!);
+        for (const s of sub.sources) sources.add(s);
+        secondary = {
+          label,
+          profile: sub.profile,
+          magazineCr: sub.totals.magazineCr,
+        };
+        return {
+          label: `Secondary weapon: ${label}`,
+          costCr: sub.totals.costCr,
+          weightKg: sub.totals.weightKg,
+          notes: 'complete mounted weapon (cost unverified)',
+        };
+      }),
+    ),
+  ]);
+  const breakdown = build.lines;
+  const totalCost = round2(build.cost);
+  const finalWeight = round2(build.weight);
   const magazineCr = round2(fuelCost + propConsumable);
-  const sourceSet = sources;
-
-  // A mounted secondary weapon (e.g. the Cryojet's breaching shotgun) is a
-  // complete separate weapon bolted on: its full cost/weight add to the projector
-  // (no shared receiver to discount against). It keeps its own profile/data line.
-  // reconcile: no worked projector-secondary cost is in the supplied text, so the
-  // full-cost mounting is flagged rather than verified.
-  let secondary: WeaponEvaluation['secondary'];
-  if (params.secondary) {
-    const sub = evaluateFirearm({ kind: 'firearm', ...params.secondary });
-    const label = secondaryLabel(params.secondary);
-    breakdown.push({
-      label: `Secondary weapon: ${label}`,
-      costCr: sub.totals.costCr,
-      weightKg: sub.totals.weightKg,
-      notes: 'complete mounted weapon (cost unverified)',
-    });
-    totalCost = round2(totalCost + sub.totals.costCr);
-    finalWeight = round2(finalWeight + sub.totals.weightKg);
-    for (const s of sub.sources) sourceSet.add(s);
-    secondary = {
-      label,
-      profile: sub.profile,
-      magazineCr: sub.totals.magazineCr,
-    };
-  }
 
   // --- Profile ---
   const damage: Damage = fuel.damage ?? { dice: 0, die: 6, mod: 0 };
@@ -188,7 +175,7 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     breakdown,
     issues,
     totals: { costCr: totalCost, weightKg: finalWeight, magazineCr },
-    sources: [...sourceSet],
+    sources: [...sources],
     notes: collectNotes({ features: params.features }),
     ...(secondary ? { secondary } : {}),
   };
