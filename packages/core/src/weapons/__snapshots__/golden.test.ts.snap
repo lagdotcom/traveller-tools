@@ -3671,6 +3671,32 @@ exports[`golden master — built-in weapon evaluations > reproduces Planetsider 
     },
   ],
   "issues": [],
+  "magazines": [
+    {
+      "capacity": 29,
+      "label": "Standard",
+      "magazineCr": 29,
+      "primary": true,
+      "unit": "rounds",
+      "weightKg": 4.996313,
+    },
+    {
+      "capacity": 40,
+      "label": "Casket",
+      "magazineCr": 40,
+      "primary": false,
+      "unit": "rounds",
+      "weightKg": 6.195428,
+    },
+    {
+      "capacity": 70,
+      "label": "Drum",
+      "magazineCr": 100,
+      "primary": false,
+      "unit": "rounds",
+      "weightKg": 9.193216,
+    },
+  ],
   "notes": [
     "Laser Pointer: DM+1 to attack rolls out to 50m.",
     "High Capacity: its magazines are incompatible with non-High-Capacity weapons of the same calibre.",

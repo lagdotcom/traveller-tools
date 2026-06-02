@@ -874,10 +874,19 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'carbine',
       stock: 'full',
       accessories: ['scope', 'laserPointer'],
+      // The standard 150% magazine (29 rounds), plus the book's two larger
+      // options: a 40-round casket (Cr40) and a heavy 70-round drum (Cr100). The
+      // FC gives no magazine weights, so `pct` sizes the loaded weight via the
+      // capacity-% rule (drum heavier than casket). Book note (not modelled): with
+      // any magazine fitted the Planetsider's mass absorbs recoil, dropping Bulky.
+      magazines: [
+        { label: 'Standard' },
+        { label: 'Casket', rounds: 40, costCr: 40, pct: 210 },
+        { label: 'Drum', rounds: 70, costCr: 100, pct: 360 },
+      ],
       // reconcile: 'Heavy Handgun ammo' adds +15% weight but no cost
       // reconcile: Receiver Totals Cr1264, 3.13kg
       // reconcile: Range 55m, Quickdraw +5, no Lo-Pen
-      // extra thing: "For those who require more firepower a 40-round casket magazine is available for Cr40 and a 70-round drum costs Cr100. The latter is heavy and awkward to use,and eliminates many of the weapon’s quick-reaction advantages. With any kind of magazine in place the Planetsider's weight absorbs recoil well, removing the Bulky trait."
     },
     'Unified Space Industries',
   ),
