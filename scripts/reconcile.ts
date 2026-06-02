@@ -855,6 +855,16 @@ const TOLERANCE: Record<string, { abs: number; rel: number }> = {
 const SHOW_ROUNDING = process.argv.includes('--rounding');
 
 /**
+ * Trait-name aliases applied to the *book* key before comparing — the book
+ * transcribes the same trait under more than one spelling (OCR). The engine emits
+ * the canonical name on the right.
+ */
+const TRAIT_KEY_ALIAS: Record<string, string> = {
+  // The Standard's stat block prints 'Bulwark'; MF-61 / Cryojet print 'Bulwarked'.
+  Bulwark: 'Bulwarked',
+};
+
+/**
  * Trait-value normalizers applied to the *book* figure before comparing — for
  * traits the book transcribes inconsistently. Inaccurate is always a penalty, but
  * the book prints its sign at random (likely OCR), so force it negative.
@@ -924,7 +934,8 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
     bookT: Record<string, number | string | boolean> | undefined,
     prefix = '',
   ) => {
-    for (const [k, raw] of Object.entries(bookT ?? {})) {
+    for (const [rawKey, raw] of Object.entries(bookT ?? {})) {
+      const k = TRAIT_KEY_ALIAS[rawKey] ?? rawKey;
       const bv = TRAIT_NORMALIZE[k] ? TRAIT_NORMALIZE[k]!(raw) : raw;
       const ev = engT[k];
       const evStr = ev === undefined ? '—' : ev === true ? 'yes' : String(ev);
