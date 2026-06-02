@@ -898,16 +898,36 @@ interface Diff {
 }
 
 /**
- * `complete` is true for a base weapon (its figures are the whole stat block, so a
- * field/trait the engine produces but the book omits is reported as "book
- * missing") and false for a variant (its figures are a partial override — only the
- * deltas vs the base — so the completeness checks would over-report and are off).
+ * Composite a partial override (a variant's figures) on top of a base figure so
+ * the result is a *complete* stat block: scalars and `signature` fall back to the
+ * base, `traits` deep-merge (override wins per key), `ammo`/`warheads` are replaced
+ * wholesale when the override gives them (the engine swaps the whole list), `ignore`
+ * unions, and `variants` is dropped (we're now at the leaf). This lets the
+ * completeness checks run on variants too — every field is present, inherited or
+ * overridden, so only genuine gaps and engine-extras are flagged.
  */
-function diffParams(
-  params: WeaponParams,
-  book: BookFigures,
-  complete: boolean,
-): Diff[] {
+function compositeFigures(
+  base: BookFigures,
+  override: BookFigures,
+): BookFigures {
+  const merged: BookFigures = { ...base, ...override };
+  if (base.traits || override.traits)
+    merged.traits = { ...base.traits, ...override.traits };
+  merged.ignore = [...(base.ignore ?? []), ...(override.ignore ?? [])];
+  merged.note = override.note ?? base.note;
+  delete merged.variants;
+  return merged;
+}
+
+/**
+ * Compare one weapon's engine output to its (complete) book figures. Every field
+ * and trait is checked for equality; a field/trait the engine produces but the book
+ * omits is reported as "book missing" (so engine-added flags surface), except the
+ * engine-internal `auto`/`penetration` scalars (the book expresses those as the
+ * `Auto`/`Lo-Pen`/`AP` traits). Per-ammo / per-warhead figures are composited onto
+ * the top-level figure (shared fields inherit) before the same checks run on them.
+ */
+function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
   const e = evaluateWeapon(params);
   const p = e.profile;
   const diffs: Diff[] = [];
@@ -985,28 +1005,30 @@ function diffParams(
         });
       }
   };
-  cmpNum('cost', e.totals.costCr, book.costCr, '', complete);
-  cmpNum('weight', e.totals.weightKg, book.weightKg, '', complete);
-  cmpNum('magazine', e.totals.magazineCr, book.magazineCr, '', complete);
-  cmpStr('damage', formatDamage(p.damage), book.damage, '', complete);
-  cmpNum('range', p.range, book.range, '', complete);
-  cmpNum('quickdraw', p.quickdraw, book.quickdraw, '', complete);
+  cmpNum('cost', e.totals.costCr, book.costCr, '', true);
+  cmpNum('weight', e.totals.weightKg, book.weightKg, '', true);
+  cmpNum('magazine', e.totals.magazineCr, book.magazineCr, '', true);
+  cmpStr('damage', formatDamage(p.damage), book.damage, '', true);
+  cmpNum('range', p.range, book.range, '', true);
+  cmpNum('quickdraw', p.quickdraw, book.quickdraw, '', true);
   // `auto` and `penetration` are engine-internal scalars the book never lists as
   // such — it expresses them as the `Auto` and `Lo-Pen`/`AP` traits — so they are
   // compared only when a figure is supplied, never reported as "book missing".
   cmpNum('auto', p.auto, book.auto);
   cmpNum('penetration', p.penetration, book.penetration);
-  cmpNum('capacity', p.capacity, book.capacity, '', complete);
+  cmpNum('capacity', p.capacity, book.capacity, '', true);
   cmpStr(
     'signature',
     `${p.signatureKind} (${p.signature})`,
     book.signature,
     '',
-    complete,
+    true,
   );
-  cmpTraits(p.traits, book.traits, '', complete);
+  cmpTraits(p.traits, book.traits, '', true);
 
-  // Per-ammo rows (firearms): match each loaded profile by its ammo *id*.
+  // Per-ammo rows (firearms): match each loaded profile by its ammo *id*. Each ammo
+  // figure inherits the top-level (primary) damage/range/magazine/traits it doesn't
+  // restate, so the completeness checks run against a full figure.
   const ignore = new Set(book.ignore ?? []);
   const ammoRows = e.ammoProfiles ?? [];
   for (const [id, figs] of Object.entries(book.ammo ?? {})) {
@@ -1016,16 +1038,24 @@ function diffParams(
       diffs.push({ field: `${prefix}(loaded)`, engine: '—', book: 'expected' });
       continue;
     }
-    cmpStr('damage', formatDamage(row.profile.damage), figs.damage, prefix);
-    cmpNum('range', row.profile.range, figs.range, prefix);
+    cmpStr('damage', formatDamage(row.profile.damage), figs.damage ?? book.damage, prefix, true); // prettier-ignore
+    cmpNum('range', row.profile.range, figs.range ?? book.range, prefix, true);
+    cmpNum('magazine', row.magazineCr, figs.magazineCr ?? book.magazineCr, prefix, true); // prettier-ignore
+    // penetration is engine-internal (see above): compare only if the book gives one.
     cmpNum('penetration', row.profile.penetration, figs.penetration, prefix);
-    cmpNum('magazine', row.magazineCr, figs.magazineCr, prefix);
-    cmpTraits(row.profile.traits, figs.traits, prefix);
+    cmpTraits(
+      row.profile.traits,
+      { ...book.traits, ...figs.traits },
+      prefix,
+      true,
+    );
     for (const f of figs.ignore ?? []) ignore.add(prefix + f);
   }
 
   // Per-warhead rows (launchers): match each loaded munition by its warhead id.
-  // `weightKg` / `costCr` here are the per-round figures the book lists.
+  // `weightKg` / `costCr` are the *per-round* figures (a different scale from the
+  // launcher's own weight/cost, so they don't inherit); damage/range/traits inherit
+  // the launcher's top-level figure.
   const munitionRows = e.munitionProfiles ?? [];
   for (const [key, figs] of Object.entries(book.warheads ?? {})) {
     const prefix = `${key} · `;
@@ -1034,11 +1064,16 @@ function diffParams(
       diffs.push({ field: `${prefix}(loaded)`, engine: '—', book: 'expected' });
       continue;
     }
-    cmpStr('damage', formatDamage(row.profile.damage), figs.damage, prefix);
-    cmpNum('range', row.profile.range, figs.range, prefix);
-    cmpNum('weight', row.weightKg, figs.weightKg, prefix);
-    cmpNum('cost', row.costCr, figs.costCr, prefix);
-    cmpTraits(row.profile.traits, figs.traits, prefix);
+    cmpStr('damage', formatDamage(row.profile.damage), figs.damage ?? book.damage, prefix, true); // prettier-ignore
+    cmpNum('range', row.profile.range, figs.range ?? book.range, prefix, true);
+    cmpNum('weight', row.weightKg, figs.weightKg, prefix, true);
+    cmpNum('cost', row.costCr, figs.costCr, prefix, true);
+    cmpTraits(
+      row.profile.traits,
+      { ...book.traits, ...figs.traits },
+      prefix,
+      true,
+    );
     for (const f of figs.ignore ?? []) ignore.add(prefix + f);
   }
 
@@ -1056,15 +1091,10 @@ function main() {
   const row = (d: Diff) =>
     `      ${(d.rounding ? '≈ ' : '  ') + d.field.padEnd(14)} engine ${d.engine.padEnd(16)} book ${(d.book + ' ' + (d.delta ?? '')).trim()}`;
 
-  // Report one params-vs-figures comparison. `complete` (base weapons) turns on the
-  // completeness checks; variants pass false (their figures are partial overrides).
-  const report = (
-    label: string,
-    params: WeaponParams,
-    book: BookFigures,
-    complete: boolean,
-  ) => {
-    const all = diffParams(params, book, complete);
+  // Report one params-vs-figures comparison (the figures are already a complete
+  // stat block — composited from the base for a variant).
+  const report = (label: string, params: WeaponParams, book: BookFigures) => {
+    const all = diffParams(params, book);
     const real = all.filter((d) => !d.rounding);
     const rounding = all.filter((d) => d.rounding);
     roundingTotal += rounding.length;
@@ -1093,9 +1123,9 @@ function main() {
       stubs.push(def.name);
       continue;
     }
-    report(def.name, def.params, book, true);
-    // Each variant is evaluated as base ← override and checked against its figures
-    // (which are partial overrides, so completeness checks are off — `complete` false).
+    report(def.name, def.params, book);
+    // Each variant is evaluated as base ← override; its figures are composited onto
+    // the base so the same completeness checks apply (inherited fields fall back).
     for (const v of def.variants ?? []) {
       const vbook = book.variants?.[v.name];
       if (!vbook) {
@@ -1105,8 +1135,7 @@ function main() {
       report(
         `${def.name} › ${v.name}`,
         variantParams(def.params, v.override),
-        vbook,
-        false,
+        compositeFigures(book, vbook),
       );
     }
   }

@@ -325,14 +325,18 @@ MissileWarheadId[]` loads them from `MISSILE_WARHEADS` (e.g. the AV-7) on a
   against `ammoProfiles[].ammo`); **`warheads`** (launchers) is keyed by the
   **warhead/missile id** (matched against `munitionProfiles[].key`) with
   **per-round** `weightKg`/`costCr`; **`variants`** by the variant name.
-  **Completeness check:** a **base** weapon's figures are treated as the whole stat
-  block, so a field _or trait_ the engine produces but the book omits is reported as
-  `book missing` (so engine-extra flags surface) — `auto`/`penetration` are exempt
-  (the book expresses them as the `Auto`/`Lo-Pen`/`AP` traits, not as fields).
-  **Variants** are partial overrides (only the deltas vs base), so their figures are
-  evaluated as base ← override via `variantParams` with the completeness check
-  **off**. `TRAIT_KEY_ALIAS` folds book OCR variants (`Bulwark`→`Bulwarked`) onto
-  the engine's canonical name before comparing.
+  **Completeness check:** figures are treated as the whole stat block, so a field
+  _or trait_ the engine produces but the book omits is reported as `book missing`
+  (so engine-extra flags surface) — `auto`/`penetration` are exempt (the book
+  expresses them as the `Auto`/`Lo-Pen`/`AP` traits, not as fields). The check runs
+  everywhere by **compositing the partial figures onto their parent first**:
+  variants via `compositeFigures(base, override)` (scalars/signature fall back to
+  base, traits deep-merge, ammo/warheads replace, evaluated as base ← override via
+  `variantParams`); per-ammo / per-warhead rows inherit the top-level
+  damage/range/magazine/traits they don't restate (a warhead's per-round
+  `weightKg`/`costCr` are a different scale, so they don't inherit).
+  `TRAIT_KEY_ALIAS` folds book OCR variants (`Bulwark`→`Bulwarked`) onto the
+  engine's canonical name before comparing.
 - **`Traits` is strictly typed** (`types.ts`): three name unions — `FlagTraitName`
   (value `true`: Bulky, Scope, Zero-G, Rugged, …), `NumericTraitName` (a score: AP,
   Auto, Lo-Pen, Blast, …) and `ScoredTraitName` (a dice/level string: Stun '2D',
