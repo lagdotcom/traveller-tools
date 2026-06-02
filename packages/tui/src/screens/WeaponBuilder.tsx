@@ -57,8 +57,6 @@ import {
   serializeWeapon,
   type StockId,
   STOCKS,
-  type WarheadId,
-  WARHEADS,
   type WeaponClass,
   type WeaponDefinition,
   type WeaponParams,
@@ -118,7 +116,6 @@ const PSTRUCT = labelMap<ProjectorStructureId>(PROJECTOR_STRUCTURES);
 const PPROP = labelMap<ProjectorPropellantId>(PROJECTOR_PROPELLANTS);
 const PFUEL = labelMap<ProjectorFuelId>(PROJECTOR_FUELS);
 const LRECEIVER = labelMap<LauncherReceiverId>(LAUNCHER_RECEIVERS);
-const WARHEAD = labelMap<WarheadId>(WARHEADS);
 const GTYPE = labelMap<GrenadeTypeId>(GRENADES);
 
 /** Small label list for a fixed set of ids (used for enum-like choices). */
@@ -230,7 +227,8 @@ const launcherValues = (l: LauncherParams) => ({
   lReceiver: LRECEIVER.toLabel(l.receiver),
   lBarrel: BARREL.toLabel(l.barrel),
   lStock: STOCK.toLabel(l.stock),
-  warhead: WARHEAD.toLabel(l.warhead),
+  warhead: GTYPE.toLabel(l.warhead),
+  warheadSize: GSIZE.toLabel(l.warheadSize),
   delivery: DELIVERY.toLabel(l.delivery),
   guidance: l.guidance ? 'yes' : 'no',
   magazineSize: String(l.magazineSize),
@@ -380,7 +378,8 @@ function buildLauncher(v: FormValues, lists: Lists): LauncherParams {
     stock: STOCK.toId(v.lStock),
     guidance: v.guidance === 'yes',
     magazineSize: num(v.magazineSize, 1),
-    warhead: WARHEAD.toId(v.warhead),
+    warhead: GTYPE.toId(v.warhead),
+    warheadSize: GSIZE.toId(v.warheadSize),
     delivery: DELIVERY.toId(v.delivery),
   };
 }
@@ -840,7 +839,8 @@ export function WeaponBuilderScreen({
         classField,
         { key: 'tl', label: 'Tech level' },
         { key: 'lReceiver', label: 'Receiver', options: LRECEIVER.labels },
-        { key: 'warhead', label: 'Warhead', options: WARHEAD.labels },
+        { key: 'warhead', label: 'Warhead', options: GTYPE.labels },
+        { key: 'warheadSize', label: 'Warhead size', options: GSIZE.labels },
         { key: 'delivery', label: 'Delivery', options: DELIVERY.labels },
         { key: 'guidance', label: 'Guidance system', options: YN },
       ],

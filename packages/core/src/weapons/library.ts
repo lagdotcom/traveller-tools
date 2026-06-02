@@ -22,11 +22,7 @@ import {
   ENERGY_WEAPON_TYPE_LABEL,
 } from './energyData.js';
 import { GRENADES } from './grenadeData.js';
-import {
-  DELIVERY_SYSTEMS,
-  LAUNCHER_RECEIVERS,
-  WARHEADS,
-} from './launcherData.js';
+import { DELIVERY_SYSTEMS, LAUNCHER_RECEIVERS } from './launcherData.js';
 import {
   PROJECTOR_FUELS,
   PROJECTOR_PROPELLANTS,
@@ -65,7 +61,6 @@ import type {
   ReceiverTypeId,
   SecondaryWeaponParams,
   StockId,
-  WarheadId,
   WeaponParams,
 } from './types.js';
 
@@ -153,6 +148,7 @@ export const DEFAULT_LAUNCHER_PARAMS: LauncherParams = {
   guidance: false,
   magazineSize: 6,
   warhead: 'fragmentation',
+  warheadSize: 'hand',
   delivery: 'cartridge',
 };
 
@@ -419,7 +415,17 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
     stock: pick<StockId>(p.stock, STOCKS, d.stock),
     guidance: bool(p.guidance, d.guidance),
     magazineSize: num(p.magazineSize, d.magazineSize),
-    warhead: pick<WarheadId>(p.warhead, WARHEADS, d.warhead),
+    // Map the legacy 'incendiary' warhead id onto its Grenade-table name.
+    warhead: pick<GrenadeTypeId>(
+      p.warhead === 'incendiary' ? 'incendiaryAntipersonnel' : p.warhead,
+      GRENADES,
+      d.warhead,
+    ),
+    warheadSize: pick<GrenadeSizeId>(
+      p.warheadSize,
+      { mini: 0, hand: 0 },
+      d.warheadSize,
+    ),
     delivery: pick<DeliveryId>(p.delivery, DELIVERY_SYSTEMS, d.delivery),
   };
 }
@@ -1235,45 +1241,21 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   // TODO: Xeirbin Components Tactical Multirole Missile System
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const MUNITIONS = [
-  /*
-    AV-7 Missile (TL10)
-    Tactical, Light, Multipurpose Anti-Vehicular
-
-    Contact Mode - 1km, Damage 6D, 6kg, Cr12000 - AP 12, Blast 4, Smart
-    Proximity Mode - 1km, Damage 4D, 6kg, Cr12000 - AP 8, Blast 12, Smart
-  */
-  /*
-    Grenade, Anti-Armour (TL6)
-
-    Hand Grenade - 20m, Damage 4D, 0.5kg, Cr50 - AP 8, Blast 1
-    Rifle Grenade - 100m, Damage 4D, 0.625kg, Cr100 - AP 8, Blast 1
-  */
-  /*
-    Grenade, Mini, Multi-purpose Anti-Personnel (TL9)
-
-    Multipurpose Mini-Grenade - 30m, Damage 1D or 3D or Typical Distraction, 0.3kg, Cr35 - Blast 4, Lo-Pen 2
-  */
-  /*
-    Grenade, Mine Delivery (TL9)
-
-    Mine-Delivery Grenade - 200m, Damage as payload, 0.6kg, Cr15 plus payload
-  */
-  /*
-    Grenade, Smart-RAM, Plasma (TL12)
-
-    Plasma Smart-RAM Grenade - 300m, Damage 8D, 0.8kg, Cr200 - Blast 6, Incendiary 4, Lo-Pen 2, Smart
-  */
-  /*
-    Rifle Grenade, Guided (TL8)
-
-    Guided Rifle Grenade - 100m, Damage as payload, weight varies, Cr50, Smart
-    (add 'terminal seeking' for Cr+100)
-  */
-  /*
-    Rocket-Propelled Grenade, Anti-Armour (TL6)
-
-    Anti-Armour RPG - 500m, Damage 5D, 5kg, Cr150 - AP 10, Blast 4, Inaccurate -2
-  */
-];
+/*
+ * Standard munitions (reference / TODO). Launchers now fire any Grenade Weapons
+ * payload (`GRENADES`, hand or mini) via a delivery system, so most of these are
+ * a payload × delivery away. Still to wire up: a Rifle-Grenade delivery (100m,
+ * cost ×2 / weight ×1.25 — reproduces the Anti-Armour Rifle Grenade exactly);
+ * the larger RPG / missile warheads; and the multi-mode rounds (we show the
+ * primary mode only). The "larger warhead" damage is flagged, not invented.
+ *
+ *   AV-7 Missile (TL10) — Contact 1km/6D/6kg/Cr12000/AP12 Blast4 Smart;
+ *                          Proximity 1km/4D/AP8 Blast12 Smart
+ *   Grenade, Anti-Armour (TL6) — Hand 20m/4D/0.5kg/Cr50/AP8 Blast1;
+ *                                 Rifle 100m/4D/0.625kg/Cr100/AP8 Blast1
+ *   Grenade, Mini, Multi-purpose AP (TL9) — 30m/1D|3D|Distraction/0.3kg/Cr35/Blast4 Lo-Pen2
+ *   Grenade, Mine Delivery (TL9) — 200m/as payload/0.6kg/Cr15 + payload
+ *   Grenade, Smart-RAM, Plasma (TL12) — 300m/8D/0.8kg/Cr200/Blast6 Incendiary4 Lo-Pen2 Smart
+ *   Rifle Grenade, Guided (TL8) — 100m/as payload/varies/Cr50 Smart (+Cr100 terminal seeking)
+ *   Rocket-Propelled Grenade, Anti-Armour (TL6) — 500m/5D/5kg/Cr150/AP10 Blast4 Inaccurate-2
+ */

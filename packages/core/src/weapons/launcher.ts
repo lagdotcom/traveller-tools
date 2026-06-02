@@ -19,11 +19,11 @@ import {
   SOURCE,
   STOCKS,
 } from './data.js';
+import { GRENADES } from './grenadeData.js';
 import {
   DELIVERY_SYSTEMS,
   GUIDANCE_COST_MULT,
   LAUNCHER_RECEIVERS,
-  WARHEADS,
 } from './launcherData.js';
 import {
   base,
@@ -43,7 +43,7 @@ function validateLauncher(params: LauncherParams): Issue[] {
   const issues: Issue[] = [];
   const tl = params.tl;
   const receiver = LAUNCHER_RECEIVERS[params.receiver];
-  const warhead = WARHEADS[params.warhead];
+  const warhead = GRENADES[params.warhead];
   const delivery = DELIVERY_SYSTEMS[params.delivery];
   pushIf(issues, tlGate(tl, receiver?.label ?? '', receiver?.minTL));
   pushIf(issues, tlGate(tl, `${warhead?.label} warhead`, warhead?.minTL));
@@ -70,7 +70,12 @@ function validateLauncher(params: LauncherParams): Issue[] {
 export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   const receiver =
     LAUNCHER_RECEIVERS[params.receiver] ?? LAUNCHER_RECEIVERS.tubeSingleLight;
-  const warhead = WARHEADS[params.warhead] ?? WARHEADS.fragmentation;
+  // The payload is a Grenade Weapons table entry at the chosen body size (mini
+  // falls back to hand when that payload isn't made as a mini).
+  const warheadDef = GRENADES[params.warhead] ?? GRENADES.fragmentation;
+  const payload =
+    (params.warheadSize === 'mini' ? warheadDef.mini : warheadDef.hand) ??
+    warheadDef.hand;
   const delivery =
     DELIVERY_SYSTEMS[params.delivery] ?? DELIVERY_SYSTEMS.cartridge;
   const barrel = BARRELS[params.barrel] ?? BARRELS.minimal;
@@ -89,9 +94,13 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     Math.round(features.reduce((c, f) => c * f.capacityMult, capacityBase)),
   );
   const munitionWeight = round2(
-    capacity * warhead.weight * delivery.weightMult,
+    capacity * payload.weight * delivery.weightMult,
   );
-  const magazineCr = round2(capacity * warhead.cost * delivery.costMult);
+  const magazineCr = round2(capacity * payload.cost * delivery.costMult);
+  const warheadLabel =
+    params.warheadSize === 'mini'
+      ? `${warheadDef.label} (Mini)`
+      : warheadDef.label;
 
   // The receiver is firearm-style (base → multiplicative chain → baseline); the
   // barrel/stock are a % of that baseline (cost/weight only — a launcher's profile
@@ -111,7 +120,7 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
       pctComponent(`Stock: ${stock.label}`, stock.costPct, stock.weightPct),
     ),
     component(() => ({
-      label: `Munition: ${warhead.label} (${delivery.label}) ×${capacity}`,
+      label: `Munition: ${warheadLabel} (${delivery.label}) ×${capacity}`,
       costCr: 0,
       weightKg: munitionWeight,
       notes: `Cr${magazineCr} to load`,
@@ -122,10 +131,10 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   const totalWeight = round2(build.weight);
 
   // --- Profile: payload damage/traits, delivery range + delivery traits ---
-  const damage: Damage = warhead.damage ?? { dice: 0, die: 6, mod: 0 };
+  const damage: Damage = payload.damage ?? { dice: 0, die: 6, mod: 0 };
   const traits: Traits = {
     ...receiver.traits,
-    ...warhead.traits,
+    ...payload.traits,
     ...delivery.traits,
   };
   if (params.guidance) traits.Smart = true;

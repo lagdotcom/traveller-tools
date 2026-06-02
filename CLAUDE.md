@@ -257,10 +257,14 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   integral tube) + `stock:'none'`. The `Light Munition Launcher` built-in
   reproduces this (Cr750/2.0kg receiver baseline → 2.8kg); reconcile: barrel/stock
   %s match the worksheet weight exactly but over-count cost by ~Cr35 (flagged).
-- **Launcher munitions** are a **payload × delivery** pair: the warhead supplies
-  damage/blast/traits (the hand-grenade payload — "equivalent in effect" per the
-  FC), and the delivery system (`DELIVERY_SYSTEMS`: cartridge / RAM / RPG) sets the
+- **Launcher munitions** are a **payload × delivery** pair: the warhead is a
+  **Grenade Weapons table** payload (`GRENADES`, shared with thrown grenades —
+  `LauncherParams.warhead: GrenadeTypeId` + `warheadSize: 'hand' | 'mini'`, mini
+  falling back to hand when not made as a mini), supplying damage/blast/traits;
+  the delivery system (`DELIVERY_SYSTEMS`: cartridge / RAM / RPG) sets the
   **range** (200/300/500) and multiplies the round's cost/weight (×2.5 / ×3 / ×5).
+  (The old standalone `WARHEADS` table was the duplicated hand-grenade column and
+  has been retired in favour of `GRENADES`.)
   reconcile: the worked munition examples don't follow these multipliers uniformly
   (plasma RAM is priced ×1, the anti-armour RPG is a _larger_ warhead than the hand
   payload), so the profile matches the book but round cost/weight are the text

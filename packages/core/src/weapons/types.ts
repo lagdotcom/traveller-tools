@@ -233,22 +233,6 @@ export type LauncherReceiverId =
   | 'fieldHeavy4';
 
 /** Loaded warhead/munition (sets the fired profile; bought separately). */
-export type WarheadId =
-  | 'fragmentation'
-  | 'antiArmour'
-  | 'breacher'
-  | 'smoke'
-  | 'stun'
-  | 'gasIncapacitant'
-  | 'gasToxin'
-  | 'incendiary'
-  | 'plasma'
-  | 'plasmaAntiArmour'
-  | 'microgrenade'
-  | 'multipleProjectile'
-  | 'cryogenic'
-  | 'emp';
-
 /** How a launcher delivers its warhead (sets range + cost/weight of the round). */
 export type DeliveryId = 'cartridge' | 'ram' | 'rpg';
 
@@ -494,8 +478,12 @@ export interface LauncherParams {
   guidance: boolean;
   /** Magazine size for "varies"-capacity (support) launchers. */
   magazineSize: number;
-  /** Loaded warhead payload (hand-grenade stats) shaping the displayed profile. */
-  warhead: WarheadId;
+  /**
+   * Loaded warhead — a payload drawn from the Grenade Weapons table (shared with
+   * thrown grenades), at the chosen body size, shaping the displayed profile.
+   */
+  warhead: GrenadeTypeId;
+  warheadSize: GrenadeSizeId;
   /** How the warhead is delivered (cartridge / RAM / RPG) — sets range + round cost. */
   delivery: DeliveryId;
 }
