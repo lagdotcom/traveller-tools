@@ -7,6 +7,8 @@ export interface Form<T extends Record<string, string>> {
   setters: Record<keyof T, (value: string) => void>;
   /** Advance focus to the next field, wrapping around. */
   next: () => void;
+  /** Replace all values (same keys) and reset focus — for switching edit target. */
+  reset: (values: T) => void;
 }
 
 /**
@@ -38,5 +40,10 @@ export function useForm<T extends Record<string, string>>(initial: T): Form<T> {
     return map;
   }, []);
 
-  return { values, activeIndex, setters, next };
+  const reset = useCallback((nextValues: T) => {
+    setValues(nextValues);
+    setActiveIndex(0);
+  }, []);
+
+  return { values, activeIndex, setters, next, reset };
 }

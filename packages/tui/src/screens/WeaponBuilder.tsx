@@ -60,9 +60,11 @@ import {
   serializeWeapon,
   type StockId,
   STOCKS,
+  variantParams,
   type WeaponClass,
   type WeaponDefinition,
   type WeaponParams,
+  type WeaponVariant,
 } from '@traveller-tools/core';
 import { Box, Text, useInput } from 'ink';
 import React, { useState } from 'react';
@@ -479,6 +481,54 @@ export function WeaponBuilderScreen({
   const [mode, setMode] = useState<'edit' | 'export' | 'import'>('edit');
   const [importBuffer, setImportBuffer] = useState('');
   const [message, setMessage] = useState('');
+
+  // --- Variant editing -------------------------------------------------------
+  // The form edits one "target": the main weapon or one of its variants.
+  // Switching commits the current target (a variant's override = the diff from
+  // the base) then re-seeds the form + lists from the new target's params.
+  const [variants, setVariants] = useState<WeaponVariant[]>(
+    initial?.variants ?? [],
+  );
+  const [target, setTarget] = useState<'main' | number>('main');
+  const [baseParams, setBaseParams] = useState<WeaponParams>(startParams);
+  const [baseMeta, setBaseMeta] = useState({
+    name: initial?.name ?? 'Untitled Weapon',
+    manufacturer: initial?.manufacturer ?? '',
+    description: initial?.description ?? '',
+  });
+
+  /** Top-level fields where `derived` differs from `base` (the variant override). */
+  const diffOverride = (
+    base: WeaponParams,
+    derived: WeaponParams,
+  ): Partial<WeaponParams> => {
+    const o: Record<string, unknown> = {};
+    const b = base as unknown as Record<string, unknown>;
+    for (const [k, v] of Object.entries(derived)) {
+      if (k === 'kind') continue;
+      if (JSON.stringify(v) !== JSON.stringify(b[k])) o[k] = v;
+    }
+    return o as Partial<WeaponParams>;
+  };
+
+  /** Re-seed every multi-select list from a params object (on a target switch). */
+  const seedLists = (q: WeaponParams) => {
+    setFeatures(q.kind === 'grenade' ? [] : q.features);
+    setFurniture(
+      q.kind === 'firearm' || q.kind === 'energy' ? q.furniture : [],
+    );
+    setAccessories(
+      q.kind === 'firearm' || q.kind === 'energy' ? q.accessories : [],
+    );
+    setMods(q.kind === 'energy' ? q.mods : []);
+    setAmmo(q.kind === 'firearm' ? q.ammo : ['ball']);
+    setWarheads(
+      q.kind === 'launcher' ? q.warheads : [{ type: 'fragmentation' }],
+    );
+    setMissiles(q.kind === 'launcher' ? (q.missiles ?? []) : []);
+    setMagazines(q.kind === 'firearm' ? (q.magazines ?? []) : []);
+    setPacks(q.kind === 'energy' ? (q.packs ?? []) : []);
+  };
 
   // --- Magazine editors (firearm) ---
   /** Apply a mutation to the magazine at index `i` (copy-on-write). */
@@ -1032,13 +1082,94 @@ export function WeaponBuilderScreen({
   const name = form.values.name.trim() || 'Untitled Weapon';
   const manufacturer = form.values.manufacturer.trim();
   const description = form.values.description.trim();
-  const currentDef: WeaponDefinition = {
-    name,
-    ...(manufacturer ? { manufacturer } : {}),
-    ...(description ? { description } : {}),
-    params,
-  };
   const evaluation = evaluateWeapon(params);
+
+  // Commit the live form into the current target, returning the whole weapon.
+  const collect = (): {
+    params: WeaponParams;
+    meta: typeof baseMeta;
+    variants: WeaponVariant[];
+  } => {
+    if (target === 'main')
+      return { params, meta: { name, manufacturer, description }, variants };
+    const override = diffOverride(baseParams, params);
+    const vs = variants.map((v, k) =>
+      k === target
+        ? {
+            name: name || v.name,
+            ...(description ? { description } : {}),
+            override,
+          }
+        : v,
+    );
+    return { params: baseParams, meta: baseMeta, variants: vs };
+  };
+
+  /** Seed the form + lists for a target, given a committed weapon snapshot. */
+  const seedTarget = (next: 'main' | number, c: ReturnType<typeof collect>) => {
+    const seedParams =
+      next === 'main'
+        ? c.params
+        : variantParams(c.params, c.variants[next]!.override);
+    const seedMeta =
+      next === 'main'
+        ? c.meta
+        : {
+            name: c.variants[next]!.name,
+            manufacturer: c.meta.manufacturer,
+            description: c.variants[next]!.description ?? '',
+          };
+    setBaseParams(c.params);
+    setBaseMeta(c.meta);
+    setVariants(c.variants);
+    form.reset(formValues(seedParams, seedMeta));
+    seedLists(seedParams);
+    setTarget(next);
+    setActive(0);
+  };
+
+  const switchTo = (next: 'main' | number) => {
+    if (next === target) return;
+    seedTarget(next, collect());
+  };
+  const addVariant = () => {
+    const c = collect();
+    const nv: WeaponVariant = {
+      name: `Variant ${c.variants.length + 1}`,
+      override: {},
+    };
+    seedTarget(c.variants.length, { ...c, variants: [...c.variants, nv] });
+    setMessage(`Added ${nv.name} — edit fields, then Ctrl+S or switch.`);
+  };
+  const removeVariant = () => {
+    if (target === 'main') return;
+    // Drop the current variant (don't commit it) and return to the main weapon.
+    seedTarget('main', {
+      params: baseParams,
+      meta: baseMeta,
+      variants: variants.filter((_, k) => k !== target),
+    });
+  };
+  const cycleTarget = () => {
+    const order: ('main' | number)[] = ['main', ...variants.map((_, i) => i)];
+    const i = order.indexOf(target);
+    switchTo(order[(i + 1) % order.length]!);
+  };
+
+  // The whole weapon (base + variants, with the live target committed) — used by
+  // save and export so they always capture the full design.
+  const collected = collect();
+  const currentDef: WeaponDefinition = {
+    name: collected.meta.name.trim() || 'Untitled Weapon',
+    ...(collected.meta.manufacturer.trim()
+      ? { manufacturer: collected.meta.manufacturer.trim() }
+      : {}),
+    ...(collected.meta.description.trim()
+      ? { description: collected.meta.description.trim() }
+      : {}),
+    params: collected.params,
+    ...(collected.variants.length > 0 ? { variants: collected.variants } : {}),
+  };
 
   // Parse imported JSON text and load it (or report why it failed).
   const loadFromText = (text: string | null) => {
@@ -1079,10 +1210,30 @@ export function WeaponBuilderScreen({
   const doSave = () => {
     store.save(currentDef);
     setMode('edit');
-    setMessage(`Saved “${name}”.`);
+    const n = currentDef.variants?.length ?? 0;
+    setMessage(
+      `Saved “${currentDef.name}”${n ? ` (+${n} variant${n > 1 ? 's' : ''})` : ''}.`,
+    );
   };
 
   useInput((input, key) => {
+    // Variant editing: switch target, add, cycle, remove.
+    if (mode === 'edit' && key.ctrl && input === 'b') {
+      switchTo('main');
+      return;
+    }
+    if (mode === 'edit' && key.ctrl && input === 'n') {
+      addVariant();
+      return;
+    }
+    if (mode === 'edit' && key.ctrl && input === 'v') {
+      cycleTarget();
+      return;
+    }
+    if (mode === 'edit' && key.ctrl && input === 'r') {
+      removeVariant();
+      return;
+    }
     if (mode === 'edit' && key.ctrl && input === 's') {
       doSave();
       return;
@@ -1153,6 +1304,42 @@ export function WeaponBuilderScreen({
       <Text bold color="yellow">
         Weapon Builder — {name}
       </Text>
+
+      <Box
+        flexDirection="column"
+        marginTop={1}
+        borderStyle="round"
+        borderColor={target === 'main' ? 'gray' : 'magenta'}
+        paddingX={1}
+      >
+        {target !== 'main' && (
+          <Text bold color="magenta">
+            ▶ Editing variant “{form.values.name || 'Variant'}” of{' '}
+            {baseMeta.name}
+          </Text>
+        )}
+        <Box>
+          <Text dimColor>Targets: </Text>
+          {[
+            { label: 'Main weapon', t: 'main' as const },
+            ...variants.map((v, i) => ({ label: v.name, t: i })),
+          ].map((x, i) => (
+            <Text key={i}>
+              {i > 0 ? <Text dimColor> · </Text> : null}
+              <Text
+                bold={target === x.t}
+                color={target === x.t ? 'cyan' : undefined}
+              >
+                {x.label}
+              </Text>
+            </Text>
+          ))}
+        </Box>
+        <Text dimColor>
+          Ctrl+N new · Ctrl+V cycle · Ctrl+B main
+          {target !== 'main' ? ' · Ctrl+R remove' : ''}
+        </Text>
+      </Box>
 
       <Box marginTop={1}>
         {sectionDefs.map((section, index) => (

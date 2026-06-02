@@ -97,7 +97,11 @@ Conventions that matter:
   shallow-merges, keeps the base `kind`, normalises). Round-trip through
   serialize/parse (`normalizeVariants`). The library flattens them into loadable
   `Base · Variant` entries; the reconcile harness checks each against
-  `BookFigures.variants`. (In-TUI authoring editor still TODO.)
+  `BookFigures.variants`. The builder edits one **target** (the main weapon or a
+  variant): a banner + target list show the current one, `Ctrl+N` adds, `Ctrl+V`
+  cycles, `Ctrl+B` returns to main, `Ctrl+R` removes; switching commits the live
+  form (a variant's override = the diff vs base) and re-seeds via `useForm.reset` +
+  `seedLists` (no remount, so the row-nav tests are untouched).
 - **Provenance.** `ComponentDef.source` tags a non-base book (e.g.
   `'High Guard'`); `evaluateShip` collects these into `sources` and the sheet
   shows a "Sources" panel of the rulebooks a design needs. Orthogonal to the

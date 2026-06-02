@@ -23,6 +23,19 @@ describe('Weapon builder (real Ink)', () => {
     return ui;
   }
 
+  it('adds, displays and backs out of a variant', async () => {
+    const ui = await openBuilder();
+    expect(ui.frame()).toContain('Main weapon');
+    await ui.type('\x0e'); // Ctrl+N: new variant
+    expect(ui.frame()).toContain('Editing variant');
+    expect(ui.frame()).toContain('Variant 1');
+    await ui.type('\x02'); // Ctrl+B: back to the main weapon
+    expect(ui.frame()).not.toContain('Editing variant');
+    expect(ui.frame()).toContain('Variant 1'); // the variant persists in the list
+    ui.unmount();
+    expect(ui.errors()).toEqual([]);
+  });
+
   it('opens with a derived profile and a cost/weight sheet', async () => {
     const ui = await openBuilder();
     expect(ui.frame()).toContain('Profile');
