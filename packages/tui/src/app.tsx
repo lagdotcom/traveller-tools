@@ -10,6 +10,7 @@ import { TravelScreen } from './screens/Travel.js';
 import { VehicleCatalogScreen } from './screens/VehicleCatalog.js';
 import { WeaponBuilderScreen } from './screens/WeaponBuilder.js';
 import { WeaponLibraryScreen } from './screens/WeaponLibrary.js';
+import { WeaponTraitsScreen } from './screens/WeaponTraits.js';
 
 type Screen =
   | 'menu'
@@ -19,7 +20,8 @@ type Screen =
   | 'library'
   | 'vehicles'
   | 'weapon'
-  | 'weaponLibrary';
+  | 'weaponLibrary'
+  | 'weaponTraits';
 
 export function App(): React.JSX.Element {
   const [screen, setScreen] = useState<Screen>('menu');
@@ -62,6 +64,9 @@ export function App(): React.JSX.Element {
   if (screen === 'vehicles') {
     return <VehicleCatalogScreen onBack={() => setScreen('menu')} />;
   }
+  if (screen === 'weaponTraits') {
+    return <WeaponTraitsScreen onBack={() => setScreen('menu')} />;
+  }
   if (screen === 'weaponLibrary') {
     return (
       <WeaponLibraryScreen
@@ -100,7 +105,7 @@ export function App(): React.JSX.Element {
         <Text>Select a tool:</Text>
       </Box>
       <Select
-        visibleOptionCount={8}
+        visibleOptionCount={9}
         options={[
           { label: 'Jump & Fuel calculator', value: 'jump' },
           { label: 'Travel time (velocity) calculator', value: 'travel' },
@@ -108,6 +113,7 @@ export function App(): React.JSX.Element {
           { label: 'Ship library', value: 'library' },
           { label: 'Weapon builder', value: 'weapon-new' },
           { label: 'Weapon library', value: 'weaponLibrary' },
+          { label: 'Weapon traits reference', value: 'weaponTraits' },
           { label: 'Vehicle catalogue', value: 'vehicles' },
           { label: 'Quit', value: 'quit' },
         ]}

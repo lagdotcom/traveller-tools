@@ -62,4 +62,15 @@ describe('App', () => {
     expect(lastFrame()).toContain('1,211');
     unmount();
   });
+
+  it('opens the weapon traits reference', async () => {
+    const { lastFrame, press, unmount } = setup();
+    await press(''); // settle
+    // Jump(0) → … → Weapon traits reference (index 6): six downs.
+    for (let i = 0; i < 6; i++) await press(ARROW_DOWN);
+    await press('\r');
+    expect(lastFrame()).toContain('Weapon Traits');
+    expect(lastFrame()).toContain('Lo-Pen');
+    unmount();
+  });
 });

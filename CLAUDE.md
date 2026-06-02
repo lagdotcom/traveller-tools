@@ -278,7 +278,14 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   multipliers, and `evaluateLauncher` flags only RPG/missile "larger warhead"
   damage as not-tabled. Don't invent the full munition table.
 - The whole FC weapon-design chapter (firearms, energy, projectors, launchers,
-  grenades) is now implemented; remaining FC content is non-weapon (armour, gear).
+  grenades) is now implemented. The FC has **no armour-design system** — armour is
+  catalogue gear, not built. Remaining FC content is reference/catalogue, not a
+  builder.
+- **Weapon-traits glossary** (`weaponTraits.ts`): the FC "Weapon Traits" chapter
+  (the 13 FC-detailed traits — Burn, Corrosive, Lo-Pen, Spread, Hazardous, …) as
+  `WEAPON_TRAITS` + `findWeaponTrait(key)`, with the Hazard/Flammability/Malfunction
+  sub-tables. Core traits (AP, Blast, …) are Core-book, not here. Surfaced by the
+  TUI's read-only **Weapon traits reference** screen (`screens/WeaponTraits.tsx`).
 
 ## TUI notes (`packages/tui`)
 

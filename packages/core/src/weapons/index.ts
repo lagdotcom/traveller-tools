@@ -11,3 +11,4 @@ export * from './projector.js';
 export * from './projectorData.js';
 export * from './types.js';
 export * from './weapon.js';
+export * from './weaponTraits.js';
