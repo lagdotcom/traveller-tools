@@ -125,6 +125,29 @@ describe('launcher — validation', () => {
   });
 });
 
+describe('launcher — rifle-grenade delivery', () => {
+  it('reproduces the worked Anti-Armour Rifle Grenade (Cr100 / 0.625kg / 100m)', () => {
+    const r = evaluateWeapon(
+      launcher({
+        tl: 6,
+        receiver: 'tubeSingleLight',
+        warhead: 'antiArmour',
+        delivery: 'rifleGrenade',
+      }),
+    );
+    // Round = anti-armour hand payload (Cr50 / 0.5kg) × rifle-grenade (×2 / ×1.25).
+    expect(r.totals.magazineCr).toBeCloseTo(100, 3);
+    // 1.5kg receiver + 0.625kg loaded round.
+    expect(r.totals.weightKg).toBeCloseTo(2.125, 3);
+    expect(r.profile.range).toBe(100);
+    expect(r.profile.damage.dice).toBe(4);
+    expect(r.profile.traits.AP).toBe(8);
+    expect(r.profile.traits.Blast).toBe(1);
+    // A rifle grenade is "equivalent in effect" to the hand payload — not flagged.
+    expect(r.issues.some((i) => /larger warhead/.test(i.message))).toBe(false);
+  });
+});
+
 describe('launcher — missiles (self-contained rounds)', () => {
   it('fires a loaded missile with its own profile, overriding the grenade path', () => {
     // A reusable single-shot heavy launcher loaded with the AV-7 missile.

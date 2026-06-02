@@ -144,6 +144,7 @@ const GSIZE = choiceMap<GrenadeSizeId>([
   ['hand', 'Hand'],
 ]);
 const DELIVERY = choiceMap<DeliveryId>([
+  ['rifleGrenade', 'Rifle Grenade'],
   ['cartridge', 'Cartridge'],
   ['ram', 'RAM'],
   ['rpg', 'RPG'],

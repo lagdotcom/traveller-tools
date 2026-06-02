@@ -234,7 +234,7 @@ export type LauncherReceiverId =
 
 /** Loaded warhead/munition (sets the fired profile; bought separately). */
 /** How a launcher delivers its warhead (sets range + cost/weight of the round). */
-export type DeliveryId = 'cartridge' | 'ram' | 'rpg';
+export type DeliveryId = 'rifleGrenade' | 'cartridge' | 'ram' | 'rpg';
 
 /** A self-contained missile round (fired from a reusable / field launcher). */
 export type MissileWarheadId = 'av7';

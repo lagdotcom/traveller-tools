@@ -46,6 +46,17 @@ export interface DeliveryDef {
 }
 
 export const DELIVERY_SYSTEMS: Record<DeliveryId, DeliveryDef> = {
+  rifleGrenade: {
+    label: 'Rifle Grenade',
+    minTL: 5,
+    costMult: 2,
+    // reconcile: the FC prose says a rifle grenade weighs "50% more" (×1.5), but
+    // the worked Anti-Armour Rifle Grenade is 0.625kg = the 0.5kg hand payload
+    // ×1.25. We follow the worked example (the oracle); cost ×2 matches both.
+    weightMult: 1.25,
+    range: 100,
+    traits: {},
+  },
   cartridge: {
     label: 'Cartridge',
     minTL: 6,

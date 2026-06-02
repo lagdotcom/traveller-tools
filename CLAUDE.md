@@ -261,8 +261,11 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   **Grenade Weapons table** payload (`GRENADES`, shared with thrown grenades —
   `LauncherParams.warhead: GrenadeTypeId` + `warheadSize: 'hand' | 'mini'`, mini
   falling back to hand when not made as a mini), supplying damage/blast/traits;
-  the delivery system (`DELIVERY_SYSTEMS`: cartridge / RAM / RPG) sets the
-  **range** (200/300/500) and multiplies the round's cost/weight (×2.5 / ×3 / ×5).
+  the delivery system (`DELIVERY_SYSTEMS`: rifle-grenade / cartridge / RAM / RPG)
+  sets the **range** (100/200/300/500) and multiplies the round's cost/weight
+  (×2/×1.25 · ×2.5/×1 · ×3/×1 · ×5/×5). reconcile: the FC prose says a rifle
+  grenade weighs +50% but the worked Anti-Armour Rifle Grenade is ×1.25 (0.625kg)
+  — we follow the worksheet.
   (The old standalone `WARHEADS` table was the duplicated hand-grenade column and
   has been retired in favour of `GRENADES`.) **Missiles** (FC Support Weapons) are
   self-contained rounds, not grenade payloads: `LauncherParams.missile?` loads one
