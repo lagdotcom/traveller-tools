@@ -94,6 +94,18 @@ export const step =
     b.weight *= weightMult;
   };
 
+/**
+ * A *silent* multiplicative step — multiplies the running total without emitting
+ * a line. For chains the breakdown folds into one baseline line (energy weapons
+ * roll their features/mods into the single receiver line rather than itemising).
+ */
+export const mul =
+  (costMult: number, weightMult = 1): Op =>
+  (b) => {
+    b.cost *= costMult;
+    b.weight *= weightMult;
+  };
+
 /** Freeze the running total as the baseline and emit a "totals" marker line. */
 export const baseline =
   (label: string, notes?: string): Op =>

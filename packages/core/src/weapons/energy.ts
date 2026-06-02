@@ -30,6 +30,15 @@ import {
   powerPerKg,
 } from './energyData.js';
 import {
+  baseline,
+  component,
+  each,
+  mul,
+  noop,
+  runBuild,
+  when,
+} from './pipeline.js';
+import {
   addTrait,
   clampLevel,
   error,
@@ -106,22 +115,6 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   const issues = validateEnergy(params);
   const sources = new Set<string>([SOURCE]);
 
-  // --- Receiver baseline: shared features + energy mods (multiplicative) ---
-  // Capacity-affecting feature multipliers are ignored here: an energy weapon's
-  // "capacity" is shots from its power source, not a magazine.
-  let cost = receiver.baseCost;
-  let weight = receiver.baseWeight;
-  for (const f of features) {
-    cost *= f.costMult;
-    weight *= f.weightMult;
-  }
-  for (const m of mods) {
-    cost *= m.costMult;
-    weight *= m.weightMult;
-  }
-  const baselineCost = round2(cost);
-  const baselineWeight = round2(weight);
-
   // --- Delivered damage dice: receiver power cap, then barrel cap ---
   const receiverCap = ENERGY_POWER_CLASS_DICE[receiver.maxPower];
   const requested = Math.max(0, Math.floor(params.damageDice));
@@ -144,60 +137,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
 
   const traits: Traits = { 'Zero-G': true };
 
-  // --- Breakdown: receiver line ---
-  const typeLabel = ENERGY_WEAPON_TYPE_LABEL[params.weaponType] ?? 'Laser';
-  const breakdown: WeaponLineItem[] = [
-    {
-      label: `Receiver: ${typeLabel} · ${receiver.label} (${ENERGY_POWER_CLASS_LABEL[receiver.maxPower]})`,
-      costCr: baselineCost,
-      weightKg: baselineWeight,
-      notes: `Up to ${receiverCap}D`,
-    },
-  ];
-
-  let totalCost = baselineCost;
-  let totalWeight = baselineWeight;
-  const add = (label: string, c: number, w: number, notes?: string) => {
-    const costCr = round2(c);
-    const weightKg = round2(w);
-    totalCost += costCr;
-    totalWeight += weightKg;
-    breakdown.push({ label, costCr, weightKg, notes });
-  };
-
-  // --- Phase B: percentages of the receiver baseline ---
-  const heavyMult = params.heavyBarrel ? 2 : 1;
-  const barrelCost = baselineCost * barrel.costPct * heavyMult;
-  const barrelWeight = baselineWeight * barrel.weightPct * heavyMult;
-  if (params.barrel !== 'rifle' || params.heavyBarrel || barrelCost > 0)
-    add(
-      `Barrel: ${barrel.label}${params.heavyBarrel ? ' (Heavy)' : ''}`,
-      barrelCost,
-      barrelWeight,
-    );
-
-  if (params.stock !== 'none')
-    add(
-      `Stock: ${stock.label}`,
-      baselineCost * stock.costPct,
-      baselineWeight * stock.weightPct,
-    );
-
-  for (const id of params.furniture) {
-    const f = FURNITURE[id];
-    if (f) add(f.label, baselineCost * f.costPct, baselineWeight * f.weightPct);
-  }
-
-  for (const id of params.accessories) {
-    const a = ACCESSORIES[id];
-    if (!a) continue;
-    const c = a.cost ?? baselineCost * (a.costPct ?? 0);
-    const w =
-      a.weightPct !== undefined ? baselineWeight * a.weightPct : a.weight;
-    add(a.label, c, w);
-  }
-
-  // --- Power source: capacity (shots), build cost/weight, reload price ---
+  // --- Power source: capacity (shots), reload price, traits — computed up front;
+  // its breakdown line (`powerLine`) is emitted last by the pipeline below. ---
   let capacity = 0;
   let magazineCr = 0;
   let deliveredDice = dice;
@@ -206,6 +147,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   let primaryPackWeight = 0;
   let primaryPackLabel = '';
   let primaryReloadCr = 0;
+  let powerLine: WeaponLineItem;
 
   if (params.powerSource === 'powerpack') {
     const perKg = powerPerKg(params.tl);
@@ -218,12 +160,12 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     primaryReloadCr = round2(
       POWERPACK_COST_PER_KG[params.powerpackRating] * kg,
     );
-    add(
-      `Powerpack: ${ENERGY_POWER_CLASS_LABEL[params.powerpackRating]} ${kg}kg`,
-      POWERPACK_COST_PER_KG[params.powerpackRating] * kg,
-      kg,
-      `${capacity} shots @ ${dice} power`,
-    );
+    powerLine = {
+      label: primaryPackLabel,
+      costCr: primaryReloadCr,
+      weightKg: round2(kg),
+      notes: `${capacity} shots @ ${dice} power`,
+    };
     // An under-rated pack suffers excessive draw → Unreliable.
     const packDice = ENERGY_POWER_CLASS_DICE[params.powerpackRating];
     if (packDice < dice) {
@@ -241,16 +183,16 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     const cart = ENERGY_CARTRIDGE[params.cartridgeRating];
     // Loaded cartridges weigh their own mass (BL-3: 3 × weak 0.01 = 0.03kg); the
     // build cost is one cartridge (the rest are the reload price).
-    add(
-      `Cartridge holder: ${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} ×${capacity}`,
-      cart.cost,
-      capacity * cart.weight,
-      `${capacity} shots`,
-    );
     magazineCr = round2(capacity * cart.cost);
     primaryPackWeight = capacity * cart.weight;
     primaryPackLabel = `Cartridge: ${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} ×${capacity}`;
     primaryReloadCr = magazineCr;
+    powerLine = {
+      label: `Cartridge holder: ${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} ×${capacity}`,
+      costCr: round2(cart.cost),
+      weightKg: round2(capacity * cart.weight),
+      notes: `${capacity} shots`,
+    };
     const cartDice = ENERGY_POWER_CLASS_DICE[params.cartridgeRating];
     if (cartDice > dice) {
       // An over-powered cartridge stresses the weapon → Unreliable.
@@ -271,6 +213,66 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     }
     if (!params.cartridgeEjects) addTrait(traits, 'Hazardous', -2);
   }
+
+  // --- Cost/weight breakdown (pipeline) — the receiver folds its features + mods
+  // into one baseline line; barrel/stock/furniture/accessories are a % of it; the
+  // power source's line comes last. ---
+  const typeLabel = ENERGY_WEAPON_TYPE_LABEL[params.weaponType] ?? 'Laser';
+  const heavyMult = params.heavyBarrel ? 2 : 1;
+  const build = runBuild(
+    [
+      each(features, (f) => mul(f.costMult, f.weightMult)),
+      each(mods, (m) => mul(m.costMult, m.weightMult)),
+      baseline(
+        `Receiver: ${typeLabel} · ${receiver.label} (${ENERGY_POWER_CLASS_LABEL[receiver.maxPower]})`,
+        `Up to ${receiverCap}D`,
+      ),
+      when(
+        params.barrel !== 'rifle' ||
+          params.heavyBarrel ||
+          barrel.costPct * heavyMult > 0,
+        component((b) => ({
+          label: `Barrel: ${barrel.label}${params.heavyBarrel ? ' (Heavy)' : ''}`,
+          costCr: round2(b.baseCost * barrel.costPct * heavyMult),
+          weightKg: round2(b.baseWeight * barrel.weightPct * heavyMult),
+        })),
+      ),
+      when(
+        params.stock !== 'none',
+        component((b) => ({
+          label: `Stock: ${stock.label}`,
+          costCr: round2(b.baseCost * stock.costPct),
+          weightKg: round2(b.baseWeight * stock.weightPct),
+        })),
+      ),
+      each(params.furniture, (id) => {
+        const f = FURNITURE[id];
+        return f
+          ? component((b) => ({
+              label: f.label,
+              costCr: round2(b.baseCost * f.costPct),
+              weightKg: round2(b.baseWeight * f.weightPct),
+            }))
+          : noop;
+      }),
+      each(params.accessories, (id) => {
+        const a = ACCESSORIES[id];
+        if (!a) return noop;
+        return component((b) => ({
+          label: a.label,
+          costCr: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
+          weightKg: round2(
+            a.weightPct !== undefined ? b.baseWeight * a.weightPct : a.weight,
+          ),
+        }));
+      }),
+      component(() => powerLine),
+    ],
+    { cost: receiver.baseCost, weight: receiver.baseWeight },
+  );
+  const breakdown = build.lines;
+  const totalCost = round2(build.cost);
+  const totalWeight = round2(build.weight);
 
   // --- Derive the profile ---
   let damage: Damage = { dice: deliveredDice, die: 6, mod: 0 };

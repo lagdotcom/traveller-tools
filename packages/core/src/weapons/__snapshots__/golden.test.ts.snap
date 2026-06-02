@@ -587,13 +587,11 @@ exports[`golden master — built-in weapon evaluations > reproduces BL-3 1`] = `
     {
       "costCr": 0,
       "label": "Barrel: Minimal",
-      "notes": undefined,
       "weightKg": 0,
     },
     {
       "costCr": 40,
       "label": "Stock: Full Stock",
-      "notes": undefined,
       "weightKg": 0.05,
     },
     {
@@ -3143,13 +3141,11 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
     {
       "costCr": 1171.875,
       "label": "Barrel: Carbine",
-      "notes": undefined,
       "weightKg": 0.9,
     },
     {
       "costCr": 703.125,
       "label": "Stock: Folding Stock",
-      "notes": undefined,
       "weightKg": 0.1125,
     },
     {
@@ -3382,7 +3378,6 @@ exports[`golden master — built-in weapon evaluations > reproduces Nefertem 1`]
     {
       "costCr": 160,
       "label": "Barrel: Assault",
-      "notes": undefined,
       "weightKg": 0.45,
     },
     {
