@@ -1223,10 +1223,26 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     powerpackRating: 'light',
     powerpackKg: 1,
   }),
-  // TODO: Krabbine Heavy Industries IP-2 Standoff Incendiary Weapon
-  // TODO: Spigot Mortar, General Purpose
   launcher(
-    'Light Munition Launcher',
+    'IP-2',
+    'Standoff incendiary weapon',
+    {
+      tl: 8,
+      receiver: 'tubeSingleLight', // reconcile: Disposable Launcher - 0.25kg, Quickdraw -8, Bulky
+      warhead: 'incendiaryAntipersonnel', // reconcile: Incendiary Rocket-Propelled Grenade - Cr75, 0.5kg
+      delivery: 'rpg',
+    },
+    'Krabbine Heavy Industries',
+  ),
+  launcher('Spigot Mortar', 'General-purpose RPG launcher', {
+    tl: 6,
+    receiver: 'reuseSingleLight',
+    warhead: 'antiArmour', // reconcile: Rocket-Propelled Grenade - Cr150, 5kg
+    delivery: 'rpg',
+    // reconcile: Damage 10D, AP 12, Blast 4
+  }),
+  launcher(
+    'Light Munitions Launcher',
     // Whaite Industries worked example: a semi-auto light tube made Lightweight +
     // Bullpup with an Assault barrel and full stock. Receiver Cr750/2.0kg, +Assault
     // barrel +full stock → 2.8kg. reconcile: the worksheet totals Cr940; the
@@ -1234,19 +1250,51 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // flagged rather than fudge — the user is the authority on the exact figure).
     'semi-auto light tube launcher',
     {
-      tl: 8,
-      receiver: 'tubeSemiLight',
+      tl: 7,
+      receiver: 'tubeSemiLight', // reconcile: Quickdraw -8
+      warhead: 'multipleProjectile',
+      // TODO: also show incapacitant gas, baton, distraction
       delivery: 'cartridge',
       features: ['lightweight', 'bullpup'],
       barrel: 'assault',
-      stock: 'fixed', // a fixed stock (same +10%/+10% as full)
-      warhead: 'fragmentation',
-      // reconcile: incapacitant gas, baton, distraction, multiple projectile
+      stock: 'fixed',
+      // reconcile: Totals = Cr940, 2.8kg (does not count the warhead)
+      // reconcile: multiple projectile = 0.4kg, Cr25
     },
     'Whaite Industries',
   ),
-  // TODO: Interstellar Ordnance 42mm Advanced Squad Support Weapon
-  // TODO: Xeirbin Components Tactical Multirole Missile System
+  launcher(
+    'ASSW',
+    'Rotary-fed RAM grenade launcher',
+    {
+      tl: 9,
+      receiver: 'reuseSingleHeavy', // reconcile: Semi-Automatic Grenade Launcher, Standard - Quickdraw -8
+      warhead: 'fragmentation',
+      delivery: 'ram', // reconcile: Standard RAM (or cartridge grenade) - 300m, 3 rounds, Bulky
+      // book error: Receiver Totals Cr6500 (extra 0), 3.85kg
+      // reconcile: Accessories: Fixed Drum - Cr325, 3kg - Capacity 6 rounds
+      // reconcile: RAM Grenade, Guided Fragmentation - TL9, 300m, 5D, 0.5kg, Cr90, Blast 3, Lo-Pen 2
+    },
+    'Interstellar Ordnance',
+  ),
+  launcher(
+    'TMMS',
+    'Light TAC missile launcher',
+    {
+      tl: 10,
+      receiver: 'reuseMagLight',
+      missile: 'av7', // Ammunition Type: Light Tac Missile
+      features: ['lightweight', 'veryCompact'],
+      guidance: true, // TODO: why is this not a feature?
+      // book error: Receiver Totals Cr1127.9, 7.68kg
+    },
+    'Xeirbin Components',
+  ),
+  // TODO CLOSEGUARD SEMI-AUTONOMOUS POINT DEFENCE SYSTEM
+  // TODO MDD INFANTRY SUPPORT WEAPON SYSTEM
+  // TODO MDS ANTI-MATERIEL RIFLE
+  // TODO PORCUPINE RIFLE GRENADE DISCHARGER
+  // TODO TES-12 LASER SUPPORT WEAPON
 ];
 
 /*

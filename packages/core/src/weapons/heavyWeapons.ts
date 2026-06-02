@@ -41,6 +41,9 @@ export interface HeavyGunDef {
 }
 
 export const HEAVY_GUNS: Record<string, HeavyGunDef> = {
+  // TODO AC-25 AUTOMATIC CANNON
+  // TODO AC-40 MEDIUM AUTOMATIC CANNON
+  // TODO AC-60H HEAVY AUTOCANNON
   blackjack: {
     label: 'Blackjack Gun/Missile System',
     minTL: 8,
@@ -74,6 +77,16 @@ export const HEAVY_GUNS: Record<string, HeavyGunDef> = {
     notes:
       'A 150mm vehicle cannon that also launches 150mm missiles (e.g. TAC-150) from a container; standard mount = an 8-Space large turret, 6-shell revolver autoloader.',
   },
+  // TODO LC-85 LOW-PRESSURE CANNON
+  // TODO VRF-3 VRF GAUSS SUPPORT WEAPON
+  // TODO MPS-22 GAUSS AUTOCANNON
+  // TODO AGGRESSOR 90MM MULTIPLE MORTAR
+  // TODO DOMINATOR 200MM SIEGE MORTAR
+  // TODO FA-150 GUN-HOWITZER
+  // TODO AIRSPACE DEFENCE SYSTEM
+  // TODO ASA-40 HEAVY AEROSPACE DEFENCE MISSILE SYSTEM
+  // TODO P-12 VEHICULAR SUPPORT WEAPON (PLASMA)
+  // TODO RESGAW-220 ROCKET ARTILLERY SYSTEM
 };
 
 /** A heavy (vehicle-scale) missile — a self-contained, one-use, smart round. */
