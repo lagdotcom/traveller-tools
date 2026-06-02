@@ -325,6 +325,18 @@ const TOLERANCE: Record<string, { abs: number; rel: number }> = {
 };
 const SHOW_ROUNDING = process.argv.includes('--rounding');
 
+/**
+ * Trait-value normalizers applied to the *book* figure before comparing — for
+ * traits the book transcribes inconsistently. Inaccurate is always a penalty, but
+ * the book prints its sign at random (likely OCR), so force it negative.
+ */
+const TRAIT_NORMALIZE: Record<
+  string,
+  (v: number | boolean) => number | boolean
+> = {
+  Inaccurate: (v) => (typeof v === 'number' ? -Math.abs(v) : v),
+};
+
 const n = (v: number) => String(Math.round(v * 10000) / 10000);
 
 type Kind = 'exact' | 'rounding' | 'diff';
@@ -376,7 +388,8 @@ function diffWeapon(name: string, book: BookFigures): Diff[] {
   cmpNum('penetration', p.penetration, book.penetration);
   cmpNum('capacity', p.capacity, book.capacity);
   cmpStr('signature', `${p.signatureKind} (${p.signature})`, book.signature);
-  for (const [k, bv] of Object.entries(book.traits ?? {})) {
+  for (const [k, raw] of Object.entries(book.traits ?? {})) {
+    const bv = TRAIT_NORMALIZE[k] ? TRAIT_NORMALIZE[k]!(raw) : raw;
     const ev = p.traits[k];
     const evStr = ev === undefined ? '—' : ev === true ? 'yes' : String(ev);
     const bvStr = bv === true ? 'yes' : String(bv);
