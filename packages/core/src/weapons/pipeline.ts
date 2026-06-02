@@ -131,5 +131,5 @@ export const pctComponent = (
     weightKg: round2(b.baseWeight * weightFrac),
     costMod: pctOf(costFrac),
     weightMod: pctOf(weightFrac),
-    notes,
+    ...(notes !== undefined ? { notes } : {}),
   }));

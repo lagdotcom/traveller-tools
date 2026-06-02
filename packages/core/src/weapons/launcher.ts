@@ -26,21 +26,17 @@ import {
   WARHEADS,
 } from './launcherData.js';
 import {
-  error,
-  modPct,
-  pctOf,
-  pushIf,
-  round2,
-  tlGate,
-  warning,
-} from './shared.js';
-import type {
-  Damage,
-  LauncherParams,
-  Traits,
-  WeaponLineItem,
-  WeaponProfile,
-} from './types.js';
+  base,
+  baseline,
+  component,
+  each,
+  pctComponent,
+  runBuild,
+  step,
+  when,
+} from './pipeline.js';
+import { error, pushIf, round2, tlGate, warning } from './shared.js';
+import type { Damage, LauncherParams, Traits, WeaponProfile } from './types.js';
 import type { WeaponEvaluation } from './weapon.js';
 
 function validateLauncher(params: LauncherParams): Issue[] {
@@ -84,36 +80,6 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   const issues = validateLauncher(params);
   const sources = new Set<string>([SOURCE]);
 
-  // --- Phase 1: the receiver (firearm-style multiplicative chain) ---
-  const lines: WeaponLineItem[] = [
-    {
-      label: `Receiver: ${receiver.label}`,
-      costCr: round2(receiver.cost),
-      weightKg: round2(receiver.weight),
-    },
-  ];
-
-  let rc = receiver.cost;
-  let rw = receiver.weight;
-  const applyMod = (label: string, costMult: number, weightMult = 1) => {
-    if (costMult === 1 && weightMult === 1) return;
-    lines.push({
-      label,
-      costCr: round2(rc * costMult - rc),
-      weightKg: round2(rw * weightMult - rw),
-      costMod: modPct(costMult),
-      weightMod: modPct(weightMult),
-    });
-    rc *= costMult;
-    rw *= weightMult;
-  };
-
-  if (params.guidance) applyMod('Guidance', GUIDANCE_COST_MULT);
-  for (const f of features) applyMod(f.label, f.costMult, f.weightMult);
-
-  const baselineCost = round2(rc);
-  const baselineWeight = round2(rw);
-
   const capacityBase =
     receiver.capacity === 'varies'
       ? Math.max(1, Math.floor(params.magazineSize))
@@ -122,52 +88,38 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     1,
     Math.round(features.reduce((c, f) => c * f.capacityMult, capacityBase)),
   );
-
-  lines.push({
-    label: 'Receiver Totals',
-    costCr: baselineCost,
-    weightKg: baselineWeight,
-    notes: `Capacity ${capacity}`,
-  });
-
-  // --- Phase 2: barrel + stock as a fraction of the modified baseline ---
-  // (cost/weight only — a launcher's profile comes from its warhead, not barrel.)
-  let componentCost = 0;
-  let componentWeight = 0;
-  const addPct = (label: string, costFrac: number, weightFrac: number) => {
-    const costCr = round2(baselineCost * costFrac);
-    const weightKg = round2(baselineWeight * weightFrac);
-    componentCost += costCr;
-    componentWeight += weightKg;
-    lines.push({
-      label,
-      costCr,
-      weightKg,
-      costMod: pctOf(costFrac),
-      weightMod: pctOf(weightFrac),
-    });
-  };
-  if (barrel.costPct > 0 || barrel.weightPct > 0)
-    addPct(`Barrel: ${barrel.label}`, barrel.costPct, barrel.weightPct);
-  if (params.stock !== 'none')
-    addPct(`Stock: ${stock.label}`, stock.costPct, stock.weightPct);
-
-  const launcherCost = round2(baselineCost + componentCost);
-  const launcherWeight = round2(baselineWeight + componentWeight);
-
-  // --- Munition: payload priced/weighed by its delivery system ---
   const munitionWeight = round2(
     capacity * warhead.weight * delivery.weightMult,
   );
   const magazineCr = round2(capacity * warhead.cost * delivery.costMult);
-  lines.push({
-    label: `Munition: ${warhead.label} (${delivery.label}) ×${capacity}`,
-    costCr: 0,
-    weightKg: munitionWeight,
-    notes: `Cr${magazineCr} to load`,
-  });
 
-  const totalWeight = round2(launcherWeight + munitionWeight);
+  // The receiver is firearm-style (base → multiplicative chain → baseline); the
+  // barrel/stock are a % of that baseline (cost/weight only — a launcher's profile
+  // comes from its warhead). The munition adds its loaded weight; its cost is the
+  // separate reload price, not part of the launcher cost.
+  const build = runBuild([
+    base(`Receiver: ${receiver.label}`, receiver.cost, receiver.weight),
+    when(params.guidance, step('Guidance', GUIDANCE_COST_MULT)),
+    each(features, (f) => step(f.label, f.costMult, f.weightMult)),
+    baseline('Receiver Totals', `Capacity ${capacity}`),
+    when(
+      barrel.costPct > 0 || barrel.weightPct > 0,
+      pctComponent(`Barrel: ${barrel.label}`, barrel.costPct, barrel.weightPct),
+    ),
+    when(
+      params.stock !== 'none',
+      pctComponent(`Stock: ${stock.label}`, stock.costPct, stock.weightPct),
+    ),
+    component(() => ({
+      label: `Munition: ${warhead.label} (${delivery.label}) ×${capacity}`,
+      costCr: 0,
+      weightKg: munitionWeight,
+      notes: `Cr${magazineCr} to load`,
+    })),
+  ]);
+  const lines = build.lines;
+  const launcherCost = round2(build.cost);
+  const totalWeight = round2(build.weight);
 
   // --- Profile: payload damage/traits, delivery range + delivery traits ---
   const damage: Damage = warhead.damage ?? { dice: 0, die: 6, mod: 0 };
