@@ -8,6 +8,8 @@ import {
   normalizeWeaponParams,
   parseWeapon,
   serializeWeapon,
+  variantParams,
+  type WeaponDefinition,
   type WeaponParams,
 } from './index.js';
 
@@ -632,5 +634,34 @@ describe('robustness & serialization', () => {
     const def = BUILTIN_WEAPONS.find((w) => w.name === 'GA-100')!;
     const parsed = parseWeapon(serializeWeapon(def));
     expect(parsed.params).toEqual(def.params);
+  });
+
+  it('resolves a variant as a shallow override of the base (kind kept)', () => {
+    const base = byName('Bodyguard Shotgun'); // longarm, rifle barrel, full stock
+    const v = variantParams(base, { barrel: 'short', stock: 'none' });
+    expect(v.kind).toBe('firearm');
+    expect((v as { barrel: string }).barrel).toBe('short');
+    expect((v as { stock: string }).stock).toBe('none');
+    // Untouched fields inherit from the base.
+    expect((v as { calibre: string }).calibre).toBe(
+      (base as { calibre: string }).calibre,
+    );
+    expect(() => evaluateWeapon(v)).not.toThrow();
+  });
+
+  it('round-trips variants through serialize/parse', () => {
+    const def: WeaponDefinition = {
+      name: 'WithVariant',
+      params: DEFAULT_WEAPON_PARAMS,
+      variants: [
+        {
+          name: 'Carbine',
+          description: 'short',
+          override: { barrel: 'carbine' },
+        },
+      ],
+    };
+    const parsed = parseWeapon(serializeWeapon(def));
+    expect(parsed.variants).toEqual(def.variants);
   });
 });

@@ -70,6 +70,18 @@ import type {
   WeaponParams,
 } from './types.js';
 
+/**
+ * A named partial override of a weapon's params — a book variant (e.g. a "cut
+ * down" or "carbine" version) without duplicating the whole design. Shallow
+ * merge: a changed field is given in full (e.g. `{ barrel: 'short', ammo:
+ * ['pellet'] }`); `kind` always inherits the base.
+ */
+export interface WeaponVariant {
+  name: string;
+  description?: string;
+  override: Partial<WeaponParams>;
+}
+
 /** A named weapon design: parameters plus presentation metadata. */
 export interface WeaponDefinition {
   name: string;
@@ -77,6 +89,20 @@ export interface WeaponDefinition {
   /** Designer / manufacturer (e.g. "Anhur Industries"). */
   manufacturer?: string;
   params: WeaponParams;
+  /** Optional book variants (partial overrides on `params`). */
+  variants?: WeaponVariant[];
+}
+
+/** Resolve a variant to full, valid params (base ← override, base `kind` kept). */
+export function variantParams(
+  base: WeaponParams,
+  override: Partial<WeaponParams>,
+): WeaponParams {
+  return normalizeWeaponParams({
+    ...(base as unknown as Record<string, unknown>),
+    ...(override as unknown as Record<string, unknown>),
+    kind: base.kind,
+  });
 }
 
 export const WEAPON_FORMAT = 'traveller-tools/weapon';
@@ -498,6 +524,31 @@ export function normalizeWeaponParams(input: unknown): WeaponParams {
   }
 }
 
+/** Coerce a variants list: each needs a name; the override is kept raw (it's
+ *  shallow-merged and normalised at resolve time, so unknown keys drop out). */
+function normalizeVariants(v: unknown): WeaponVariant[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const out: WeaponVariant[] = [];
+  for (const item of v) {
+    if (!isObject(item)) continue;
+    const name =
+      typeof item.name === 'string' && item.name.trim()
+        ? item.name.trim()
+        : undefined;
+    if (!name) continue;
+    out.push({
+      name,
+      ...(typeof item.description === 'string'
+        ? { description: item.description }
+        : {}),
+      override: isObject(item.override)
+        ? (item.override as Partial<WeaponParams>)
+        : {},
+    });
+  }
+  return out.length ? out : undefined;
+}
+
 // --- Serialize / parse ------------------------------------------------------
 
 export function serializeWeapon(def: WeaponDefinition): string {
@@ -509,6 +560,9 @@ export function serializeWeapon(def: WeaponDefinition): string {
       ...(def.description ? { description: def.description } : {}),
       ...(def.manufacturer ? { manufacturer: def.manufacturer } : {}),
       params: normalizeWeaponParams(def.params),
+      ...(def.variants && def.variants.length > 0
+        ? { variants: def.variants }
+        : {}),
     },
   };
   return JSON.stringify(doc, null, 2);
@@ -539,6 +593,9 @@ export function parseWeapon(text: string): WeaponDefinition {
       ? { manufacturer: weapon.manufacturer }
       : {}),
     params: normalizeWeaponParams(params),
+    ...(normalizeVariants(weapon.variants)
+      ? { variants: normalizeVariants(weapon.variants) }
+      : {}),
   };
 }
 

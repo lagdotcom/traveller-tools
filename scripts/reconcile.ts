@@ -19,6 +19,8 @@ import {
   evaluateWeapon,
   formatDamage,
   type Traits,
+  variantParams,
+  type WeaponParams,
 } from '@traveller-tools/core';
 
 const EL = 'emissions (low)';
@@ -50,6 +52,12 @@ interface BookFigures {
    * top-level figures still cover the weapon as a whole (the primary ammo).
    */
   ammo?: Record<string, AmmoFigures>;
+  /**
+   * Per-variant figures, keyed by the variant name on the built-in's `variants`.
+   * Each is a full figure set (a variant changes the whole profile) and may carry
+   * its own `ammo` / `ignore`.
+   */
+  variants?: Record<string, BookFigures>;
   /**
    * Spot exceptions: field names to skip (a confirmed book error the engine is
    * right about). Use a `note` to record why. Field names match the report's
@@ -604,10 +612,8 @@ interface Diff {
   rounding?: boolean;
 }
 
-function diffWeapon(name: string, book: BookFigures): Diff[] {
-  const def = BUILTIN_WEAPONS.find((w) => w.name === name);
-  if (!def) return [{ field: '(weapon)', engine: 'MISSING', book: 'listed' }];
-  const e = evaluateWeapon(def.params);
+function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
+  const e = evaluateWeapon(params);
   const p = e.profile;
   const diffs: Diff[] = [];
   // `field` is the base name (used for tolerance); `prefix` labels per-ammo rows.
@@ -700,6 +706,27 @@ function main() {
   const row = (d: Diff) =>
     `      ${(d.rounding ? '≈ ' : '  ') + d.field.padEnd(14)} engine ${d.engine.padEnd(16)} book ${(d.book + ' ' + (d.delta ?? '')).trim()}`;
 
+  // Report one params-vs-figures comparison (base weapon or a variant).
+  const report = (label: string, params: WeaponParams, book: BookFigures) => {
+    const all = diffParams(params, book);
+    const real = all.filter((d) => !d.rounding);
+    const rounding = all.filter((d) => d.rounding);
+    roundingTotal += rounding.length;
+    if (real.length === 0) {
+      reconciled++;
+      const tag = rounding.length
+        ? ` (${rounding.length} within rounding)`
+        : '';
+      lines.push(`✓  ${label}${tag}`);
+    } else {
+      realDiffTotal += real.length;
+      lines.push(`✗  ${label}`);
+      for (const d of real) lines.push(row(d));
+      if (book.note) lines.push(`      note: ${book.note}`);
+    }
+    if (SHOW_ROUNDING) for (const d of rounding) lines.push(row(d));
+  };
+
   for (const def of BUILTIN_WEAPONS) {
     const book = BOOK_FIGURES[def.name];
     if (book === undefined) {
@@ -710,24 +737,20 @@ function main() {
       stubs.push(def.name);
       continue;
     }
-    const all = diffWeapon(def.name, book);
-    const real = all.filter((d) => !d.rounding);
-    const rounding = all.filter((d) => d.rounding);
-    roundingTotal += rounding.length;
-
-    if (real.length === 0) {
-      reconciled++;
-      const tag = rounding.length
-        ? ` (${rounding.length} within rounding)`
-        : '';
-      lines.push(`✓  ${def.name}${tag}`);
-    } else {
-      realDiffTotal += real.length;
-      lines.push(`✗  ${def.name}`);
-      for (const d of real) lines.push(row(d));
-      if (book.note) lines.push(`      note: ${book.note}`);
+    report(def.name, def.params, book);
+    // Each variant is evaluated as base ← override and checked against its figures.
+    for (const v of def.variants ?? []) {
+      const vbook = book.variants?.[v.name];
+      if (!vbook) {
+        stubs.push(`${def.name} › ${v.name}`);
+        continue;
+      }
+      report(
+        `${def.name} › ${v.name}`,
+        variantParams(def.params, v.override),
+        vbook,
+      );
     }
-    if (SHOW_ROUNDING) for (const d of rounding) lines.push(row(d));
   }
 
   console.log('\n=== Book reconciliation ===\n');
