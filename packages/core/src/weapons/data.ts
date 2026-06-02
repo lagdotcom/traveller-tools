@@ -923,6 +923,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      traits: { Accurised: true },
       note: 'Accurised: DM+1 to aimed fire at ranges beyond 25m.',
     },
     bullpup: {
@@ -1027,6 +1028,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1.1,
       capacityMult: 1,
       quickdraw: 0,
+      traits: { Rugged: true },
       note: 'Rugged: DM+2 to rolls on the Malfunction table.',
     },
     vacuum: {
@@ -1035,6 +1037,9 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       weightMult: 1,
       capacityMult: 1,
       quickdraw: 0,
+      // Vacuum operation grants the Zero-G trait (corroborated by the Guardian /
+      // Sentinel worksheets, whose only Zero-G source is this feature).
+      traits: { 'Zero-G': true },
       note: 'Vacuum: functions in vacuum or very low pressure (enlarged trigger guard for vacc-suit gloves); works in space or atmosphere.',
     },
     underwater: {
@@ -1063,7 +1068,7 @@ export const RECEIVER_FEATURES: Record<ReceiverFeatureId, ReceiverFeatureDef> =
       quickdraw: 0,
       signatureShift: -3,
       ammoCostMult: 20,
-      traits: { 'Stealth (extreme)': true },
+      traits: { Stealth: 'extreme' },
       note: 'Extreme Stealth: DM−6 to detect the weapon; firing standard ammo instead gives only −2 Signature and DM−4.',
       group: 'stealth',
     },

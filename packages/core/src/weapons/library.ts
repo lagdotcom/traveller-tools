@@ -1450,7 +1450,12 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       ammo: ['ball', 'apAdvanced'],
     },
     undefined,
-    [{ name: 'cut down', override: { barrel: 'assault' } }],
+    [
+      {
+        name: 'cut down',
+        override: { barrel: 'assault', ammo: ['explosive', 'pellet'] },
+      },
+    ],
   ),
   energyWeapon(
     'TES-12',
