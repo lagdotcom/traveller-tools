@@ -90,8 +90,9 @@ Conventions that matter:
   Both builders edit all three as ordinary text fields in a trailing **Identity**
   section (appended last so the position-sensitive nav tests don't shift); `Ctrl+S`
   saves directly using them (no save dialog). Built-in weapons pass the maker as
-  the helper's 4th arg (`weapon(name, desc, overrides, mfr?)`); ships use
-  `ship(name, desc, overrides, mfr?)`.
+  the helper's 4th arg and **variants as the 5th**
+  (`weapon(name, desc, overrides, mfr?, variants?)`, same for `energyWeapon` /
+  `projector` / `launcher`); ships use `ship(name, desc, overrides, mfr?)`.
 - **Weapon variants.** `WeaponDefinition.variants?: WeaponVariant[]` — named
   **partial overrides** of the base `params` (`variantParams(base, override)`
   shallow-merges, keeps the base `kind`, normalises). Round-trip through

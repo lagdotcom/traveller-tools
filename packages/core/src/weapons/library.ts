@@ -601,18 +601,27 @@ export function parseWeapon(text: string): WeaponDefinition {
 
 // --- Built-in weapons (the worked FC examples) -----------------
 
+/** Optional named variants (partial overrides on the just-built params). */
+type Variants = WeaponVariant[];
+const withVariants = (def: WeaponDefinition, variants?: Variants) =>
+  variants && variants.length > 0 ? { ...def, variants } : def;
+
 function weapon(
   name: string,
   description: string,
   overrides: Partial<FirearmParams>,
   manufacturer?: string,
+  variants?: Variants,
 ): WeaponDefinition {
-  return {
-    name,
-    description,
-    ...(manufacturer ? { manufacturer } : {}),
-    params: { ...DEFAULT_WEAPON_PARAMS, ...overrides },
-  };
+  return withVariants(
+    {
+      name,
+      description,
+      ...(manufacturer ? { manufacturer } : {}),
+      params: { ...DEFAULT_WEAPON_PARAMS, ...overrides },
+    },
+    variants,
+  );
 }
 
 function energyWeapon(
@@ -620,13 +629,17 @@ function energyWeapon(
   description: string,
   overrides: Partial<EnergyParams>,
   manufacturer?: string,
+  variants?: Variants,
 ): WeaponDefinition {
-  return {
-    name,
-    description,
-    ...(manufacturer ? { manufacturer } : {}),
-    params: { ...DEFAULT_ENERGY_PARAMS, ...overrides },
-  };
+  return withVariants(
+    {
+      name,
+      description,
+      ...(manufacturer ? { manufacturer } : {}),
+      params: { ...DEFAULT_ENERGY_PARAMS, ...overrides },
+    },
+    variants,
+  );
 }
 
 function projector(
@@ -634,13 +647,17 @@ function projector(
   description: string,
   overrides: Partial<ProjectorParams>,
   manufacturer?: string,
+  variants?: Variants,
 ): WeaponDefinition {
-  return {
-    name,
-    description,
-    ...(manufacturer ? { manufacturer } : {}),
-    params: { ...DEFAULT_PROJECTOR_PARAMS, ...overrides },
-  };
+  return withVariants(
+    {
+      name,
+      description,
+      ...(manufacturer ? { manufacturer } : {}),
+      params: { ...DEFAULT_PROJECTOR_PARAMS, ...overrides },
+    },
+    variants,
+  );
 }
 
 function launcher(
@@ -648,13 +665,17 @@ function launcher(
   description: string,
   overrides: Partial<LauncherParams>,
   manufacturer?: string,
+  variants?: Variants,
 ): WeaponDefinition {
-  return {
-    name,
-    description,
-    ...(manufacturer ? { manufacturer } : {}),
-    params: { ...DEFAULT_LAUNCHER_PARAMS, ...overrides },
-  };
+  return withVariants(
+    {
+      name,
+      description,
+      ...(manufacturer ? { manufacturer } : {}),
+      params: { ...DEFAULT_LAUNCHER_PARAMS, ...overrides },
+    },
+    variants,
+  );
 }
 
 // function grenade(
