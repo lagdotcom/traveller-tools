@@ -1235,7 +1235,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     tl: 11,
     receiver: 'medium',
     damageDice: 5,
-    // efficientBeamGeneration / improvedBeamFocus map to the existing beam mods.
     mods: ['efficientBeam', 'improvedFocus'],
     barrel: 'carbine',
     stock: 'folding',
@@ -1345,12 +1344,80 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     },
     'Xeirbin Components',
   ),
-  // TODO CLOSEGUARD SEMI-AUTONOMOUS POINT DEFENCE SYSTEM
-  // TODO MDD INFANTRY SUPPORT WEAPON SYSTEM
-  // TODO MDS ANTI-MATERIEL RIFLE
-  // TODO PORCUPINE RIFLE GRENADE DISCHARGER
-  // TODO TES-12 LASER SUPPORT WEAPON
+  weapon('MDD-15', 'heavy machine-gun', {
+    tl: 8,
+    receiver: 'support', // Cr3000, 10kg, Quickdraw -8, base mag 50 rounds
+    calibre: 'antiMateriel',
+    mechanism: 'fullAuto',
+    barrel: 'long',
+    heavyBarrel: true,
+    stock: 'supportMount', // Cr900, 10kg
+    accessories: ['scope'],
+
+    // all versions: 550m, 50 Mag (Cr750), Quickdraw -9, Bulky, Scope
+    // reconcile: Heavy Machinegun - 5D, 35.2kg, Cr9050 - Auto 3
+    // reconcile: Chain Gun - 5D, 56.7kg, Cr28100 - Auto 4 [needs powered feed system, pintle/ring mount]
+    // reconcile: Twin Chain Gun - 7D, 113.4kg, Cr56200 - Auto 4 [needs small turret]
+  }),
+  weapon('MDS-15', 'heavy projectile weapon', {
+    tl: 8,
+    receiver: 'support', // same as MDD
+    calibre: 'antiMateriel',
+    mechanism: 'semiAuto',
+    features: [
+      'compact',
+      'rugged',
+      'lightweight',
+      { id: 'recoilComp', level: 2 },
+      'accurised',
+      'highQuality',
+    ],
+    capacityPct: 50,
+    barrel: 'long',
+    stock: 'full',
+    accessories: ['scope'],
+    furniture: ['bipod'],
+
+    // all versions: Mag 7, Quickdraw -9, Bulky
+    // reconcile: MDS-15 - 550m, 5D-3, 13.61kg, Cr59720, Mag Cr150 - Scope
+    // reconcile: MDS-15 (advanced AP) - 550m, 5D-5, 13.61kg, Cr59720, Mag Cr480 - AP 6, Scope
+    // reconcile: MDS-15 (cut down, explosive) - 250m, 7D-3, 10.76kg, Cr47435, Mag Cr650 - Lo-Pen 2
+    // reconcile: MDS-15 (cut down, pellet) - 250m, 5D-3, 10.76kg, Cr47435, Mag Cr150 - Lo-Pen 4, Spread 3
+  }),
+  energyWeapon('TES-12', 'laser support weapon', {
+    tl: 8,
+    receiver: 'large',
+    damageDice: 8,
+    mods: ['efficientBeam', 'improvedFocus'],
+    barrel: 'long',
+    stock: 'full',
+    accessories: ['scope'],
+    furniture: ['bipod'],
+    // Accessory: Internal Power Pack (1kg) - Cr2500, Power 1000
+    // Accessory: Laser Designator - Cr1000, 0.2kg
+
+    // all versions: 8D, Mag 125 (Cr2500), Bulky, Emis (low), Lo-Pen 2, Scope, Zero-G
+    // reconcile: TES-12 - 625m, 13.7kg, Cr19500, Quickdraw -9
+    // reconcile: TEA-12 - 450m, 10.01kg, Cr17500, Quickdraw -4 [carbine, folding stock]
+  }),
 ];
+
+/* TODO
+  CLOSEGUARD SEMI-AUTONOMOUS POINT DEFENCE SYSTEM (TL9)
+  - takes 1 Space
+  - internal batteries good for 36h
+  - short range radar and thermal sensors
+  - has Point Defence 2; up to two targets of same general type, at DM+2 to hit
+
+  machinegun - 375m, 3D+3, 32kg, kCr123, Mag 50 (Cr50) - Auto 3, Phys (norm), Slow Loader 4
+  twin RF heavy machinegun - 550m, 7D, 110kg, kCr175, Mag 50 (Cr750) - Auto 3, Bulky, Phys (high), Slow Loader 4
+  twin laser support weapon - 625m, 8D, 45kg, kCr160, Mag 125 (kCr5) - Bulky, Emis (low), Zero-G
+*/
+/* TODO
+  PORCUPINE RIFLE GRENADE DISCHARGER (TL7)
+
+  porcupine - 100m, damage as grenade, 8kg, Cr2500, Mag 12 (cost as grenade) - traits as grenade
+*/
 
 /*
  * Standard munitions (reference / TODO). Launchers now fire any Grenade Weapons
