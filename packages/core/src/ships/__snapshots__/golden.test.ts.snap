@@ -1,0 +1,5883 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden master — built-in ship evaluations > reproduces Close Escort (Gazelle) 1`] = `
+{
+  "cargoTons": 25,
+  "crew": [
+    {
+      "count": 4,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 3,
+      "role": "Engineer",
+    },
+    {
+      "count": 8,
+      "role": "Gunner",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Reinforced Structure use derived rules (not from the Core Rulebook) and may be inaccurate.",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 80,
+    "fuelProcessor": 6,
+    "jump": 120,
+    "manoeuvre": 240,
+    "sensors": 2,
+    "weapons": 54,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 18403.5,
+    "monthlySalaryCr": 57000,
+    "purchaseMCr": 220.842,
+  },
+  "sources": [
+    "Core Rulebook",
+    "High Guard",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-400-standard",
+        "name": "Hull — 400 tons, Standard",
+        "quantity": 1,
+        "resources": {
+          "cost": 20,
+          "hardpoints": 4,
+          "power": -80,
+          "tons": 400,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 3",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "tons": -15,
+        },
+      },
+      {
+        "id": "reinforcement",
+        "name": "Reinforced Structure — +20 HP",
+        "quantity": 1,
+        "resources": {
+          "cost": 10,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 6",
+        "quantity": 1,
+        "resources": {
+          "cost": 48,
+          "power": -240,
+          "tons": -24,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-3",
+        "quantity": 1,
+        "resources": {
+          "cost": 52.5,
+          "power": -120,
+          "tons": -35,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 540",
+        "quantity": 1,
+        "resources": {
+          "cost": 36,
+          "power": 540,
+          "tons": -36,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-3, 8 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -128,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/30",
+        "quantity": 1,
+        "resources": {
+          "cost": 20,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Military Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Particle Barbette",
+        "quantity": 1,
+        "resources": {
+          "cost": 8,
+          "hardpoints": -1,
+          "power": -15,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Particle Barbette",
+        "quantity": 1,
+        "resources": {
+          "cost": 8,
+          "hardpoints": -1,
+          "power": -15,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Beam Laser ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 2.5,
+          "hardpoints": -1,
+          "power": -12,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Beam Laser ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 2.5,
+          "hardpoints": -1,
+          "power": -12,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 120 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+          "power": -6,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Gig (hangar 22t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 12.38,
+          "tons": -22,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Evade/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Fire Control/4",
+        "quantity": 1,
+        "resources": {
+          "cost": 8,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 11,
+        "resources": {
+          "cost": 5.5,
+          "tons": -44,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.1,
+          "tons": -11,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 245.38,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 4,
+        "remaining": 0,
+        "used": 4,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 540,
+        "remaining": 38,
+        "used": 502,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 400,
+        "remaining": 25,
+        "used": 375,
+      },
+    },
+    "stats": {
+      "armour": 3,
+      "hullPoints": 180,
+      "jump": 3,
+      "staterooms": 11,
+      "thrust": 6,
+      "turrets": 4,
+      "weapons": 8,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Far Trader (Type A2) 1`] = `
+{
+  "cargoTons": 63,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 14 (104/90)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 40,
+    "fuelProcessor": 2,
+    "jump": 40,
+    "manoeuvre": 20,
+    "sensors": 1,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 4443.375,
+    "monthlySalaryCr": 15000,
+    "purchaseMCr": 53.3205,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-200-streamlined",
+        "name": "Hull — 200 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 12,
+          "hardpoints": 2,
+          "power": -40,
+          "tons": 200,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 2",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.2000000000000002,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-2",
+        "quantity": 1,
+        "resources": {
+          "cost": 22.5,
+          "power": -40,
+          "tons": -15,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 90",
+        "quantity": 1,
+        "resources": {
+          "cost": 6,
+          "power": 90,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-2, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -41,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5bis",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.045,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Civilian Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelScoop",
+        "name": "Fuel Scoop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 40 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "cargoCrane",
+        "name": "Cargo Crane",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 10,
+        "resources": {
+          "cost": 5,
+          "tons": -40,
+        },
+      },
+      {
+        "id": "lowBerth",
+        "name": "Low Berths ×6",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+          "power": -1,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.9,
+          "tons": -9,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 59.245000000000005,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 2,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 90,
+        "remaining": -14,
+        "used": 104,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 200,
+        "remaining": 63,
+        "used": 137,
+      },
+    },
+    "stats": {
+      "armour": 2,
+      "hullPoints": 80,
+      "jump": 2,
+      "staterooms": 10,
+      "thrust": 1,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Free Trader (Type A) 1`] = `
+{
+  "cargoTons": 81,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 9 (84/75)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 40,
+    "fuelProcessor": 1,
+    "jump": 20,
+    "manoeuvre": 20,
+    "sensors": 1,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 3861.0000000000005,
+    "monthlySalaryCr": 15000,
+    "purchaseMCr": 46.33200000000001,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-200-streamlined",
+        "name": "Hull — 200 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 12,
+          "hardpoints": 2,
+          "power": -40,
+          "tons": 200,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 2",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.2000000000000002,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-1",
+        "quantity": 1,
+        "resources": {
+          "cost": 15,
+          "power": -20,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 75",
+        "quantity": 1,
+        "resources": {
+          "cost": 5,
+          "power": 75,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-1, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -21,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Civilian Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelScoop",
+        "name": "Fuel Scoop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 20 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.05,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "cargoCrane",
+        "name": "Cargo Crane",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 10,
+        "resources": {
+          "cost": 5,
+          "tons": -40,
+        },
+      },
+      {
+        "id": "lowBerth",
+        "name": "Low Berths ×20",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "power": -2,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.1,
+          "tons": -11,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 51.480000000000004,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 2,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 75,
+        "remaining": -9,
+        "used": 84,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 200,
+        "remaining": 81,
+        "used": 119,
+      },
+    },
+    "stats": {
+      "armour": 2,
+      "hullPoints": 80,
+      "jump": 1,
+      "staterooms": 10,
+      "thrust": 1,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Gig 1`] = `
+{
+  "cargoTons": 8.6,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 4,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 14,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 516.0000000000001,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 6.192000000000001,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-20-streamlined",
+        "name": "Hull — 20 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.2,
+          "hardpoints": 1,
+          "power": -4,
+          "tons": 20,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 7",
+        "quantity": 1,
+        "resources": {
+          "cost": 2.8000000000000003,
+          "power": -14,
+          "tons": -1.4000000000000001,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 30",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "power": 30,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Single Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "cabinSpace",
+        "name": "Cabin Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.15000000000000002,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 6.880000000000001,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 1,
+        "remaining": 0,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 30,
+        "remaining": 12,
+        "used": 18,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 20,
+        "remaining": 8.6,
+        "used": 11.4,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 8,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 7,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Laboratory Ship (Type L) 1`] = `
+{
+  "cargoTons": 3,
+  "crew": [
+    {
+      "count": 2,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 2,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 64 (244/180)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 80,
+    "fuelProcessor": 0,
+    "jump": 80,
+    "manoeuvre": 80,
+    "sensors": 4,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 11628.374999999998,
+    "monthlySalaryCr": 25000,
+    "purchaseMCr": 139.54049999999998,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-400-standard",
+        "name": "Hull — 400 tons, Standard",
+        "quantity": 1,
+        "resources": {
+          "cost": 20,
+          "hardpoints": 4,
+          "power": -80,
+          "tons": 400,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 2",
+        "quantity": 1,
+        "resources": {
+          "cost": 16,
+          "power": -80,
+          "tons": -8,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-2",
+        "quantity": 1,
+        "resources": {
+          "cost": 37.5,
+          "power": -80,
+          "tons": -25,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 180",
+        "quantity": 1,
+        "resources": {
+          "cost": 12,
+          "power": 180,
+          "tons": -12,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-2, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -82,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/10",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.16,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Improved",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.3,
+          "power": -4,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "probeDrones",
+        "name": "Probe Drones ×15",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "laboratory",
+        "name": "Laboratory",
+        "quantity": 1,
+        "resources": {
+          "cost": 25,
+          "tons": -100,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Pinnace (hangar 44t) — carrying ATV",
+        "quantity": 1,
+        "resources": {
+          "cost": 23.384999999999998,
+          "tons": -44,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Air/Raft (hangar 5t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 20,
+        "resources": {
+          "cost": 10,
+          "tons": -80,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -15,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 155.045,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 4,
+        "remaining": 4,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 180,
+        "remaining": -64,
+        "used": 244,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 400,
+        "remaining": 3,
+        "used": 397,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 160,
+      "jump": 2,
+      "staterooms": 20,
+      "thrust": 2,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Launch 1`] = `
+{
+  "cargoTons": 14.8,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 4,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 2,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 197.25,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 2.367,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-20-streamlined",
+        "name": "Hull — 20 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.2,
+          "hardpoints": 1,
+          "power": -4,
+          "tons": 20,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.4,
+          "power": -2,
+          "tons": -0.2,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 10",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "power": 10,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 2.63,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 1,
+        "remaining": 1,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 10,
+        "remaining": 4,
+        "used": 6,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 20,
+        "remaining": 14.8,
+        "used": 5.2,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 8,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 1,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Light Fighter 1`] = `
+{
+  "cargoTons": 3.6500000000000004,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 2,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 6,
+    "sensors": 2,
+    "weapons": 4,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 757.5,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 9.09,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-10-streamlined",
+        "name": "Hull — 10 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.6,
+          "hardpoints": 1,
+          "power": -2,
+          "tons": 10,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 2",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.06,
+          "tons": -0.25,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 6",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.2000000000000002,
+          "power": -6,
+          "tons": -0.6000000000000001,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 15",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "power": 15,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Cockpit",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.01,
+          "tons": -1.5,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Military Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Fixed Mount — Pulse Laser",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.1,
+          "hardpoints": -1,
+          "power": -4,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Fire Control/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 10.1,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 1,
+        "remaining": 0,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 15,
+        "remaining": 1,
+        "used": 14,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 10,
+        "remaining": 3.6500000000000004,
+        "used": 6.35,
+      },
+    },
+    "stats": {
+      "armour": 2,
+      "hullPoints": 4,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 6,
+      "turrets": 1,
+      "weapons": 1,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Mercenary Cruiser (Type C) 1`] = `
+{
+  "cargoTons": 70,
+  "crew": [
+    {
+      "count": 5,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 4,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 160,
+    "fuelProcessor": 0,
+    "jump": 240,
+    "manoeuvre": 240,
+    "sensors": 2,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 26480.250000000004,
+    "monthlySalaryCr": 51000,
+    "purchaseMCr": 317.76300000000003,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-800-standard",
+        "name": "Hull — 800 tons, Standard",
+        "quantity": 1,
+        "resources": {
+          "cost": 40,
+          "hardpoints": 8,
+          "power": -160,
+          "tons": 800,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 4",
+        "quantity": 1,
+        "resources": {
+          "cost": 8,
+          "tons": -40,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 3",
+        "quantity": 1,
+        "resources": {
+          "cost": 48,
+          "power": -240,
+          "tons": -24,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-3",
+        "quantity": 1,
+        "resources": {
+          "cost": 97.5,
+          "power": -240,
+          "tons": -65,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 750",
+        "quantity": 1,
+        "resources": {
+          "cost": 50,
+          "power": 750,
+          "tons": -50,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-3, 8 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -252,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/20bis",
+        "quantity": 1,
+        "resources": {
+          "cost": 7.5,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Military Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "repairDrones",
+        "name": "Repair Drones",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.6,
+          "tons": -8,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Air/Raft (hangar 5t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "2× Modular Cutter (hangar 112t) — carrying ATV",
+        "quantity": 1,
+        "resources": {
+          "cost": 52.67,
+          "tons": -112,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Auto-Repair/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 10,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Evade/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Fire Control/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/3",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 25,
+        "resources": {
+          "cost": 12.5,
+          "tons": -100,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.4,
+          "tons": -44,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 353.07000000000005,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 8,
+        "remaining": 0,
+        "used": 8,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 750,
+        "remaining": 108,
+        "used": 642,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 800,
+        "remaining": 70,
+        "used": 730,
+      },
+    },
+    "stats": {
+      "armour": 4,
+      "hullPoints": 320,
+      "jump": 3,
+      "staterooms": 25,
+      "thrust": 3,
+      "turrets": 8,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Modular Cutter 1`] = `
+{
+  "cargoTons": 35,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 10,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 20,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 707.25,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 8.487,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-50-streamlined",
+        "name": "Hull — 50 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "hardpoints": 2,
+          "power": -10,
+          "tons": 50,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 4",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 30",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "power": 30,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Fixed Mount (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "cabinSpace",
+        "name": "Cabin Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 9.43,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 1,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 30,
+        "remaining": 0,
+        "used": 30,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 50,
+        "remaining": 35,
+        "used": 15,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 20,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 4,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Passenger Shuttle 1`] = `
+{
+  "cargoTons": 16.049999999999997,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 19,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 9.5,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 1232.25,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 14.787,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-95-streamlined",
+        "name": "Hull — 95 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 5.7,
+          "hardpoints": 3,
+          "power": -19,
+          "tons": 95,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.9000000000000001,
+          "power": -9.5,
+          "tons": -0.9500000000000001,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 30",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "power": 30,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 6.800000000000001,
+          "tons": -68,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 16.43,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 3,
+        "remaining": 3,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 30,
+        "remaining": 1.5,
+        "used": 28.5,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 95,
+        "remaining": 16.049999999999997,
+        "used": 78.95,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 38,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 1,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Patrol Corvette (Type T) 1`] = `
+{
+  "cargoTons": 38,
+  "crew": [
+    {
+      "count": 4,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 3,
+      "role": "Engineer",
+    },
+    {
+      "count": 8,
+      "role": "Gunner",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 80,
+    "fuelProcessor": 4,
+    "jump": 120,
+    "manoeuvre": 160,
+    "sensors": 2,
+    "weapons": 24,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 15417.000000000002,
+    "monthlySalaryCr": 57000,
+    "purchaseMCr": 185.00400000000002,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-400-streamlined",
+        "name": "Hull — 400 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 24,
+          "hardpoints": 4,
+          "power": -80,
+          "tons": 400,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 4",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.800000000000001,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 4",
+        "quantity": 1,
+        "resources": {
+          "cost": 32,
+          "power": -160,
+          "tons": -16,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-3",
+        "quantity": 1,
+        "resources": {
+          "cost": 52.5,
+          "power": -120,
+          "tons": -35,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 405",
+        "quantity": 1,
+        "resources": {
+          "cost": 27,
+          "power": 405,
+          "tons": -27,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-3, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -124,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/15",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Military Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Pulse Laser ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "hardpoints": -1,
+          "power": -12,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Pulse Laser ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "hardpoints": -1,
+          "power": -12,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Missile Rack ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 3.25,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Missile Rack ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 3.25,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 80 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+          "power": -4,
+          "tons": -4,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Ship’s Boat (hangar 33t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 16.13,
+          "tons": -33,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "G/Carrier (hangar 17t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 15.83,
+          "tons": -17,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Evade/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Fire Control/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/3",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 12,
+        "resources": {
+          "cost": 6,
+          "tons": -48,
+        },
+      },
+      {
+        "id": "lowBerth",
+        "name": "Low Berths ×4",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+          "power": -1,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 205.56,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 4,
+        "remaining": 0,
+        "used": 4,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 405,
+        "remaining": 14,
+        "used": 391,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 400,
+        "remaining": 38,
+        "used": 362,
+      },
+    },
+    "stats": {
+      "armour": 4,
+      "hullPoints": 160,
+      "jump": 3,
+      "staterooms": 12,
+      "thrust": 4,
+      "turrets": 4,
+      "weapons": 12,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Pinnace 1`] = `
+{
+  "cargoTons": 23,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 8,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 20,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 710.9999999999999,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 8.531999999999998,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-40-streamlined",
+        "name": "Hull — 40 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 2.4,
+          "hardpoints": 2,
+          "power": -8,
+          "tons": 40,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 5",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 30",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "power": 30,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Fixed Mount (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "cabinSpace",
+        "name": "Cabin Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.45,
+          "tons": -9,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 9.479999999999999,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 1,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 30,
+        "remaining": 2,
+        "used": 28,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 40,
+        "remaining": 23,
+        "used": 17,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 16,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 5,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Safari Ship (Type K) 1`] = `
+{
+  "cargoTons": 14,
+  "crew": [
+    {
+      "count": 2,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 40,
+    "fuelProcessor": 2,
+    "jump": 40,
+    "manoeuvre": 20,
+    "sensors": 1,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 5353.500000000001,
+    "monthlySalaryCr": 21000,
+    "purchaseMCr": 64.242,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-200-streamlined",
+        "name": "Hull — 200 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 12,
+          "hardpoints": 2,
+          "power": -40,
+          "tons": 200,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-2",
+        "quantity": 1,
+        "resources": {
+          "cost": 22.5,
+          "power": -40,
+          "tons": -15,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 105",
+        "quantity": 1,
+        "resources": {
+          "cost": 7,
+          "power": 105,
+          "tons": -7,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-2, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -41,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5bis",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.045,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Civilian Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Double Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelScoop",
+        "name": "Fuel Scoop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 40 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "multiEnvironment",
+        "name": "Multi-Environment Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "power": -1,
+          "tons": -8,
+        },
+      },
+      {
+        "id": "multiEnvironment",
+        "name": "Multi-Environment Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "power": -1,
+          "tons": -8,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Launch (hangar 22t) — carrying ATV",
+        "quantity": 1,
+        "resources": {
+          "cost": 11.035,
+          "tons": -22,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Air/Raft (hangar 5t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 11,
+        "resources": {
+          "cost": 5.5,
+          "tons": -44,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -20,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 71.38000000000001,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 1,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 105,
+        "remaining": 0,
+        "used": 105,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 200,
+        "remaining": 14,
+        "used": 186,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 80,
+      "jump": 2,
+      "staterooms": 11,
+      "thrust": 1,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Scout / Courier (Type S) 1`] = `
+{
+  "cargoTons": 12,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 4 (64/60)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 20,
+    "fuelProcessor": 2,
+    "jump": 20,
+    "manoeuvre": 20,
+    "sensors": 2,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 3078.375,
+    "monthlySalaryCr": 15000,
+    "purchaseMCr": 36.9405,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-100-streamlined",
+        "name": "Hull — 100 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 6,
+          "hardpoints": 1,
+          "power": -20,
+          "tons": 100,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 4",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.2000000000000002,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 2",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-2",
+        "quantity": 1,
+        "resources": {
+          "cost": 15,
+          "power": -20,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 60",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": 60,
+          "tons": -4,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-2, 12 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -23,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5bis",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.045,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Military Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Double Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelScoop",
+        "name": "Fuel Scoop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 40 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "probeDrones",
+        "name": "Probe Drones ×10",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "workshop",
+        "name": "Workshop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.8999999999999999,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Air/Raft (hangar 5t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 4,
+        "resources": {
+          "cost": 2,
+          "tons": -16,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 41.045,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 1,
+        "remaining": 0,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 60,
+        "remaining": -4,
+        "used": 64,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 100,
+        "remaining": 12,
+        "used": 88,
+      },
+    },
+    "stats": {
+      "armour": 4,
+      "hullPoints": 40,
+      "jump": 2,
+      "staterooms": 4,
+      "thrust": 2,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Seeker Mining Ship (Type J) 1`] = `
+{
+  "cargoTons": 26,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 3 (63/60)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 20,
+    "fuelProcessor": 1,
+    "jump": 20,
+    "manoeuvre": 20,
+    "sensors": 2,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 2819.625,
+    "monthlySalaryCr": 15000,
+    "purchaseMCr": 33.8355,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-100-streamlined",
+        "name": "Hull — 100 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 6,
+          "hardpoints": 1,
+          "power": -20,
+          "tons": 100,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 4",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.2000000000000002,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 2",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-2",
+        "quantity": 1,
+        "resources": {
+          "cost": 15,
+          "power": -20,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 60",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": 60,
+          "tons": -4,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-2, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -21,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5bis",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.045,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Military Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.1,
+          "power": -2,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Double Turret (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelScoop",
+        "name": "Fuel Scoop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 20 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.05,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "miningDrones",
+        "name": "Mining Drones ×5",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 2,
+        "resources": {
+          "cost": 1,
+          "tons": -8,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 37.595,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 1,
+        "remaining": 0,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 60,
+        "remaining": -3,
+        "used": 63,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 100,
+        "remaining": 26,
+        "used": 74,
+      },
+    },
+    "stats": {
+      "armour": 4,
+      "hullPoints": 40,
+      "jump": 2,
+      "staterooms": 2,
+      "thrust": 2,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Ship’s Boat 1`] = `
+{
+  "cargoTons": 13.5,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 6,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 15,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 591,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 7.092,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-30-streamlined",
+        "name": "Hull — 30 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.7999999999999998,
+          "hardpoints": 1,
+          "power": -6,
+          "tons": 30,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 5",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "power": -15,
+          "tons": -1.5,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 30",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "power": 30,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Fixed Mount (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "cabinSpace",
+        "name": "Cabin Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.45,
+          "tons": -9,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 7.88,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 1,
+        "remaining": 0,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 30,
+        "remaining": 9,
+        "used": 21,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 30,
+        "remaining": 13.5,
+        "used": 16.5,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 12,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 5,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Shuttle 1`] = `
+{
+  "cargoTons": 69.15,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 19,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 28.5,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 1247.2500000000002,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 14.967000000000002,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-95-streamlined",
+        "name": "Hull — 95 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 5.7,
+          "hardpoints": 3,
+          "power": -19,
+          "tons": 95,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 3",
+        "quantity": 1,
+        "resources": {
+          "cost": 5.7,
+          "power": -28.5,
+          "tons": -2.85,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 60",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": 60,
+          "tons": -4,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Fixed Mount (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "cabinSpace",
+        "name": "Cabin Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.6000000000000001,
+          "tons": -12,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 16.630000000000003,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 3,
+        "remaining": 2,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 60,
+        "remaining": 12.5,
+        "used": 47.5,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 95,
+        "remaining": 69.15,
+        "used": 25.85,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 38,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 3,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Slow Boat 1`] = `
+{
+  "cargoTons": 21.1,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 6,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 9,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 403.5,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 4.842,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-30-streamlined",
+        "name": "Hull — 30 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.7999999999999998,
+          "hardpoints": 1,
+          "power": -6,
+          "tons": 30,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 3",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.7999999999999998,
+          "power": -9,
+          "tons": -0.8999999999999999,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 15",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "power": 15,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Fixed Mount (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "cabinSpace",
+        "name": "Cabin Space",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.15000000000000002,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 5.38,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 1,
+        "remaining": 0,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 15,
+        "remaining": 0,
+        "used": 15,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 30,
+        "remaining": 21.1,
+        "used": 8.9,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 12,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 3,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Slow Pinnace 1`] = `
+{
+  "cargoTons": 32.8,
+  "crew": [
+    {
+      "count": 1,
+      "role": "Pilot",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 8,
+    "fuelProcessor": 0,
+    "jump": 0,
+    "manoeuvre": 12,
+    "sensors": 0,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 482.25000000000006,
+    "monthlySalaryCr": 6000,
+    "purchaseMCr": 5.787000000000001,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-40-streamlined",
+        "name": "Hull — 40 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 2.4,
+          "hardpoints": 2,
+          "power": -8,
+          "tons": 40,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 3",
+        "quantity": 1,
+        "resources": {
+          "cost": 2.4000000000000004,
+          "power": -12,
+          "tons": -1.2000000000000002,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 20",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "power": 20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -1,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.5,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Basic",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Fixed Mount (empty)",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 6.430000000000001,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 1,
+        "used": 1,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 20,
+        "remaining": 0,
+        "used": 20,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 40,
+        "remaining": 32.8,
+        "used": 7.2,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 16,
+      "jump": 0,
+      "staterooms": 0,
+      "thrust": 3,
+      "turrets": 1,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Subsidised Liner (Type M) 1`] = `
+{
+  "cargoTons": 119,
+  "crew": [
+    {
+      "count": 2,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 3,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 3 (363/360)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 120,
+    "fuelProcessor": 0,
+    "jump": 180,
+    "manoeuvre": 60,
+    "sensors": 1,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 13212.750000000002,
+    "monthlySalaryCr": 29000,
+    "purchaseMCr": 158.55300000000003,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-600-standard",
+        "name": "Hull — 600 tons, Standard",
+        "quantity": 1,
+        "resources": {
+          "cost": 30,
+          "hardpoints": 6,
+          "power": -120,
+          "tons": 600,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 12,
+          "power": -60,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-3",
+        "quantity": 1,
+        "resources": {
+          "cost": 75,
+          "power": -180,
+          "tons": -50,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 360",
+        "quantity": 1,
+        "resources": {
+          "cost": 24,
+          "power": 360,
+          "tons": -24,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-3, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -183,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/10bis",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.24,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Civilian Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Launch (hangar 22t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 8.129999999999999,
+          "tons": -22,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/3",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 30,
+        "resources": {
+          "cost": 15,
+          "tons": -120,
+        },
+      },
+      {
+        "id": "lowBerth",
+        "name": "Low Berths ×20",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "power": -2,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.5,
+          "tons": -45,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 176.17000000000002,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 6,
+        "remaining": 6,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 360,
+        "remaining": -3,
+        "used": 363,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 600,
+        "remaining": 119,
+        "used": 481,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 240,
+      "jump": 3,
+      "staterooms": 30,
+      "thrust": 1,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Subsidised Merchant (Type R) 1`] = `
+{
+  "cargoTons": 201,
+  "crew": [
+    {
+      "count": 2,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 28 (163/135)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 80,
+    "fuelProcessor": 1,
+    "jump": 40,
+    "manoeuvre": 40,
+    "sensors": 1,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 6548.25,
+    "monthlySalaryCr": 21000,
+    "purchaseMCr": 78.579,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-400-streamlined",
+        "name": "Hull — 400 tons, Streamlined",
+        "quantity": 1,
+        "resources": {
+          "cost": 24,
+          "hardpoints": 4,
+          "power": -80,
+          "tons": 400,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 8,
+          "power": -40,
+          "tons": -4,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-1",
+        "quantity": 1,
+        "resources": {
+          "cost": 22.5,
+          "power": -40,
+          "tons": -15,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 135",
+        "quantity": 1,
+        "resources": {
+          "cost": 9,
+          "power": 135,
+          "tons": -9,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-1, 4 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -41,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Civilian Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "fuelScoop",
+        "name": "Fuel Scoop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 20 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.05,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Launch (hangar 22t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 8.129999999999999,
+          "tons": -22,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 19,
+        "resources": {
+          "cost": 9.5,
+          "tons": -76,
+        },
+      },
+      {
+        "id": "lowBerth",
+        "name": "Low Berths ×9",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.45,
+          "power": -1,
+          "tons": -4.5,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.55,
+          "tons": -5.5,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 87.30999999999999,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 4,
+        "remaining": 4,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 135,
+        "remaining": -28,
+        "used": 163,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 400,
+        "remaining": 201,
+        "used": 199,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 160,
+      "jump": 1,
+      "staterooms": 19,
+      "thrust": 1,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Survey Scout (Donosev) 1`] = `
+{
+  "cargoTons": 51,
+  "crew": [
+    {
+      "count": 2,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 2,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Power exceeds capacity by 80 (290/210)",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 80,
+    "fuelProcessor": 6,
+    "jump": 120,
+    "manoeuvre": 80,
+    "sensors": 4,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 11867.25,
+    "monthlySalaryCr": 25000,
+    "purchaseMCr": 142.407,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-400-standard",
+        "name": "Hull — 400 tons, Standard",
+        "quantity": 1,
+        "resources": {
+          "cost": 20,
+          "hardpoints": 4,
+          "power": -80,
+          "tons": 400,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 2",
+        "quantity": 1,
+        "resources": {
+          "cost": 16,
+          "power": -80,
+          "tons": -8,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-3",
+        "quantity": 1,
+        "resources": {
+          "cost": 52.5,
+          "power": -120,
+          "tons": -35,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 210",
+        "quantity": 1,
+        "resources": {
+          "cost": 14,
+          "power": 210,
+          "tons": -14,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-3, 8 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -124,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -20,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/25",
+        "quantity": 1,
+        "resources": {
+          "cost": 10,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Improved",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.3,
+          "power": -4,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "workshop",
+        "name": "Workshop",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.8999999999999999,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "probeDrones",
+        "name": "Probe Drones ×20",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -4,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 120 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+          "power": -6,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "laboratory",
+        "name": "Laboratory",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "tons": -8,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Modular Cutter (hangar 56t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 23.43,
+          "tons": -56,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "3× Air/Raft (hangar 15t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.5,
+          "tons": -15,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/3",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.30000000000000004,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 10,
+        "resources": {
+          "cost": 5,
+          "tons": -40,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 158.23000000000002,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 4,
+        "remaining": 4,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": true,
+        "overflowSeverity": "warning",
+        "provided": 210,
+        "remaining": -80,
+        "used": 290,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 400,
+        "remaining": 51,
+        "used": 349,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 160,
+      "jump": 3,
+      "staterooms": 10,
+      "thrust": 2,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces System Defence Boat 1`] = `
+{
+  "cargoTons": 19.5,
+  "crew": [
+    {
+      "count": 3,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+    {
+      "count": 4,
+      "role": "Gunner",
+    },
+  ],
+  "issues": [
+    {
+      "message": "Reinforced Structure use derived rules (not from the Core Rulebook) and may be inaccurate.",
+      "severity": "warning",
+    },
+  ],
+  "powerRequirements": {
+    "basic": 40,
+    "fuelProcessor": 1,
+    "jump": 0,
+    "manoeuvre": 180,
+    "sensors": 4,
+    "weapons": 12,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 10192.5,
+    "monthlySalaryCr": 30000,
+    "purchaseMCr": 122.31,
+  },
+  "sources": [
+    "Core Rulebook",
+    "High Guard",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-200-standard",
+        "name": "Hull — 200 tons, Standard",
+        "quantity": 1,
+        "resources": {
+          "cost": 10,
+          "hardpoints": 2,
+          "power": -40,
+          "tons": 200,
+        },
+      },
+      {
+        "id": "armour",
+        "name": "Armour — Crystaliron 13",
+        "quantity": 1,
+        "resources": {
+          "cost": 6.5,
+          "tons": -32.5,
+        },
+      },
+      {
+        "id": "reinforcement",
+        "name": "Reinforced Structure — +10 HP",
+        "quantity": 1,
+        "resources": {
+          "cost": 5,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 9",
+        "quantity": 1,
+        "resources": {
+          "cost": 36,
+          "power": -180,
+          "tons": -18,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 240",
+        "quantity": 1,
+        "resources": {
+          "cost": 16,
+          "power": 240,
+          "tons": -16,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — 12 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -6,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/35",
+        "quantity": 1,
+        "resources": {
+          "cost": 30,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Improved",
+        "quantity": 1,
+        "resources": {
+          "cost": 4.3,
+          "power": -4,
+          "tons": -3,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Beam Laser ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 2.5,
+          "hardpoints": -1,
+          "power": -12,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "weapon",
+        "name": "Triple Turret — Missile Rack ×3",
+        "quantity": 1,
+        "resources": {
+          "cost": 3.25,
+          "hardpoints": -1,
+          "power": -0,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "missileStorage",
+        "name": "Missile Storage (144 missiles)",
+        "quantity": 1,
+        "resources": {
+          "tons": -12,
+        },
+      },
+      {
+        "id": "repairDrones",
+        "name": "Repair Drones",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.4,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "fuelProcessor",
+        "name": "Fuel Processor — 20 tons/day",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.05,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "medicalBay",
+        "name": "Medical Bay",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+          "power": -1,
+          "tons": -4,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Auto-Repair/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 5,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Evade/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 2,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Fire Control/2",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 15,
+        "resources": {
+          "cost": 7.5,
+          "tons": -60,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.4,
+          "tons": -4,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 135.9,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 0,
+        "used": 2,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 240,
+        "remaining": 2,
+        "used": 238,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 200,
+        "remaining": 19.5,
+        "used": 180.5,
+      },
+    },
+    "stats": {
+      "armour": 13,
+      "hullPoints": 90,
+      "jump": 0,
+      "staterooms": 15,
+      "thrust": 9,
+      "turrets": 2,
+      "weapons": 6,
+    },
+  },
+}
+`;
+
+exports[`golden master — built-in ship evaluations > reproduces Yacht (Type Y) 1`] = `
+{
+  "cargoTons": 21,
+  "crew": [
+    {
+      "count": 2,
+      "role": "Pilot",
+    },
+    {
+      "count": 1,
+      "role": "Astrogator",
+    },
+    {
+      "count": 1,
+      "role": "Engineer",
+    },
+  ],
+  "issues": [],
+  "powerRequirements": {
+    "basic": 40,
+    "fuelProcessor": 0,
+    "jump": 20,
+    "manoeuvre": 20,
+    "sensors": 1,
+    "weapons": 0,
+  },
+  "runningCosts": {
+    "monthlyMaintenanceCr": 5277.375,
+    "monthlySalaryCr": 21000,
+    "purchaseMCr": 63.3285,
+  },
+  "sources": [
+    "Core Rulebook",
+  ],
+  "summary": {
+    "lineItems": [
+      {
+        "id": "hull-200-standard",
+        "name": "Hull — 200 tons, Standard",
+        "quantity": 1,
+        "resources": {
+          "cost": 10,
+          "hardpoints": 2,
+          "power": -40,
+          "tons": 200,
+        },
+      },
+      {
+        "id": "mDrive",
+        "name": "Manoeuvre Drive — Thrust 1",
+        "quantity": 1,
+        "resources": {
+          "cost": 4,
+          "power": -20,
+          "tons": -2,
+        },
+      },
+      {
+        "id": "jDrive",
+        "name": "Jump Drive — Jump-1",
+        "quantity": 1,
+        "resources": {
+          "cost": 15,
+          "power": -20,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "powerPlant",
+        "name": "Power Plant — Fusion, Power 90",
+        "quantity": 1,
+        "resources": {
+          "cost": 6,
+          "power": 90,
+          "tons": -6,
+        },
+      },
+      {
+        "id": "fuel",
+        "name": "Fuel — J-1, 8 weeks operation",
+        "quantity": 1,
+        "resources": {
+          "tons": -22,
+        },
+      },
+      {
+        "id": "bridge",
+        "name": "Bridge",
+        "quantity": 1,
+        "resources": {
+          "cost": 1,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "computer",
+        "name": "Computer/5",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.03,
+        },
+      },
+      {
+        "id": "sensors",
+        "name": "Sensors — Civilian Grade",
+        "quantity": 1,
+        "resources": {
+          "cost": 3,
+          "power": -1,
+          "tons": -1,
+        },
+      },
+      {
+        "id": "luxuryStateroom",
+        "name": "Luxury Staterooms ×1",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -10,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Air/Raft (hangar 5t)",
+        "quantity": 1,
+        "resources": {
+          "cost": 1.5,
+          "tons": -5,
+        },
+      },
+      {
+        "id": "carriedCraft",
+        "name": "Ship’s Boat (hangar 33t) — carrying ATV",
+        "quantity": 1,
+        "resources": {
+          "cost": 19.035,
+          "tons": -33,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Jump Control/1",
+        "quantity": 1,
+        "resources": {
+          "cost": 0.1,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Library",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Manoeuvre",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "software",
+        "name": "Intellect",
+        "quantity": 1,
+        "resources": {
+          "cost": 0,
+        },
+      },
+      {
+        "id": "stateroom",
+        "name": "Stateroom",
+        "quantity": 12,
+        "resources": {
+          "cost": 6,
+          "tons": -48,
+        },
+      },
+      {
+        "id": "commonArea",
+        "name": "Common Areas",
+        "quantity": 1,
+        "resources": {
+          "cost": 3.2,
+          "tons": -32,
+        },
+      },
+    ],
+    "resources": {
+      "cost": {
+        "key": "cost",
+        "label": "Cost (MCr)",
+        "mode": "accumulate",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 0,
+        "remaining": 0,
+        "used": 70.365,
+      },
+      "hardpoints": {
+        "key": "hardpoints",
+        "label": "Hardpoints",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 2,
+        "remaining": 2,
+        "used": 0,
+      },
+      "power": {
+        "key": "power",
+        "label": "Power",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "warning",
+        "provided": 90,
+        "remaining": 9,
+        "used": 81,
+      },
+      "tons": {
+        "key": "tons",
+        "label": "Tons",
+        "mode": "capacity",
+        "overCapacity": false,
+        "overflowSeverity": "error",
+        "provided": 200,
+        "remaining": 21,
+        "used": 179,
+      },
+    },
+    "stats": {
+      "armour": 0,
+      "hullPoints": 80,
+      "jump": 1,
+      "staterooms": 12,
+      "thrust": 1,
+      "turrets": 0,
+      "weapons": 0,
+    },
+  },
+}
+`;
