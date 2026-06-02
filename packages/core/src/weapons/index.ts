@@ -3,6 +3,7 @@ export * from './energy.js';
 export * from './energyData.js';
 export * from './grenade.js';
 export * from './grenadeData.js';
+export * from './heavyWeapons.js';
 export * from './launcher.js';
 export * from './launcherData.js';
 export * from './library.js';

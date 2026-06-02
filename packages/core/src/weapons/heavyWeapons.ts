@@ -4,12 +4,12 @@
  * vehicle/ship weapon domain, NOT the personal (kg-scale) weapon builder, so it
  * is deliberately kept separate and is NOT wired into `evaluateWeapon`.
  *
- * Parked as typed reference data (the FC gives these as fixed catalogue items,
- * not a construction system). Open question: where it integrates — most likely
- * the ship/vehicle weapon-mount system (`ships/ship.ts` WEAPONS/MOUNTS) rather
- * than here. The Blackjack ↔ TAC-150 relationship mirrors the personal
- * launcher ↔ missile one, a scale up: a turreted gun/launcher that fires shell
- * variants or loads a self-contained heavy missile.
+ * A standalone reference catalogue (the FC gives these as fixed catalogue items,
+ * not a construction system). Deliberately not hooked into any vehicle/ship
+ * builder — it stands on its own, exported for lookup. The Blackjack ↔ TAC-150
+ * relationship mirrors the personal launcher ↔ missile one, a scale up: a
+ * turreted gun/launcher that fires shell variants or loads a self-contained
+ * heavy missile.
  */
 import type { Damage, Traits } from './types.js';
 
