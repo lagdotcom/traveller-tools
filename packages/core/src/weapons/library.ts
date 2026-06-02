@@ -1358,10 +1358,12 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     magazines: [{ rounds: 50, costCr: 750 }],
 
     // all versions: 550m, 50 Mag (Cr750), Quickdraw -9, Bulky, Scope
-    // 5D / Auto 3 / Mag 50 (Cr750) reproduce. reconcile: the build runs high —
-    // r1100 / Cr20300 / 52.7kg / QD-10 vs the book's 550m / Cr9050 / 35.2kg / QD-9
-    // (the antiMateriel calibre's range + the support-mount cost/weight don't match
-    // the book's Heavy Machinegun figures).
+    // 5D / Auto 3 / Mag 50 (Cr750) / range 550m reproduce. reconcile: cost/weight
+    // run high (Cr20300/52.7kg vs Cr9050/35.2kg) — the book applies no anti-materiel
+    // calibre cost/weight multiplier on the support receiver, but the engine does
+    // (the ×2.5/×1.5 is needed & correct for the Crunch Gun on an LSW, so it's a
+    // receiver-dependent rule the model doesn't capture). QD-10 vs -9: long + heavy
+    // barrel each cost -1, the book counts the pair as -1.
     // reconcile: Heavy Machinegun - 5D, 35.2kg, Cr9050 - Auto 3
     // reconcile: Chain Gun - 5D, 56.7kg, Cr28100 - Auto 4 [needs powered feed system, pintle/ring mount]
     // reconcile: Twin Chain Gun - 7D, 113.4kg, Cr56200 - Auto 4 [needs small turret]
@@ -1388,8 +1390,10 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     magazines: [{ rounds: 7, costCr: 150 }],
 
     // all versions: Mag 7, Quickdraw -9, Bulky
-    // 5D-3 / Mag 7 (Cr150) reproduce. reconcile: the build runs high — r1100 /
-    // Cr83961 / 20.29kg / QD-13 vs the book's 550m / Cr59720 / 13.61kg / QD-9.
+    // 5D-3 / Mag 7 (Cr150) / range 550m reproduce. reconcile: cost/weight run high
+    // (Cr83961/20.29kg vs Cr59720/13.61kg) — same receiver-dependent anti-materiel
+    // multiplier as the MDD-15 (correct for the Crunch on an LSW, not applied by the
+    // book on the support receiver). QD-13 vs -9.
     // reconcile: MDS-15 - 550m, 5D-3, 13.61kg, Cr59720, Mag Cr150 - Scope
     // reconcile: MDS-15 (advanced AP) - 550m, 5D-5, 13.61kg, Cr59720, Mag Cr480 - AP 6, Scope
     // reconcile: MDS-15 (cut down, explosive) - 250m, 7D-3, 10.76kg, Cr47435, Mag Cr650 - Lo-Pen 2
@@ -1412,24 +1416,19 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     // Mag 125 / Lo-Pen 2 / Zero-G / Scope / cost (Cr19500) / weight (13.7kg) all
     // reproduce — the heavy powerpack drives 8D without Unreliable and the
     // weapon-mounted Laser Designator closes the last Cr1000 / 0.2kg.
-    // reconcile: range 688 / QD-13 / Emis(normal) / 8D+3 differ from the book's
-    // 625m / QD-9 / Emis(low) / 8D.
+    // book error: damage is 8D+3 — the table omits Improved Beam Focus's +3.
+    // range 688m reproduces the listed components (500 base × Efficient Beam ×1.25
+    // × Long barrel ×1.1). reconcile: QD-13 vs the book's -9 (the model counts the
+    // stock/bipod/scope QD the book's receiver+barrel breakdown omits); signature
+    // Emis(normal) vs (low).
     // reconcile: TES-12 - 625m, 13.7kg, Cr19500, Quickdraw -9
     // reconcile: TEA-12 - 450m, 10.01kg, Cr17500, Quickdraw -4 [carbine, folding stock]
   }),
 ];
 
-/* TODO
-  CLOSEGUARD SEMI-AUTONOMOUS POINT DEFENCE SYSTEM (TL9)
-  - takes 1 Space
-  - internal batteries good for 36h
-  - short range radar and thermal sensors
-  - has Point Defence 2; up to two targets of same general type, at DM+2 to hit
-
-  machinegun - 375m, 3D+3, 32kg, kCr123, Mag 50 (Cr50) - Auto 3, Phys (norm), Slow Loader 4
-  twin RF heavy machinegun - 550m, 7D, 110kg, kCr175, Mag 50 (Cr750) - Auto 3, Bulky, Phys (high), Slow Loader 4
-  twin laser support weapon - 625m, 8D, 45kg, kCr160, Mag 125 (kCr5) - Bulky, Emis (low), Zero-G
-*/
+// Closeguard point-defence system → weapons/heavyWeapons.ts (POINT_DEFENCE_SYSTEMS):
+// it's vehicle/installation scale (1 Space, kCr), so it lives in the standalone
+// catalogue, not as a personal build.
 /* TODO
   PORCUPINE RIFLE GRENADE DISCHARGER (TL7)
 

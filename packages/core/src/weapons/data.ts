@@ -464,7 +464,7 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     label: 'Anti-Materiel',
     damage: d(5),
     ammoCostPer100: 1500,
-    range: 1000,
+    range: 500,
     receiverCostMult: 2.5,
     receiverWeightMult: 1.5,
     capacityMult: 0.4,
@@ -700,7 +700,9 @@ export const BARRELS: Record<BarrelId, BarrelDef> = {
     label: 'Very Long',
     costPct: 1,
     weightPct: 1,
-    rangeMult: 1.25,
+    // reconcile: ×2.5 range (not ×1.25) — with anti-materiel's 500m base this
+    // reproduces the 13mm Crunch Gun's 1250m. Only the Crunch Gun uses it.
+    rangeMult: 2.5,
     quickdraw: 0,
     penetration: 0,
     signatureShift: 0,

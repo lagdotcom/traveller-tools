@@ -163,3 +163,79 @@ export const HEAVY_MISSILES: Record<string, HeavyMissileDef> = {
     traits: { Blast: 12, 'One-Use': true, Smart: true },
   },
 };
+
+/** One weapon fit of a point-defence system (a self-contained variant). */
+export interface PointDefenceFit {
+  label: string;
+  /** Range in metres. */
+  range: number;
+  damage: Damage;
+  weightKg: number;
+  cost: number;
+  magazine: number;
+  /** Loaded-magazine reload price (Cr). */
+  magazineCr: number;
+  signature: string;
+  traits: Traits;
+}
+
+/**
+ * A point-defence system (FC Support Weaponry) — a self-contained mount + sensors
+ * + one of several weapon fits. Vehicle/installation scale (it occupies Spaces and
+ * costs kCr), so reference data here rather than a personal build.
+ */
+export interface PointDefenceSystemDef {
+  label: string;
+  minTL: number;
+  /** Mounting Spaces occupied. */
+  spaces: number;
+  traits: Traits;
+  notes?: string;
+  fits: PointDefenceFit[];
+}
+
+export const POINT_DEFENCE_SYSTEMS: Record<string, PointDefenceSystemDef> = {
+  closeguard: {
+    label: 'Closeguard Semi-Autonomous Point Defence System',
+    minTL: 9,
+    spaces: 1,
+    traits: { 'Point Defence': 2 },
+    notes:
+      'Internal batteries (36h); short-range radar + thermal sensors. Point Defence 2: engages up to two targets of the same general type at DM+2 to hit.',
+    fits: [
+      {
+        label: 'Machinegun',
+        range: 375,
+        damage: d(3, 3),
+        weightKg: 32,
+        cost: 123000,
+        magazine: 50,
+        magazineCr: 50,
+        signature: 'Physical (normal)',
+        traits: { Auto: 3, 'Slow Loader': 4 },
+      },
+      {
+        label: 'Twin RF Heavy Machinegun',
+        range: 550,
+        damage: d(7),
+        weightKg: 110,
+        cost: 175000,
+        magazine: 50,
+        magazineCr: 750,
+        signature: 'Physical (high)',
+        traits: { Auto: 3, Bulky: true, 'Slow Loader': 4 },
+      },
+      {
+        label: 'Twin Laser Support Weapon',
+        range: 625,
+        damage: d(8),
+        weightKg: 45,
+        cost: 160000,
+        magazine: 125,
+        magazineCr: 5000,
+        signature: 'Emissions (low)',
+        traits: { Bulky: true, 'Zero-G': true },
+      },
+    ],
+  },
+};
