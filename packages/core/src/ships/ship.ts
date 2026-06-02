@@ -4,6 +4,7 @@ import {
   type Design,
   type DesignSummary,
   evaluate,
+  type Evaluation,
   type Issue,
   type ResourceDef,
   type Rule,
@@ -1428,9 +1429,8 @@ const CREW_SALARY: Record<string, number> = {
   Steward: 2000,
 };
 
-export interface ShipEvaluation {
+export interface ShipEvaluation extends Evaluation {
   summary: DesignSummary<ShipStats>;
-  issues: Issue[];
   cargoTons: number;
   /** Power demand breakdown (for a book-style Power Requirements panel). */
   powerRequirements: {

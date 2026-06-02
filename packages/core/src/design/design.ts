@@ -109,6 +109,17 @@ export interface Issue {
   message: string;
 }
 
+/**
+ * The common contract every domain evaluation satisfies. The additive ship
+ * engine and the multiplicative weapon pipeline both return at least validation
+ * `issues` and the rulebooks (`sources`) a design draws on, so shared TUI
+ * components (e.g. the Sources panel) can accept either.
+ */
+export interface Evaluation {
+  issues: Issue[];
+  sources: string[];
+}
+
 /** A validation rule: inspects the design + its summary and returns issues. */
 export type Rule<S extends Stats = Stats> = (input: {
   design: Design<S>;

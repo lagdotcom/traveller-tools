@@ -50,6 +50,11 @@ Generic, not ship-specific (vehicles/robots are meant to reuse it):
   minTL, plus custom).
 - `InstalledComponent.options` is `Record<string, number | string | string[]>`
   (the `string[]` is e.g. a turret's fitted weapons).
+- **`Evaluation` contract** (`design.ts`): the shared shape both engines satisfy —
+  `{ issues: Issue[]; sources: string[] }`. `ShipEvaluation` and `WeaponEvaluation`
+  both `extends Evaluation`, so cross-domain TUI bits (e.g. `SourcesPanel`) accept
+  either. The additive `summarize` fold and the multiplicative weapon `runBuild`
+  stay distinct paradigms; this is the thin contract they genuinely share.
 
 ## The ship domain (`packages/core/src/ships/ship.ts`)
 

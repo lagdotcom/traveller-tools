@@ -6,6 +6,8 @@ import {
 import { Box, Text, useStdout } from 'ink';
 import React from 'react';
 
+import { SourcesPanel } from './SourcesPanel.js';
+
 /** Format the trait map the way the book lists them: `Auto 3, Lo-Pen 2`. */
 function formatTraits(profile: WeaponProfile): string {
   const parts = Object.entries(profile.traits)
@@ -208,9 +210,7 @@ export function WeaponSheet({
         </Box>
       ) : null}
 
-      <Box marginTop={1}>
-        <Text dimColor>Sources: {sources.join(', ')}</Text>
-      </Box>
+      <SourcesPanel sources={sources} />
     </Box>
   );
 }

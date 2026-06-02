@@ -2,6 +2,8 @@ import type { CrewMember, LineItem } from '@traveller-tools/core';
 import { Box, Text, useStdout } from 'ink';
 import React from 'react';
 
+import { SourcesPanel } from './SourcesPanel.js';
+
 const fmt = (n: number) => String(Math.round(n * 1000) / 1000);
 
 interface Row {
@@ -168,16 +170,7 @@ export function ShipSheet(props: ShipSheetProps): React.JSX.Element {
           </Text>
           <Text>Pay Cr{Math.round(props.runningCosts.monthlySalaryCr)}/mo</Text>
         </Box>
-        <Box marginTop={1} flexDirection="column">
-          <Text bold color="yellow">
-            Sources
-          </Text>
-          {props.sources.map((s) => (
-            <Text key={s} dimColor>
-              {s}
-            </Text>
-          ))}
-        </Box>
+        <SourcesPanel sources={props.sources} />
       </Box>
     </Box>
   );

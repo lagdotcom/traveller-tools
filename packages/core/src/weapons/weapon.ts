@@ -5,7 +5,7 @@
  * the Field Catalogue cost model is sequential-multiplicative off a receiver
  * baseline, walks an explicit pipeline rather than the additive `summarize`.
  */
-import type { Issue } from '../design/index.js';
+import type { Evaluation, Issue } from '../design/index.js';
 import {
   ACCESSORIES,
   AMMO_TYPES,
@@ -72,12 +72,10 @@ import {
   type WeaponProfile,
 } from './types.js';
 
-export interface WeaponEvaluation {
+export interface WeaponEvaluation extends Evaluation {
   profile: WeaponProfile;
   breakdown: WeaponLineItem[];
-  issues: Issue[];
   totals: { costCr: number; weightKg: number; magazineCr: number };
-  sources: string[];
   /** Play-time rules carried by chosen components (not captured as stats/traits). */
   notes?: string[];
   /**
