@@ -33,6 +33,9 @@ export function App(): React.JSX.Element {
   const [loadedWeapon, setLoadedWeapon] = useState<
     WeaponDefinition | undefined
   >(undefined);
+  const [loadedVariant, setLoadedVariant] = useState<number | undefined>(
+    undefined,
+  );
   const [weaponSeq, setWeaponSeq] = useState(0);
   const { exit } = useApp();
 
@@ -42,8 +45,9 @@ export function App(): React.JSX.Element {
     setScreen('ship');
   };
 
-  const loadWeapon = (def: WeaponDefinition | undefined) => {
+  const loadWeapon = (def: WeaponDefinition | undefined, variant?: number) => {
     setLoadedWeapon(def);
+    setLoadedVariant(variant);
     setWeaponSeq((n) => n + 1);
     setScreen('weapon');
   };
@@ -80,6 +84,7 @@ export function App(): React.JSX.Element {
       <WeaponBuilderScreen
         key={weaponSeq}
         initial={loadedWeapon}
+        initialVariant={loadedVariant}
         onBack={() => setScreen('menu')}
         onLoad={loadWeapon}
       />

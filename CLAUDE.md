@@ -95,8 +95,10 @@ Conventions that matter:
 - **Weapon variants.** `WeaponDefinition.variants?: WeaponVariant[]` — named
   **partial overrides** of the base `params` (`variantParams(base, override)`
   shallow-merges, keeps the base `kind`, normalises). Round-trip through
-  serialize/parse (`normalizeVariants`). The library flattens them into loadable
-  `Base · Variant` entries; the reconcile harness checks each against
+  serialize/parse (`normalizeVariants`). The library flattens **both built-ins and
+  saved designs** into loadable `Base · Variant` entries (resolved params) and
+  loading one opens its base weapon positioned on that variant (App threads an
+  `initialVariant` index to the builder); the reconcile harness checks each against
   `BookFigures.variants`. The builder edits one **target** (the main weapon or a
   variant): a banner + target list show the current one, `Ctrl+N` adds, `Ctrl+V`
   cycles, `Ctrl+B` returns to main, `Ctrl+R` removes; switching commits the live

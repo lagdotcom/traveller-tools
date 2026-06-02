@@ -413,22 +413,37 @@ function buildGrenade(v: FormValues): GrenadeParams {
 export function WeaponBuilderScreen({
   onBack,
   initial,
+  initialVariant,
   onLoad,
 }: {
   onBack: () => void;
   initial?: WeaponDefinition;
-  onLoad: (def: WeaponDefinition) => void;
+  /** Open directly on this variant index (else the main weapon). */
+  initialVariant?: number;
+  onLoad: (def: WeaponDefinition, variant?: number) => void;
 }): React.JSX.Element {
   const files = useFiles();
   const store = useWeaponStore();
-  const startParams = initial?.params ?? DEFAULT_WEAPON_PARAMS;
-  const form = useForm(
-    formValues(startParams, {
-      name: initial?.name ?? 'Untitled Weapon',
-      manufacturer: initial?.manufacturer ?? '',
-      description: initial?.description ?? '',
-    }),
-  );
+  const baseDefParams = initial?.params ?? DEFAULT_WEAPON_PARAMS;
+  const baseDefMeta = {
+    name: initial?.name ?? 'Untitled Weapon',
+    manufacturer: initial?.manufacturer ?? '',
+    description: initial?.description ?? '',
+  };
+  // Optionally open straight on a variant (from the library).
+  const startVariant =
+    initialVariant != null ? initial?.variants?.[initialVariant] : undefined;
+  const startParams = startVariant
+    ? variantParams(baseDefParams, startVariant.override)
+    : baseDefParams;
+  const startMeta = startVariant
+    ? {
+        name: startVariant.name,
+        manufacturer: baseDefMeta.manufacturer,
+        description: startVariant.description ?? '',
+      }
+    : baseDefMeta;
+  const form = useForm(formValues(startParams, startMeta));
   type FormKey = keyof typeof form.values;
   // Features are shared by firearm + energy + launcher + projector (all reuse
   // RECEIVER_FEATURES); furniture/accessories are firearm/energy only. Seed each
@@ -489,13 +504,11 @@ export function WeaponBuilderScreen({
   const [variants, setVariants] = useState<WeaponVariant[]>(
     initial?.variants ?? [],
   );
-  const [target, setTarget] = useState<'main' | number>('main');
-  const [baseParams, setBaseParams] = useState<WeaponParams>(startParams);
-  const [baseMeta, setBaseMeta] = useState({
-    name: initial?.name ?? 'Untitled Weapon',
-    manufacturer: initial?.manufacturer ?? '',
-    description: initial?.description ?? '',
-  });
+  const [target, setTarget] = useState<'main' | number>(
+    startVariant ? initialVariant! : 'main',
+  );
+  const [baseParams, setBaseParams] = useState<WeaponParams>(baseDefParams);
+  const [baseMeta, setBaseMeta] = useState(baseDefMeta);
 
   /** Top-level fields where `derived` differs from `base` (the variant override). */
   const diffOverride = (
