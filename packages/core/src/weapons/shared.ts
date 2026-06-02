@@ -1,6 +1,11 @@
 /** Helpers shared by the firearm, energy, projector, launcher and grenade pipelines. */
 import type { Issue } from '../design/index.js';
-import { SIGNATURE_LEVELS, type SignatureLevel, type Traits } from './types.js';
+import {
+  type NumericTraitName,
+  SIGNATURE_LEVELS,
+  type SignatureLevel,
+  type Traits,
+} from './types.js';
 
 /** Round to 6 d.p. to tame floating-point drift in the multiplicative model. */
 export const round2 = (n: number): number => Math.round(n * 1e6) / 1e6;
@@ -82,16 +87,23 @@ export function penetrationProfile(
 // --- Traits -----------------------------------------------------------------
 
 /** Add a numeric trait level, stacking with any existing numeric value. */
-export function addTrait(traits: Traits, name: string, level: number): void {
+export function addTrait(
+  traits: Traits,
+  name: NumericTraitName,
+  level: number,
+): void {
   const existing = traits[name];
   traits[name] = typeof existing === 'number' ? existing + level : level;
 }
 
-/** Merge a source trait map: numbers stack, `true` flags overwrite. */
+/** Merge a source trait map: numbers stack, `true`/string values overwrite. */
 export function mergeTraits(traits: Traits, source?: Traits): void {
   if (!source) return;
+  // The key/value pairing is guaranteed correct by the `Traits` type on `source`;
+  // the loop just can't express that to the compiler, so the writes are cast.
+  const out = traits as Record<string, number | string | true>;
   for (const [k, v] of Object.entries(source)) {
-    if (typeof v === 'number') addTrait(traits, k, v);
-    else traits[k] = v;
+    if (typeof v === 'number') addTrait(traits, k as NumericTraitName, v);
+    else out[k] = v;
   }
 }

@@ -17,6 +17,7 @@ import type {
   CalibreId,
   Damage,
   FeedId,
+  FlagTraitName,
   FurnitureId,
   MechanismId,
   ReceiverFeatureId,
@@ -174,7 +175,7 @@ export interface RapidFireDef {
   /** +1 damage die per this many full base dice. */
   dicePer: number;
   heatDicePerDie: number;
-  trait: string;
+  trait: FlagTraitName;
 }
 export const RAPID_FIRE: Record<'rf' | 'vrf', RapidFireDef> = {
   rf: {
@@ -1494,7 +1495,8 @@ export const AMMO_TYPES: Record<AmmoTypeId, AmmoTypeDef> = {
     label: 'Incendiary',
     minTL: 6,
     costMult: 6,
-    traits: { Incendiary: true },
+    // Bare "Incendiary" (no modifier) means Incendiary 0 (Weapon Traits chapter).
+    traits: { Incendiary: 0 },
   },
   flechette: {
     label: 'Flechette',

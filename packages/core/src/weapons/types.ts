@@ -36,10 +36,65 @@ export const SIGNATURE_LEVELS = [
 export type SignatureLevel = (typeof SIGNATURE_LEVELS)[number];
 
 /**
- * A weapon trait with an optional score: a number (`Auto 3`), `true` (a flag like
- * `Bulky`), or a string for a variable/dice score (`Burn 'D3+1'`, `Stun '2D'`).
+ * Weapon traits, strictly keyed by their canonical name with the value type each
+ * one carries. Three shapes cover them all:
+ *  - **flag** traits are present as `true` (`Bulky`, `Scope`, `Zero-G`, …);
+ *  - **numeric** traits carry a score (`Auto 3`, `Lo-Pen 4`, `Blast 2`, …);
+ *  - **scored** traits carry a variable/dice string (`Burn 'D3+1'`, `Stun '2D'`,
+ *    `Distraction 'potent'`, `Stealth 'extreme'`).
+ * A couple are dual: `Burn` is usually a dice string but the rules also give flat
+ * numbers, and `Incendiary` with no modifier means `0`.
+ * Keeping this closed catches key typos (`'Stealth (extreme)'`) and value-type
+ * mistakes (`Bulky: 2`) at compile time; add a name here when a new book needs it.
  */
-export type Traits = Record<string, number | string | true>;
+export type FlagTraitName =
+  | 'Bulky'
+  | 'Very Bulky'
+  | 'Scope'
+  | 'Smart'
+  | 'Rugged'
+  | 'Accurised'
+  | 'Zero-G'
+  | 'One-Use'
+  | 'Corrosive'
+  | 'Incapacitant'
+  | 'Battlechem'
+  | 'Cryogenic'
+  | 'Gas'
+  | 'Toxin';
+
+export type NumericTraitName =
+  | 'AP'
+  | 'Auto'
+  | 'Blast'
+  | 'Lo-Pen'
+  | 'Spread'
+  | 'Inaccurate'
+  | 'Hazardous'
+  | 'Slow Loader'
+  | 'Unreliable'
+  | 'Armoured'
+  | 'Bulwarked'
+  | 'Point Defence'
+  | 'Pulse Intensity';
+
+export type ScoredTraitName = 'Stun' | 'Distraction' | 'Stealth';
+
+export type TraitName =
+  | FlagTraitName
+  | NumericTraitName
+  | ScoredTraitName
+  | 'Burn'
+  | 'Incendiary';
+
+export type Traits = Partial<Record<FlagTraitName, true>> &
+  Partial<Record<NumericTraitName, number>> &
+  Partial<Record<ScoredTraitName, string>> & {
+    /** Dice string (`'D3+1'`) or a flat number. */
+    Burn?: number | string;
+    /** A modifier number; `0` means bare "Incendiary". */
+    Incendiary?: number;
+  };
 
 /** The MgT2 rulebooks a piece of data can come from (provenance, for the sheet). */
 export type BookSource =

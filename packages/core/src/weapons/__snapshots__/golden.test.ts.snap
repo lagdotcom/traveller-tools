@@ -84,7 +84,7 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
         "tl": 4,
         "traits": {
           "Bulky": true,
-          "Incendiary": true,
+          "Incendiary": 0,
           "Scope": true,
         },
       },
@@ -495,7 +495,7 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
         "tl": 9,
         "traits": {
           "Bulky": true,
-          "Distraction (Potent)": true,
+          "Distraction": "potent",
           "Smart": true,
         },
       },
@@ -555,7 +555,7 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
         "traits": {
           "Bulky": true,
           "Smart": true,
-          "Stun (2D)": true,
+          "Stun": "2D",
         },
       },
       "weightKg": 0.5,
@@ -585,7 +585,7 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
           "Blast": 9,
           "Bulky": true,
           "Smart": true,
-          "Stun": true,
+          "Stun": "3D",
         },
       },
       "weightKg": 0.5,
@@ -3512,7 +3512,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
         "tl": 7,
         "traits": {
           "Bulky": true,
-          "Stun (1D)": true,
+          "Stun": "1D",
         },
       },
       "weightKg": 0.3,
@@ -3540,7 +3540,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
         "tl": 7,
         "traits": {
           "Bulky": true,
-          "Distraction (Typical)": true,
+          "Distraction": "typical",
         },
       },
       "weightKg": 0.3,

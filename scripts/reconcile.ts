@@ -897,18 +897,36 @@ interface Diff {
   rounding?: boolean;
 }
 
-function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
+/**
+ * `complete` is true for a base weapon (its figures are the whole stat block, so a
+ * field/trait the engine produces but the book omits is reported as "book
+ * missing") and false for a variant (its figures are a partial override — only the
+ * deltas vs the base — so the completeness checks would over-report and are off).
+ */
+function diffParams(
+  params: WeaponParams,
+  book: BookFigures,
+  complete: boolean,
+): Diff[] {
   const e = evaluateWeapon(params);
   const p = e.profile;
   const diffs: Diff[] = [];
   // `field` is the base name (used for tolerance); `prefix` labels per-ammo rows.
+  // `reportMissing` (top-level fields only) flags a field the *book* omits but the
+  // engine produces — so the now-complete figures are checked for completeness too.
+  // A zero engine value counts as "not applicable" and is not flagged when omitted.
   const cmpNum = (
     field: string,
     eng: number,
     bk: number | undefined,
     prefix = '',
+    reportMissing = false,
   ) => {
-    if (bk === undefined) return;
+    if (bk === undefined) {
+      if (reportMissing && eng !== 0)
+        diffs.push({ field: prefix + field, engine: n(eng), book: 'missing' });
+      return;
+    }
     const kind = classifyNum(field, eng, bk);
     if (kind === 'exact') return;
     const sign = eng - bk >= 0 ? '+' : '';
@@ -925,19 +943,28 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
     eng: string,
     bk: string | undefined,
     prefix = '',
+    reportMissing = false,
   ) => {
-    if (bk !== undefined && eng !== bk)
+    if (bk === undefined) {
+      if (reportMissing)
+        diffs.push({ field: prefix + field, engine: eng, book: 'missing' });
+      return;
+    }
+    if (eng !== bk)
       diffs.push({ field: prefix + field, engine: eng, book: bk });
   };
   const cmpTraits = (
     engT: Traits,
     bookT: Record<string, number | string | boolean> | undefined,
     prefix = '',
+    reportExtra = false,
   ) => {
+    const bookKeys = new Set<string>();
     for (const [rawKey, raw] of Object.entries(bookT ?? {})) {
       const k = TRAIT_KEY_ALIAS[rawKey] ?? rawKey;
+      bookKeys.add(k);
       const bv = TRAIT_NORMALIZE[k] ? TRAIT_NORMALIZE[k]!(raw) : raw;
-      const ev = engT[k];
+      const ev = (engT as Record<string, number | string | true>)[k];
       const evStr = ev === undefined ? '—' : ev === true ? 'yes' : String(ev);
       const bvStr = bv === true ? 'yes' : String(bv);
       if (evStr !== bvStr)
@@ -947,18 +974,37 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
           book: bvStr,
         });
     }
+    // The reverse direction: traits the engine emits that the book doesn't list.
+    if (reportExtra)
+      for (const [k, ev] of Object.entries(engT)) {
+        if (bookKeys.has(k)) continue;
+        diffs.push({
+          field: `${prefix}trait ${k}`,
+          engine: ev === true ? 'yes' : String(ev),
+          book: 'missing',
+        });
+      }
   };
-  cmpNum('cost', e.totals.costCr, book.costCr);
-  cmpNum('weight', e.totals.weightKg, book.weightKg);
-  cmpNum('magazine', e.totals.magazineCr, book.magazineCr);
-  cmpStr('damage', formatDamage(p.damage), book.damage);
-  cmpNum('range', p.range, book.range);
-  cmpNum('quickdraw', p.quickdraw, book.quickdraw);
+  cmpNum('cost', e.totals.costCr, book.costCr, '', complete);
+  cmpNum('weight', e.totals.weightKg, book.weightKg, '', complete);
+  cmpNum('magazine', e.totals.magazineCr, book.magazineCr, '', complete);
+  cmpStr('damage', formatDamage(p.damage), book.damage, '', complete);
+  cmpNum('range', p.range, book.range, '', complete);
+  cmpNum('quickdraw', p.quickdraw, book.quickdraw, '', complete);
+  // `auto` and `penetration` are engine-internal scalars the book never lists as
+  // such — it expresses them as the `Auto` and `Lo-Pen`/`AP` traits — so they are
+  // compared only when a figure is supplied, never reported as "book missing".
   cmpNum('auto', p.auto, book.auto);
   cmpNum('penetration', p.penetration, book.penetration);
-  cmpNum('capacity', p.capacity, book.capacity);
-  cmpStr('signature', `${p.signatureKind} (${p.signature})`, book.signature);
-  cmpTraits(p.traits, book.traits);
+  cmpNum('capacity', p.capacity, book.capacity, '', complete);
+  cmpStr(
+    'signature',
+    `${p.signatureKind} (${p.signature})`,
+    book.signature,
+    '',
+    complete,
+  );
+  cmpTraits(p.traits, book.traits, '', complete);
 
   // Per-ammo rows (firearms): match each loaded profile by its ammo *id*.
   const ignore = new Set(book.ignore ?? []);
@@ -1010,9 +1056,15 @@ function main() {
   const row = (d: Diff) =>
     `      ${(d.rounding ? '≈ ' : '  ') + d.field.padEnd(14)} engine ${d.engine.padEnd(16)} book ${(d.book + ' ' + (d.delta ?? '')).trim()}`;
 
-  // Report one params-vs-figures comparison (base weapon or a variant).
-  const report = (label: string, params: WeaponParams, book: BookFigures) => {
-    const all = diffParams(params, book);
+  // Report one params-vs-figures comparison. `complete` (base weapons) turns on the
+  // completeness checks; variants pass false (their figures are partial overrides).
+  const report = (
+    label: string,
+    params: WeaponParams,
+    book: BookFigures,
+    complete: boolean,
+  ) => {
+    const all = diffParams(params, book, complete);
     const real = all.filter((d) => !d.rounding);
     const rounding = all.filter((d) => d.rounding);
     roundingTotal += rounding.length;
@@ -1041,8 +1093,9 @@ function main() {
       stubs.push(def.name);
       continue;
     }
-    report(def.name, def.params, book);
-    // Each variant is evaluated as base ← override and checked against its figures.
+    report(def.name, def.params, book, true);
+    // Each variant is evaluated as base ← override and checked against its figures
+    // (which are partial overrides, so completeness checks are off — `complete` false).
     for (const v of def.variants ?? []) {
       const vbook = book.variants?.[v.name];
       if (!vbook) {
@@ -1053,6 +1106,7 @@ function main() {
         `${def.name} › ${v.name}`,
         variantParams(def.params, v.override),
         vbook,
+        false,
       );
     }
   }

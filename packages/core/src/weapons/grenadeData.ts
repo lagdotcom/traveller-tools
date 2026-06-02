@@ -62,12 +62,12 @@ export const GRENADES: Record<GrenadeTypeId, GrenadeDef> = {
   baton: {
     label: 'Baton',
     minTL: 7,
-    mini: { cost: 5, weight: 0.3, damage: null, traits: { 'Stun (1D)': true } },
+    mini: { cost: 5, weight: 0.3, damage: null, traits: { Stun: '1D' } },
     hand: {
       cost: 10,
       weight: 0.5,
       damage: null,
-      traits: { 'Stun (2D)': true },
+      traits: { Stun: '2D' },
     },
   },
   breacher: {
@@ -110,13 +110,13 @@ export const GRENADES: Record<GrenadeTypeId, GrenadeDef> = {
       cost: 25,
       weight: 0.3,
       damage: null,
-      traits: { 'Distraction (Typical)': true },
+      traits: { Distraction: 'typical' },
     },
     hand: {
       cost: 60,
       weight: 0.6,
       damage: null,
-      traits: { 'Distraction (Potent)': true },
+      traits: { Distraction: 'potent' },
     },
   },
   emp: {
@@ -275,7 +275,7 @@ export const GRENADES: Record<GrenadeTypeId, GrenadeDef> = {
       cost: 30,
       weight: 0.5,
       damage: d(3),
-      traits: { Blast: 9, Stun: true },
+      traits: { Blast: 9, Stun: '3D' },
     },
   },
 };

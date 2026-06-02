@@ -324,8 +324,23 @@ MissileWarheadId[]` loads them from `MISSILE_WARHEADS` (e.g. the AV-7) on a
   Per-component figures: **`ammo`** (firearms) is keyed by the **ammo id** (matched
   against `ammoProfiles[].ammo`); **`warheads`** (launchers) is keyed by the
   **warhead/missile id** (matched against `munitionProfiles[].key`) with
-  **per-round** `weightKg`/`costCr`; **`variants`** by the variant name (each a full
-  figure set, evaluated as base ← override via `variantParams`).
+  **per-round** `weightKg`/`costCr`; **`variants`** by the variant name.
+  **Completeness check:** a **base** weapon's figures are treated as the whole stat
+  block, so a field _or trait_ the engine produces but the book omits is reported as
+  `book missing` (so engine-extra flags surface) — `auto`/`penetration` are exempt
+  (the book expresses them as the `Auto`/`Lo-Pen`/`AP` traits, not as fields).
+  **Variants** are partial overrides (only the deltas vs base), so their figures are
+  evaluated as base ← override via `variantParams` with the completeness check
+  **off**. `TRAIT_KEY_ALIAS` folds book OCR variants (`Bulwark`→`Bulwarked`) onto
+  the engine's canonical name before comparing.
+- **`Traits` is strictly typed** (`types.ts`): three name unions — `FlagTraitName`
+  (value `true`: Bulky, Scope, Zero-G, Rugged, …), `NumericTraitName` (a score: AP,
+  Auto, Lo-Pen, Blast, …) and `ScoredTraitName` (a dice/level string: Stun '2D',
+  Distraction 'potent', Stealth 'extreme'), plus the dual `Burn` (number|string) and
+  `Incendiary` (number; `0` = bare). This catches key typos (`'Stealth (extreme)'`)
+  and value-type slips (`Bulky: 2`) at compile time — add a name here when a new book
+  needs one. `mergeTraits`/`addTrait` (shared.ts) do the only string-keyed writes
+  (cast internally). Don't embed a score in the key (`'Stun (2D)'`); use `Stun: '2D'`.
 - **Weapon-traits glossary** (`weaponTraits.ts`): the FC "Weapon Traits" chapter
   (the 13 FC-detailed traits — Burn, Corrosive, Lo-Pen, Spread, Hazardous, …) as
   `WEAPON_TRAITS` + `findWeaponTrait(key)`, with the Hazard/Flammability/Malfunction

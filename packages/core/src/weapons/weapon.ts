@@ -63,6 +63,7 @@ import {
   type AmmoTypeId,
   type Damage,
   type FirearmParams,
+  type FlagTraitName,
   type MagazineSpec,
   type SecondaryWeaponParams,
   SIGNATURE_LEVELS,
@@ -753,7 +754,7 @@ function firearmProfile(
     };
     const baseAp = typeof traits.AP === 'number' ? traits.AP : 0;
     traits.AP = Math.max(baseAp, heatDice);
-    traits[rapidFire.trait] = true;
+    (traits as Partial<Record<FlagTraitName, true>>)[rapidFire.trait] = true;
   }
 
   // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,
