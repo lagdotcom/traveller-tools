@@ -143,7 +143,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         // weight reads ~0.5 kg light: inherits the base shotgun's longarm-receiver
         // quirk (worksheet 3 kg vs the rules' 2.5 kg) — with 3 kg it is exact.
         // explosive Lo-Pen: book 2 (calibre only); engine 3 adds explosive's −1 pen.
-        note: "Sawed-Off weight/explosive-Lo-Pen residuals: see data.ts 'sawed-off' barrel + the longarm-receiver quirk.",
+        note: "Sawed-Off weight/explosive-Lo-Pen residuals: see data.ts 'sawedOff' barrel + the longarm-receiver quirk.",
         ammo: {
           pellet: { traits: { 'Lo-Pen': 5, Spread: 3 } },
           explosive: { damage: '6D-4', traits: { 'Lo-Pen': 2 } },

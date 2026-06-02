@@ -717,7 +717,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     [
       {
         name: 'Sawed-Off',
-        override: { barrel: 'sawed-off', ammo: ['pellet', 'explosive'] },
+        override: { barrel: 'sawedOff', ammo: ['pellet', 'explosive'] },
       },
     ],
   ),

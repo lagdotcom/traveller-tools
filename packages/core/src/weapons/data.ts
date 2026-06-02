@@ -622,7 +622,7 @@ export const PELLET_SPREAD: Record<BarrelId, number> = {
   rifle: 2,
   long: 1,
   veryLong: 1,
-  'sawed-off': 3,
+  sawedOff: 3,
 };
 
 export const BARRELS: Record<BarrelId, BarrelDef> = {
@@ -717,7 +717,7 @@ export const BARRELS: Record<BarrelId, BarrelDef> = {
   // longarm-weight quirk that makes the base shotgun read light (not a barrel bug).
   // Quickdraw +5 (shorter than Short's +6, longer than Handgun's +4) and the
   // Short-barrel penetration/signature shifts are derived, not book-stated.
-  'sawed-off': {
+  sawedOff: {
     label: 'Sawed-Off',
     costPct: 0.1,
     weightPct: 0.1,

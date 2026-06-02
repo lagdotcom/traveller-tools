@@ -225,10 +225,10 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   A **spread (pellet/flechette) round uses the calibre's shorter `pelletRange`**
   (where given) as its range base instead of the solid `range` — so a pellet
   primary's profile range is the pellet figure, not the slug figure. The
-  **`sawed-off`** barrel (a drastically shortened smoothbore, derived from the
+  **`sawedOff`** barrel (a drastically shortened smoothbore, derived from the
   Civilian Shotgun's Sawed-Off variant: rangeMult 0.25, Pellet Spread 3) reproduces
   that variant; its ~0.5 kg weight gap is the documented longarm-receiver quirk, not
-  a barrel bug (see the `BARRELS['sawed-off']` comment).
+  a barrel bug (see the `BARRELS.sawedOff` comment).
 - **Receiver features carry options** (ship-component style). `params.features` is
   a `ReceiverFeatureRef[]`: a bare id for a plain feature, or `{ id, level }` for a
   _leveled_ one (Armoured/Bulwarked/Recoil Comp/Disguised/Low Quality), so one id
