@@ -119,7 +119,6 @@ const PPROP = labelMap<ProjectorPropellantId>(PROJECTOR_PROPELLANTS);
 const PFUEL = labelMap<ProjectorFuelId>(PROJECTOR_FUELS);
 const LRECEIVER = labelMap<LauncherReceiverId>(LAUNCHER_RECEIVERS);
 const MISSILE = labelMap<MissileWarheadId>(MISSILE_WARHEADS);
-const NO_MISSILE = 'None (grenade)';
 const GTYPE = labelMap<GrenadeTypeId>(GRENADES);
 
 /** Small label list for a fixed set of ids (used for enum-like choices). */
@@ -232,10 +231,8 @@ const launcherValues = (l: LauncherParams) => ({
   lReceiver: LRECEIVER.toLabel(l.receiver),
   lBarrel: BARREL.toLabel(l.barrel),
   lStock: STOCK.toLabel(l.stock),
-  warhead: GTYPE.toLabel(l.warhead),
   warheadSize: GSIZE.toLabel(l.warheadSize),
   delivery: DELIVERY.toLabel(l.delivery),
-  lMissile: l.missile ? MISSILE.toLabel(l.missile) : NO_MISSILE,
   guidance: l.guidance ? 'yes' : 'no',
   magazineSize: String(l.magazineSize),
 });
@@ -270,7 +267,14 @@ function formValues(
   };
 }
 
-type ListId = 'features' | 'furniture' | 'accessories' | 'mods' | 'ammo';
+type ListId =
+  | 'features'
+  | 'furniture'
+  | 'accessories'
+  | 'mods'
+  | 'ammo'
+  | 'warheads'
+  | 'missiles';
 
 /** The flat string-keyed record the form holds (one entry per builder field). */
 type FormValues = ReturnType<typeof formValues>;
@@ -281,6 +285,8 @@ interface Lists {
   accessories: AccessoryId[];
   mods: EnergyModId[];
   ammo: AmmoTypeId[];
+  warheads: GrenadeTypeId[];
+  missiles: MissileWarheadId[];
   // Carried through unedited so loaded designs keep their magazine / power-pack
   // options (the builder edits the standard magazine via Capacity %).
   magazines?: MagazineSpec[];
@@ -384,10 +390,10 @@ function buildLauncher(v: FormValues, lists: Lists): LauncherParams {
     stock: STOCK.toId(v.lStock),
     guidance: v.guidance === 'yes',
     magazineSize: num(v.magazineSize, 1),
-    warhead: GTYPE.toId(v.warhead),
+    warheads: lists.warheads.length > 0 ? lists.warheads : ['fragmentation'],
     warheadSize: GSIZE.toId(v.warheadSize),
     delivery: DELIVERY.toId(v.delivery),
-    ...(v.lMissile !== NO_MISSILE ? { missile: MISSILE.toId(v.lMissile) } : {}),
+    ...(lists.missiles.length > 0 ? { missiles: lists.missiles } : {}),
   };
 }
 
@@ -442,6 +448,12 @@ export function WeaponBuilderScreen({
   const [ammo, setAmmo] = useState<AmmoTypeId[]>(
     startParams.kind === 'firearm' ? startParams.ammo : ['ball'],
   );
+  const [warheads, setWarheads] = useState<GrenadeTypeId[]>(
+    startParams.kind === 'launcher' ? startParams.warheads : ['fragmentation'],
+  );
+  const [missiles, setMissiles] = useState<MissileWarheadId[]>(
+    startParams.kind === 'launcher' ? (startParams.missiles ?? []) : [],
+  );
   // Magazine / power-pack options (the first magazine is the standard one). Each
   // is editable in its own builder section.
   const [magazines, setMagazines] = useState<MagazineSpec[]>(
@@ -457,6 +469,8 @@ export function WeaponBuilderScreen({
   const [addAccessory, setAddAccessory] = useState('');
   const [addMod, setAddMod] = useState('');
   const [addAmmo, setAddAmmo] = useState('');
+  const [addWarhead, setAddWarhead] = useState('');
+  const [addMissile, setAddMissile] = useState('');
   const [active, setActive] = useState(0);
   const [mode, setMode] = useState<'edit' | 'export' | 'import'>('edit');
   const [importBuffer, setImportBuffer] = useState('');
@@ -650,6 +664,39 @@ export function WeaponBuilderScreen({
         const id = AMMO.toId(effective(addAmmo, lists.ammo.available));
         if (id && !ammo.includes(id)) setAmmo((p) => [...p, id]);
         setAddAmmo('');
+      },
+    },
+    warheads: {
+      items: warheads,
+      itemLabel: (i) => GTYPE.toLabel(warheads[i]!),
+      // Keep at least one warhead loaded (the primary munition).
+      remove: (i) =>
+        setWarheads((p) => (p.length > 1 ? p.filter((_, k) => k !== i) : p)),
+      available: GTYPE.labels.filter((l) => !warheads.includes(GTYPE.toId(l))),
+      addValue: addWarhead,
+      onAddChange: setAddWarhead,
+      onAdd: () => {
+        const id = GTYPE.toId(effective(addWarhead, lists.warheads.available));
+        if (id && !warheads.includes(id)) setWarheads((p) => [...p, id]);
+        setAddWarhead('');
+      },
+    },
+    missiles: {
+      items: missiles,
+      itemLabel: (i) => MISSILE.toLabel(missiles[i]!),
+      // Missiles are optional (none = grenade mode); removable down to empty.
+      remove: (i) => setMissiles((p) => p.filter((_, k) => k !== i)),
+      available: MISSILE.labels.filter(
+        (l) => !missiles.includes(MISSILE.toId(l)),
+      ),
+      addValue: addMissile,
+      onAddChange: setAddMissile,
+      onAdd: () => {
+        const id = MISSILE.toId(
+          effective(addMissile, lists.missiles.available),
+        );
+        if (id && !missiles.includes(id)) setMissiles((p) => [...p, id]);
+        setAddMissile('');
       },
     },
   };
@@ -846,17 +893,15 @@ export function WeaponBuilderScreen({
         classField,
         { key: 'tl', label: 'Tech level' },
         { key: 'lReceiver', label: 'Receiver', options: LRECEIVER.labels },
-        { key: 'warhead', label: 'Warhead', options: GTYPE.labels },
         { key: 'warheadSize', label: 'Warhead size', options: GSIZE.labels },
         { key: 'delivery', label: 'Delivery', options: DELIVERY.labels },
-        {
-          key: 'lMissile',
-          label: 'Missile (overrides warhead)',
-          options: [NO_MISSILE, ...MISSILE.labels],
-        },
         { key: 'guidance', label: 'Guidance system', options: YN },
       ],
     },
+    // Each loaded warhead is its own profile row (like a firearm's ammo list).
+    { label: 'Warheads', list: 'warheads' },
+    // Missiles, when loaded, override the grenade warheads above.
+    { label: 'Missiles (override warheads)', list: 'missiles' },
     // The receiver is built like a firearm: features modify the baseline, then a
     // barrel + stock are added as a % of it (cost/weight only).
     { label: 'Features', list: 'features' },
@@ -955,6 +1000,8 @@ export function WeaponBuilderScreen({
     accessories,
     mods,
     ammo,
+    warheads,
+    missiles,
     magazines: magazines.length > 0 ? magazines : undefined,
     packs: packs.length > 0 ? packs : undefined,
   };

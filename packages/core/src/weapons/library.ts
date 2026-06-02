@@ -152,7 +152,7 @@ export const DEFAULT_LAUNCHER_PARAMS: LauncherParams = {
   stock: 'none',
   guidance: false,
   magazineSize: 6,
-  warhead: 'fragmentation',
+  warheads: ['fragmentation'],
   warheadSize: 'hand',
   delivery: 'cartridge',
 };
@@ -420,11 +420,11 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
     stock: pick<StockId>(p.stock, STOCKS, d.stock),
     guidance: bool(p.guidance, d.guidance),
     magazineSize: num(p.magazineSize, d.magazineSize),
-    // Map the legacy 'incendiary' warhead id onto its Grenade-table name.
-    warhead: pick<GrenadeTypeId>(
-      p.warhead === 'incendiary' ? 'incendiaryAntipersonnel' : p.warhead,
-      GRENADES,
-      d.warhead,
+    // Warheads are a list (accepts a legacy single `warhead`); the legacy
+    // 'incendiary' id maps onto its Grenade-table name. Falls back to the default.
+    warheads: normalizeWarheads(
+      Array.isArray(p.warheads) ? p.warheads : [p.warhead],
+      d.warheads,
     ),
     warheadSize: pick<GrenadeSizeId>(
       p.warheadSize,
@@ -432,10 +432,27 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
       d.warheadSize,
     ),
     delivery: pick<DeliveryId>(p.delivery, DELIVERY_SYSTEMS, d.delivery),
-    ...(typeof p.missile === 'string' && p.missile in MISSILE_WARHEADS
-      ? { missile: p.missile as MissileWarheadId }
-      : {}),
+    // Missiles are a list too (accepts a legacy single `missile`); omitted when none.
+    ...(() => {
+      const raw = Array.isArray(p.missiles) ? p.missiles : [p.missile];
+      const missiles = raw.filter(
+        (x): x is MissileWarheadId =>
+          typeof x === 'string' && x in MISSILE_WARHEADS,
+      );
+      return missiles.length > 0 ? { missiles } : {};
+    })(),
   };
+}
+
+/** Coerce a launcher warhead list, mapping the legacy 'incendiary' id; defaults if empty. */
+function normalizeWarheads(
+  v: unknown[],
+  fallback: GrenadeTypeId[],
+): GrenadeTypeId[] {
+  const list = v
+    .map((x) => (x === 'incendiary' ? 'incendiaryAntipersonnel' : x))
+    .filter((x): x is GrenadeTypeId => typeof x === 'string' && x in GRENADES);
+  return list.length > 0 ? list : fallback;
 }
 
 /** Coerce arbitrary parsed JSON into a complete, valid GrenadeParams. */
@@ -1233,7 +1250,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 8,
       receiver: 'tubeSingleLight', // reconcile: Disposable Launcher - 0.25kg, Quickdraw -8, Bulky
-      warhead: 'incendiaryAntipersonnel', // reconcile: Incendiary Rocket-Propelled Grenade - Cr75, 0.5kg
+      warheads: ['incendiaryAntipersonnel'], // reconcile: Incendiary Rocket-Propelled Grenade - Cr75, 0.5kg
       delivery: 'rpg',
     },
     'Krabbine Heavy Industries',
@@ -1241,7 +1258,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   launcher('Spigot Mortar', 'General-purpose RPG launcher', {
     tl: 6,
     receiver: 'reuseSingleLight',
-    warhead: 'antiArmour', // reconcile: Rocket-Propelled Grenade - Cr150, 5kg
+    warheads: ['antiArmour'], // reconcile: Rocket-Propelled Grenade - Cr150, 5kg
     delivery: 'rpg',
     // reconcile: Damage 10D, AP 12, Blast 4
   }),
@@ -1256,8 +1273,14 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 7,
       receiver: 'tubeSemiLight', // reconcile: Quickdraw -8
-      warhead: 'multipleProjectile',
-      // TODO: also show incapacitant gas, baton, distraction
+      // Primary is the multiple-projectile round; the book also lists incapacitant
+      // gas, baton and distraction cartridges (each its own profile row).
+      warheads: [
+        'multipleProjectile',
+        'gasIncapacitant',
+        'baton',
+        'distraction',
+      ],
       delivery: 'cartridge',
       features: ['lightweight', 'bullpup'],
       barrel: 'assault',
@@ -1273,7 +1296,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 9,
       receiver: 'reuseSingleHeavy', // reconcile: Semi-Automatic Grenade Launcher, Standard - Quickdraw -8
-      warhead: 'fragmentation',
+      warheads: ['fragmentation'],
       delivery: 'ram', // reconcile: Standard RAM (or cartridge grenade) - 300m, 3 rounds, Bulky
       // book error: Receiver Totals Cr6500 (extra 0), 3.85kg
       // reconcile: Accessories: Fixed Drum - Cr325, 3kg - Capacity 6 rounds
@@ -1287,7 +1310,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 10,
       receiver: 'reuseMagLight',
-      missile: 'av7', // Ammunition Type: Light Tac Missile
+      missiles: ['av7'], // Ammunition Type: Light Tac Missile
       features: ['lightweight', 'veryCompact'],
       guidance: true, // TODO: why is this not a feature?
       // book error: Receiver Totals Cr1127.9, 7.68kg

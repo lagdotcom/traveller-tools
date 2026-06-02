@@ -258,9 +258,12 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   reproduces this (Cr750/2.0kg receiver baseline → 2.8kg); reconcile: barrel/stock
   %s match the worksheet weight exactly but over-count cost by ~Cr35 (flagged).
 - **Launcher munitions** are a **payload × delivery** pair: the warhead is a
-  **Grenade Weapons table** payload (`GRENADES`, shared with thrown grenades —
-  `LauncherParams.warhead: GrenadeTypeId` + `warheadSize: 'hand' | 'mini'`, mini
-  falling back to hand when not made as a mini), supplying damage/blast/traits;
+  **Grenade Weapons table** payload (`GRENADES`, shared with thrown grenades),
+  supplying damage/blast/traits. **`LauncherParams.warheads: GrenadeTypeId[]` is a
+  list** (the firearm-`ammo` analogue) at a shared `warheadSize: 'hand' | 'mini'`
+  (mini falling back to hand when not made as a mini): the build is fixed and each
+  warhead yields its own profile row (`WeaponEvaluation.munitionProfiles`, first =
+  primary, each with its own reload price), emitted only when >1 is loaded;
   the delivery system (`DELIVERY_SYSTEMS`: rifle-grenade / cartridge / RAM / RPG)
   sets the **range** (100/200/300/500) and multiplies the round's cost/weight
   (×2/×1.25 · ×2.5/×1 · ×3/×1 · ×5/×5). reconcile: the FC prose says a rifle
@@ -268,10 +271,12 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   — we follow the worksheet.
   (The old standalone `WARHEADS` table was the duplicated hand-grenade column and
   has been retired in favour of `GRENADES`.) **Missiles** (FC Support Weapons) are
-  self-contained rounds, not grenade payloads: `LauncherParams.missile?` loads one
-  from `MISSILE_WARHEADS` (e.g. the AV-7) on a reusable/field launcher, overriding
-  the grenade path — the round's own damage/range/traits/cost/weight govern (no
-  delivery multiplier) and multi-mode missiles show the primary mode (flagged).
+  self-contained rounds, not grenade payloads: `LauncherParams.missiles?:
+MissileWarheadId[]` loads them from `MISSILE_WARHEADS` (e.g. the AV-7) on a
+  reusable/field launcher, overriding the grenade path (each missile is its own
+  `munitionProfiles` row) — the round's own damage/range/traits/cost/weight govern
+  (no delivery multiplier) and multi-mode missiles show the primary mode (flagged).
+  Serialization migrates a legacy single `warhead`/`missile` into the lists.
   reconcile: the worked munition examples don't follow these multipliers uniformly
   (plasma RAM is priced ×1, the anti-armour RPG is a _larger_ warhead than the hand
   payload), so the profile matches the book but round cost/weight are the text

@@ -121,20 +121,24 @@ export function WeaponSheet({
       <Text bold color="yellow">
         Profile — TL{profile.tl}
       </Text>
-      {evaluation.ammoProfiles && evaluation.ammoProfiles.length > 1 ? (
-        // One labelled row per loaded ammunition type.
-        evaluation.ammoProfiles.map((a) => (
-          <Box key={a.ammo} flexDirection="column" marginBottom={1}>
-            <ProfileBlock
-              profile={a.profile}
-              title={a.label}
-              magazineCr={a.magazineCr}
-            />
-          </Box>
-        ))
-      ) : (
-        <ProfileBlock profile={profile} magazineCr={totals.magazineCr} />
-      )}
+      {(() => {
+        // One labelled row per loaded ammunition type (firearm) or munition
+        // (launcher); otherwise a single headline profile.
+        const rows = evaluation.ammoProfiles ?? evaluation.munitionProfiles;
+        return rows && rows.length > 1 ? (
+          rows.map((a, i) => (
+            <Box key={i} flexDirection="column" marginBottom={1}>
+              <ProfileBlock
+                profile={a.profile}
+                title={a.label}
+                magazineCr={a.magazineCr}
+              />
+            </Box>
+          ))
+        ) : (
+          <ProfileBlock profile={profile} magazineCr={totals.magazineCr} />
+        );
+      })()}
 
       {evaluation.secondary ? (
         <Box flexDirection="column" marginTop={1}>

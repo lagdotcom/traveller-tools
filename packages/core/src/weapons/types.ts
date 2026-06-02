@@ -492,17 +492,23 @@ export interface LauncherParams {
    * Loaded warhead — a payload drawn from the Grenade Weapons table (shared with
    * thrown grenades), at the chosen body size, shaping the displayed profile.
    */
-  warhead: GrenadeTypeId;
+  /**
+   * Loaded warheads — payloads drawn from the Grenade Weapons table (shared with
+   * thrown grenades), at the chosen body size, delivered by `delivery`. Like a
+   * firearm's `ammo` list, the build is fixed and each yields its own profile
+   * row; the first is the primary.
+   */
+  warheads: GrenadeTypeId[];
   warheadSize: GrenadeSizeId;
   /** How the warhead is delivered (cartridge / RAM / RPG) — sets range + round cost. */
   delivery: DeliveryId;
   /**
-   * A loaded missile (from `MISSILE_WARHEADS`). When set, the launcher fires this
-   * complete self-contained round — its own profile/cost/weight — instead of a
-   * grenade payload, and `warhead`/`delivery` are ignored. Needs a missile-capable
-   * (reusable / field) receiver.
+   * Loaded missiles (from `MISSILE_WARHEADS`). When non-empty, the launcher fires
+   * these complete self-contained rounds — their own profile/cost/weight — instead
+   * of grenade payloads, and `warheads`/`delivery` are ignored. Needs a missile-
+   * capable (reusable / field) receiver.
    */
-  missile?: MissileWarheadId;
+  missiles?: MissileWarheadId[];
 }
 
 /**

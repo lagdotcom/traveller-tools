@@ -88,6 +88,16 @@ export interface WeaponEvaluation extends Evaluation {
     profile: WeaponProfile;
     magazineCr: number;
   }[];
+  /**
+   * One profile per loaded munition (launchers only) — the analogue of
+   * `ammoProfiles`. The primary is the first and equals `profile`; each carries
+   * its own reload price. Present only when more than one munition is loaded.
+   */
+  munitionProfiles?: {
+    label: string;
+    profile: WeaponProfile;
+    magazineCr: number;
+  }[];
   /** A mounted secondary weapon's own profile, shown as a second data line. */
   secondary?: { label: string; profile: WeaponProfile; magazineCr: number };
   /**

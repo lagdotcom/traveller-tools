@@ -18,7 +18,7 @@ const launcher = (overrides: Partial<LauncherParams>): LauncherParams => ({
 describe('launcher — receiver + warhead', () => {
   it('TL6 single-shot light tube launcher with a frag cartridge', () => {
     const r = evaluateWeapon(
-      launcher({ receiver: 'tubeSingleLight', warhead: 'fragmentation' }),
+      launcher({ receiver: 'tubeSingleLight', warheads: ['fragmentation'] }),
     );
     expect(r.totals.costCr).toBeCloseTo(200, 3);
     // 1.5kg receiver + 1 round × 0.5kg × 1 (cartridge) = 2.0kg loaded.
@@ -37,7 +37,7 @@ describe('launcher — receiver + warhead', () => {
     const r = evaluateWeapon(
       launcher({
         receiver: 'reuseSingleHeavy',
-        warhead: 'antiArmour',
+        warheads: ['antiArmour'],
         delivery: 'rpg',
       }),
     );
@@ -59,7 +59,7 @@ describe('launcher — receiver + warhead', () => {
       launcher({
         receiver: 'tubeSupportStandard',
         magazineSize: 5,
-        warhead: 'fragmentation',
+        warheads: ['fragmentation'],
       }),
     );
     expect(r.profile.capacity).toBe(5);
@@ -70,7 +70,7 @@ describe('launcher — receiver + warhead', () => {
   });
 
   it('an effect-only warhead (smoke) has no damage dice', () => {
-    const r = evaluateWeapon(launcher({ warhead: 'smoke' }));
+    const r = evaluateWeapon(launcher({ warheads: ['smoke'] }));
     expect(r.profile.damage.dice).toBe(0);
     expect(r.profile.traits['Blast']).toBe(9);
   });
@@ -85,7 +85,7 @@ describe('launcher — receiver + warhead', () => {
         features: ['lightweight', 'bullpup'],
         barrel: 'assault',
         stock: 'full',
-        warhead: 'fragmentation',
+        warheads: ['fragmentation'],
       }),
     );
     const totals = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
@@ -103,10 +103,39 @@ describe('launcher — receiver + warhead', () => {
   });
 });
 
+describe('launcher — multiple munitions', () => {
+  it('yields a profile row per loaded warhead (primary first, own reload)', () => {
+    const r = evaluateWeapon(
+      launcher({
+        receiver: 'tubeSingleLight',
+        warheads: ['fragmentation', 'smoke'],
+      }),
+    );
+    expect(r.munitionProfiles).toHaveLength(2);
+    // The primary row equals the headline profile.
+    expect(r.munitionProfiles![0]!.profile).toEqual(r.profile);
+    expect(r.munitionProfiles![0]!.label).toMatch(/Fragmentation/);
+    expect(r.munitionProfiles![1]!.label).toMatch(/Smoke/);
+    // Each carries its own reload: frag Cr30×2.5=75, smoke Cr15×2.5=37.5.
+    expect(r.munitionProfiles![0]!.magazineCr).toBeCloseTo(75, 3);
+    expect(r.munitionProfiles![1]!.magazineCr).toBeCloseTo(37.5, 3);
+    // A single munition adds no munitionProfiles (mirrors firearm ammoProfiles).
+    const one = evaluateWeapon(launcher({ warheads: ['fragmentation'] }));
+    expect(one.munitionProfiles).toBeUndefined();
+  });
+
+  it('migrates a legacy single warhead/missile to a list', () => {
+    const g = normalizeWeaponParams({ kind: 'launcher', warhead: 'smoke' });
+    expect((g as LauncherParams).warheads).toEqual(['smoke']);
+    const m = normalizeWeaponParams({ kind: 'launcher', missile: 'av7' });
+    expect((m as LauncherParams).missiles).toEqual(['av7']);
+  });
+});
+
 describe('launcher — validation', () => {
   it('gates the receiver and the warhead by tech level', () => {
     const r = evaluateWeapon(
-      launcher({ tl: 5, receiver: 'tubeSingleLight', warhead: 'plasma' }),
+      launcher({ tl: 5, receiver: 'tubeSingleLight', warheads: ['plasma'] }),
     );
     expect(
       r.issues.some((i) => /Single Shot, Light requires TL6/.test(i.message)),
@@ -131,7 +160,7 @@ describe('launcher — rifle-grenade delivery', () => {
       launcher({
         tl: 6,
         receiver: 'tubeSingleLight',
-        warhead: 'antiArmour',
+        warheads: ['antiArmour'],
         delivery: 'rifleGrenade',
       }),
     );
@@ -152,7 +181,7 @@ describe('launcher — missiles (self-contained rounds)', () => {
   it('fires a loaded missile with its own profile, overriding the grenade path', () => {
     // A reusable single-shot heavy launcher loaded with the AV-7 missile.
     const r = evaluateWeapon(
-      launcher({ tl: 10, receiver: 'reuseSingleHeavy', missile: 'av7' }),
+      launcher({ tl: 10, receiver: 'reuseSingleHeavy', missiles: ['av7'] }),
     );
     // Profile is the missile's primary (Contact) mode + its own range.
     expect(r.profile.damage.dice).toBe(6);
@@ -170,7 +199,7 @@ describe('launcher — missiles (self-contained rounds)', () => {
 
   it('TL-gates the missile (AV-7 is TL10)', () => {
     const r = evaluateWeapon(
-      launcher({ tl: 8, receiver: 'reuseSingleHeavy', missile: 'av7' }),
+      launcher({ tl: 8, receiver: 'reuseSingleHeavy', missiles: ['av7'] }),
     );
     expect(
       r.issues.some((i) => /AV-7 Missile requires TL10/.test(i.message)),
