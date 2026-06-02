@@ -42,6 +42,12 @@ interface BookFigures {
   signature?: string;
   /** Only the distinctive traits to check (AP, Lo-Pen, Blast, …). */
   traits?: Record<string, number | boolean>;
+  /**
+   * Spot exceptions: field names to skip (a confirmed book error the engine is
+   * right about). Use a `note` to record why. Field names match the report's
+   * labels, e.g. 'damage', 'cost', 'trait Burn'.
+   */
+  ignore?: string[];
   /** Free notes (page ref, "book error: …", etc.). */
   note?: string;
 }
@@ -516,6 +522,9 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: -9,
     signature: EL,
     traits: { Bulky: true, 'Lo-Pen': 2, Scope: true, 'Zero-G': true },
+    // Book error: the table prints 8D but omits Improved Beam Focus's +3 (the
+    // engine's 8D+3 is correct). Spot-ignored so it doesn't clutter the list.
+    ignore: ['damage'],
   },
 };
 
@@ -609,7 +618,9 @@ function diffWeapon(name: string, book: BookFigures): Diff[] {
     if (evStr !== bvStr)
       diffs.push({ field: `trait ${k}`, engine: evStr, book: bvStr });
   }
-  return diffs;
+  // Drop spot exceptions (confirmed book errors the engine is right about).
+  const ignore = new Set(book.ignore ?? []);
+  return diffs.filter((d) => !ignore.has(d.field));
 }
 
 function main() {

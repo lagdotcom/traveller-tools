@@ -35,8 +35,11 @@ export const SIGNATURE_LEVELS = [
 ] as const;
 export type SignatureLevel = (typeof SIGNATURE_LEVELS)[number];
 
-/** A weapon trait with an optional numeric score (e.g. `Auto 3`, `Bulky`). */
-export type Traits = Record<string, number | true>;
+/**
+ * A weapon trait with an optional score: a number (`Auto 3`), `true` (a flag like
+ * `Bulky`), or a string for a variable/dice score (`Burn 'D3+1'`, `Stun '2D'`).
+ */
+export type Traits = Record<string, number | string | true>;
 
 /** The MgT2 rulebooks a piece of data can come from (provenance, for the sheet). */
 export type BookSource =

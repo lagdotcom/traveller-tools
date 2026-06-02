@@ -1015,8 +1015,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
 {
   "ammoProfiles": [
     {
-      "ammo": "ball",
-      "label": "Ball",
+      "ammo": "pellet",
+      "label": "Pellet",
       "magazineCr": 1.25,
       "profile": {
         "auto": 0,
@@ -1029,7 +1029,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
         "heat": 0,
         "heatDissipation": 7,
         "heatThreshold": 20,
-        "penetration": -1,
+        "penetration": -3,
         "quickdraw": -1,
         "range": 80,
         "recoil": 0,
@@ -1038,7 +1038,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
         "tl": 4,
         "traits": {
           "Inaccurate": -1,
-          "Lo-Pen": 2,
+          "Lo-Pen": 4,
+          "Spread": 2,
         },
       },
     },
@@ -1103,7 +1104,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
     "heat": 0,
     "heatDissipation": 7,
     "heatThreshold": 20,
-    "penetration": -1,
+    "penetration": -3,
     "quickdraw": -1,
     "range": 80,
     "recoil": 0,
@@ -1112,7 +1113,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
     "tl": 4,
     "traits": {
       "Inaccurate": -1,
-      "Lo-Pen": 2,
+      "Lo-Pen": 4,
+      "Spread": 2,
     },
   },
   "sources": [
@@ -3375,39 +3377,13 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     },
     {
       "costCr": 0,
-      "label": "Munition: Multiple Projectile (Mini) (Cartridge) ×3",
-      "notes": "Cr75 to load",
-      "weightKg": 1.2,
+      "label": "Munition: Gas, Incapacitant (Mini) (Cartridge) ×3",
+      "notes": "Cr375 to load",
+      "weightKg": 1.5,
     },
   ],
   "issues": [],
   "munitionProfiles": [
-    {
-      "label": "Multiple Projectile (Mini) (Cartridge)",
-      "magazineCr": 75,
-      "profile": {
-        "auto": 0,
-        "capacity": 3,
-        "damage": {
-          "dice": 5,
-          "die": 6,
-          "mod": 0,
-        },
-        "heat": 0,
-        "penetration": 0,
-        "quickdraw": 0,
-        "range": 200,
-        "recoil": 0,
-        "signature": "normal",
-        "signatureKind": "physical",
-        "tl": 7,
-        "traits": {
-          "Bulky": true,
-          "Lo-Pen": 3,
-          "Spread": 2,
-        },
-      },
-    },
     {
       "label": "Gas, Incapacitant (Mini) (Cartridge)",
       "magazineCr": 375,
@@ -3484,6 +3460,32 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
         },
       },
     },
+    {
+      "label": "Multiple Projectile (Mini) (Cartridge)",
+      "magazineCr": 75,
+      "profile": {
+        "auto": 0,
+        "capacity": 3,
+        "damage": {
+          "dice": 5,
+          "die": 6,
+          "mod": 0,
+        },
+        "heat": 0,
+        "penetration": 0,
+        "quickdraw": 0,
+        "range": 200,
+        "recoil": 0,
+        "signature": "normal",
+        "signatureKind": "physical",
+        "tl": 7,
+        "traits": {
+          "Bulky": true,
+          "Lo-Pen": 3,
+          "Spread": 2,
+        },
+      },
+    },
   ],
   "notes": [
     "Lightweight: the +50% cost may instead be taken as the Hazardous (−1) trait.",
@@ -3493,7 +3495,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     "auto": 0,
     "capacity": 3,
     "damage": {
-      "dice": 5,
+      "dice": 0,
       "die": 6,
       "mod": 0,
     },
@@ -3506,9 +3508,9 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     "signatureKind": "physical",
     "tl": 7,
     "traits": {
+      "Blast": 3,
       "Bulky": true,
-      "Lo-Pen": 3,
-      "Spread": 2,
+      "Incapacitant": true,
     },
   },
   "sources": [
@@ -3516,8 +3518,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
   ],
   "totals": {
     "costCr": 975,
-    "magazineCr": 75,
-    "weightKg": 4,
+    "magazineCr": 375,
+    "weightKg": 4.3,
   },
 }
 `;
@@ -3937,9 +3939,9 @@ exports[`golden master — built-in weapon evaluations > reproduces MF-61 1`] = 
       "Armoured": 2,
       "Blast": 2,
       "Bulwarked": 3,
-      "Burn (D3+1)": true,
+      "Burn": "D3+1",
       "Hazardous": -6,
-      "Incendiary (D3+1)": true,
+      "Incendiary": 1,
     },
   },
   "sources": [

@@ -143,7 +143,7 @@ export const PROJECTOR_FUELS: Record<ProjectorFuelId, ProjectorFuelDef> = {
     minTL: 5,
     damage: d(4),
     costPerKg: 75,
-    traits: { Incendiary: 1, 'Burn (D3+1)': true },
+    traits: { Incendiary: 1, Burn: 'D3+1' },
   },
   irritant: {
     label: 'Irritant',
@@ -172,7 +172,7 @@ export const PROJECTOR_FUELS: Record<ProjectorFuelId, ProjectorFuelDef> = {
     minTL: 9,
     damage: d(5),
     costPerKg: 150,
-    traits: { 'Incendiary (D3+1)': true, 'Burn (D3+1)': true },
+    traits: { Incendiary: 1, Burn: 'D3+1' },
   },
   cryogenic: {
     label: 'Cryogenic',
