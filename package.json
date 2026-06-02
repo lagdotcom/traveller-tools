@@ -11,6 +11,7 @@
     "dev": "npm run build && tsx packages/tui/src/cli.tsx",
     "test": "vitest run",
     "test:watch": "vitest",
+    "reconcile": "npm run build && tsx scripts/reconcile.ts",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc --build",
