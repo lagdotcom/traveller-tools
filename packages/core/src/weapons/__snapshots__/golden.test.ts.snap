@@ -413,6 +413,8 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
   "issues": [],
   "munitionProfiles": [
     {
+      "costCr": 90,
+      "key": "fragmentation",
       "label": "Fragmentation (RAM)",
       "magazineCr": 90,
       "profile": {
@@ -438,8 +440,11 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
           "Smart": true,
         },
       },
+      "weightKg": 0.5,
     },
     {
+      "costCr": 37.5,
+      "key": "multipleProjectile",
       "label": "Multiple Projectile (Cartridge)",
       "magazineCr": 37.5,
       "profile": {
@@ -465,8 +470,11 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
           "Spread": 4,
         },
       },
+      "weightKg": 0.9,
     },
     {
+      "costCr": 150,
+      "key": "distraction",
       "label": "Distraction (Cartridge)",
       "magazineCr": 150,
       "profile": {
@@ -491,8 +499,11 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
           "Smart": true,
         },
       },
+      "weightKg": 0.6,
     },
     {
+      "costCr": 125,
+      "key": "gasIncapacitant",
       "label": "Gas, Incapacitant (Cartridge)",
       "magazineCr": 125,
       "profile": {
@@ -518,8 +529,11 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
           "Smart": true,
         },
       },
+      "weightKg": 0.5,
     },
     {
+      "costCr": 25,
+      "key": "baton",
       "label": "Baton (Cartridge)",
       "magazineCr": 25,
       "profile": {
@@ -544,8 +558,11 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
           "Stun (2D)": true,
         },
       },
+      "weightKg": 0.5,
     },
     {
+      "costCr": 75,
+      "key": "stun",
       "label": "Stun (Cartridge)",
       "magazineCr": 75,
       "profile": {
@@ -571,6 +588,7 @@ exports[`golden master — built-in weapon evaluations > reproduces ASSW 1`] = `
           "Stun": true,
         },
       },
+      "weightKg": 0.5,
     },
   ],
   "notes": [],
@@ -657,7 +675,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Adjudicator 
         "heatThreshold": 10,
         "penetration": -5,
         "quickdraw": 8,
-        "range": 12,
+        "range": 3,
         "recoil": 1,
         "signature": "high",
         "signatureKind": "physical",
@@ -821,17 +839,35 @@ exports[`golden master — built-in weapon evaluations > reproduces BL-3 1`] = `
       "weightKg": 0.05,
     },
     {
-      "costCr": 5,
-      "label": "Cartridge holder: Weak ×3",
-      "notes": "3 shots",
-      "weightKg": 0.03,
+      "costCr": 1000,
+      "label": "Powerpack: Light 1kg",
+      "notes": "150 shots @ 2 power",
+      "weightKg": 1,
     },
   ],
   "issues": [],
+  "magazines": [
+    {
+      "capacity": 150,
+      "label": "Powerpack: Light 1kg",
+      "magazineCr": 1000,
+      "primary": true,
+      "unit": "shots",
+      "weightKg": 1.55,
+    },
+    {
+      "capacity": 45,
+      "label": "Powerpack 0.3kg",
+      "magazineCr": 150,
+      "primary": false,
+      "unit": "shots",
+      "weightKg": 0.85,
+    },
+  ],
   "notes": [],
   "profile": {
     "auto": 0,
-    "capacity": 3,
+    "capacity": 150,
     "damage": {
       "dice": 2,
       "die": 6,
@@ -854,9 +890,9 @@ exports[`golden master — built-in weapon evaluations > reproduces BL-3 1`] = `
     "Field Catalogue",
   ],
   "totals": {
-    "costCr": 445,
-    "magazineCr": 15,
-    "weightKg": 0.58,
+    "costCr": 1440,
+    "magazineCr": 0,
+    "weightKg": 1.55,
   },
 }
 `;
@@ -910,7 +946,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Bodyguard 1`
         "heatThreshold": 20,
         "penetration": -3,
         "quickdraw": 0,
-        "range": 100,
+        "range": 25,
         "recoil": 0,
         "signature": "high",
         "signatureKind": "physical",
@@ -1031,7 +1067,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
         "heatThreshold": 20,
         "penetration": -3,
         "quickdraw": -1,
-        "range": 80,
+        "range": 20,
         "recoil": 0,
         "signature": "high",
         "signatureKind": "physical",
@@ -1106,7 +1142,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
     "heatThreshold": 20,
     "penetration": -3,
     "quickdraw": -1,
-    "range": 80,
+    "range": 20,
     "recoil": 0,
     "signature": "high",
     "signatureKind": "physical",
@@ -3377,14 +3413,50 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     },
     {
       "costCr": 0,
-      "label": "Munition: Gas, Incapacitant (Mini) (Cartridge) ×3",
-      "notes": "Cr375 to load",
-      "weightKg": 1.5,
+      "label": "Munition: Fragmentation (Mini) (RAM) ×3",
+      "notes": "Cr180 to load",
+      "weightKg": 0.9,
     },
   ],
-  "issues": [],
+  "issues": [
+    {
+      "message": "RAM munition requires TL8",
+      "severity": "error",
+    },
+  ],
   "munitionProfiles": [
     {
+      "costCr": 60,
+      "key": "fragmentation",
+      "label": "Fragmentation (Mini) (RAM)",
+      "magazineCr": 180,
+      "profile": {
+        "auto": 0,
+        "capacity": 3,
+        "damage": {
+          "dice": 3,
+          "die": 6,
+          "mod": 0,
+        },
+        "heat": 0,
+        "penetration": 0,
+        "quickdraw": 0,
+        "range": 300,
+        "recoil": 0,
+        "signature": "normal",
+        "signatureKind": "physical",
+        "tl": 7,
+        "traits": {
+          "Blast": 4,
+          "Bulky": true,
+          "Lo-Pen": 2,
+        },
+      },
+      "weightKg": 0.3,
+    },
+    {
+      "costCr": 125,
+      "key": "gasIncapacitant",
       "label": "Gas, Incapacitant (Mini) (Cartridge)",
       "magazineCr": 375,
       "profile": {
@@ -3409,8 +3481,11 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
           "Incapacitant": true,
         },
       },
+      "weightKg": 0.5,
     },
     {
+      "costCr": 12.5,
+      "key": "baton",
       "label": "Baton (Mini) (Cartridge)",
       "magazineCr": 37.5,
       "profile": {
@@ -3434,8 +3509,11 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
           "Stun (1D)": true,
         },
       },
+      "weightKg": 0.3,
     },
     {
+      "costCr": 62.5,
+      "key": "distraction",
       "label": "Distraction (Mini) (Cartridge)",
       "magazineCr": 187.5,
       "profile": {
@@ -3459,8 +3537,11 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
           "Distraction (Typical)": true,
         },
       },
+      "weightKg": 0.3,
     },
     {
+      "costCr": 25,
+      "key": "multipleProjectile",
       "label": "Multiple Projectile (Mini) (Cartridge)",
       "magazineCr": 75,
       "profile": {
@@ -3485,6 +3566,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
           "Spread": 2,
         },
       },
+      "weightKg": 0.4,
     },
   ],
   "notes": [
@@ -3495,22 +3577,22 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     "auto": 0,
     "capacity": 3,
     "damage": {
-      "dice": 0,
+      "dice": 3,
       "die": 6,
       "mod": 0,
     },
     "heat": 0,
     "penetration": 0,
     "quickdraw": 0,
-    "range": 200,
+    "range": 300,
     "recoil": 0,
     "signature": "normal",
     "signatureKind": "physical",
     "tl": 7,
     "traits": {
-      "Blast": 3,
+      "Blast": 4,
       "Bulky": true,
-      "Incapacitant": true,
+      "Lo-Pen": 2,
     },
   },
   "sources": [
@@ -3518,8 +3600,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
   ],
   "totals": {
     "costCr": 975,
-    "magazineCr": 375,
-    "weightKg": 4.3,
+    "magazineCr": 180,
+    "weightKg": 3.7,
   },
 }
 `;
@@ -3544,10 +3626,10 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
       "weightKg": 0.1125,
     },
     {
-      "costCr": 150,
-      "label": "Powerpack: Standard 0.1kg",
-      "notes": "17 shots @ 4 power",
-      "weightKg": 0.1,
+      "costCr": 1000,
+      "label": "Powerpack: Light 1kg",
+      "notes": "175 shots @ 4 power",
+      "weightKg": 1,
     },
   ],
   "issues": [
@@ -3555,11 +3637,49 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
       "message": "Carbine barrel limits this laser to 4D — excess power is wasted",
       "severity": "warning",
     },
+    {
+      "message": "Powerpack rating (3D) is below the weapon's 4D output → Unreliable 1",
+      "severity": "warning",
+    },
+  ],
+  "magazines": [
+    {
+      "capacity": 175,
+      "label": "Powerpack: Light 1kg",
+      "magazineCr": 1000,
+      "primary": true,
+      "unit": "shots",
+      "weightKg": 4.2625,
+    },
+    {
+      "capacity": 17,
+      "label": "internal",
+      "magazineCr": 150,
+      "primary": false,
+      "unit": "shots",
+      "weightKg": 3.3625,
+    },
+    {
+      "capacity": 175,
+      "label": "belt pack",
+      "magazineCr": 1500,
+      "primary": false,
+      "unit": "shots",
+      "weightKg": 4.2625,
+    },
+    {
+      "capacity": 525,
+      "label": "back pack",
+      "magazineCr": 4500,
+      "primary": false,
+      "unit": "shots",
+      "weightKg": 6.2625,
+    },
   ],
   "notes": [],
   "profile": {
     "auto": 0,
-    "capacity": 17,
+    "capacity": 175,
     "damage": {
       "dice": 4,
       "die": 6,
@@ -3575,6 +3695,7 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
     "tl": 11,
     "traits": {
       "Lo-Pen": 2,
+      "Unreliable": 1,
       "Zero-G": true,
     },
   },
@@ -3582,9 +3703,9 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
     "Field Catalogue",
   ],
   "totals": {
-    "costCr": 6712.5,
+    "costCr": 7562.5,
     "magazineCr": 0,
-    "weightKg": 3.3625,
+    "weightKg": 4.2625,
   },
 }
 `;
@@ -3733,6 +3854,35 @@ exports[`golden master — built-in weapon evaluations > reproduces MDS-15 1`] =
         "signatureKind": "physical",
         "tl": 8,
         "traits": {
+          "Bulky": true,
+          "Scope": true,
+        },
+      },
+    },
+    {
+      "ammo": "apAdvanced",
+      "label": "Armour-Piercing (Advanced)",
+      "magazineCr": 420,
+      "profile": {
+        "auto": 0,
+        "capacity": 7,
+        "damage": {
+          "dice": 5,
+          "die": 6,
+          "mod": -5,
+        },
+        "heat": 0,
+        "heatDissipation": 10,
+        "heatThreshold": 30,
+        "penetration": 2,
+        "quickdraw": -13,
+        "range": 550,
+        "recoil": 0,
+        "signature": "extreme",
+        "signatureKind": "physical",
+        "tl": 8,
+        "traits": {
+          "AP": 6,
           "Bulky": true,
           "Scope": true,
         },
@@ -4072,6 +4222,24 @@ exports[`golden master — built-in weapon evaluations > reproduces Nefertem 1`]
     },
   ],
   "issues": [],
+  "magazines": [
+    {
+      "capacity": 100,
+      "label": "Powerpack: Light 1kg",
+      "magazineCr": 1000,
+      "primary": true,
+      "unit": "shots",
+      "weightKg": 2.95,
+    },
+    {
+      "capacity": 100,
+      "label": "Powerpack 1kg",
+      "magazineCr": 1000,
+      "primary": false,
+      "unit": "shots",
+      "weightKg": 2.95,
+    },
+  ],
   "notes": [],
   "profile": {
     "auto": 0,
@@ -5801,7 +5969,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Ten-Six 1`] 
       "heatThreshold": 10,
       "penetration": -6,
       "quickdraw": 10,
-      "range": 8,
+      "range": 2,
       "recoil": 2,
       "signature": "very high",
       "signatureKind": "physical",

@@ -96,7 +96,8 @@ export type BarrelId =
   | 'carbine'
   | 'rifle'
   | 'long'
-  | 'veryLong';
+  | 'veryLong'
+  | 'sawed-off';
 
 export type StockId = 'none' | 'folding' | 'fixed' | 'full';
 

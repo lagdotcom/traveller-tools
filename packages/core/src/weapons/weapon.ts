@@ -94,9 +94,16 @@ export interface WeaponEvaluation extends Evaluation {
    * its own reload price. Present only when more than one munition is loaded.
    */
   munitionProfiles?: {
+    /** The warhead / missile id (matched against book figures by id). */
+    key: string;
     label: string;
     profile: WeaponProfile;
+    /** Reload price of a full load. */
     magazineCr: number;
+    /** Per-round weight (a single munition), as the book lists it. */
+    weightKg: number;
+    /** Per-round cost (a single munition), as the book lists it. */
+    costCr: number;
   }[];
   /** A mounted secondary weapon's own profile, shown as a second data line. */
   secondary?: { label: string; profile: WeaponProfile; magazineCr: number };
@@ -654,12 +661,17 @@ function firearmProfile(
 
   if (auto > 0) traits.Auto = auto;
 
-  // Range: ball range × any feature range bonus (e.g. Advanced Projectile +25%)
-  // × barrel multiplier (minimal overrides to a flat 5 m).
+  // Range: base range × any feature range bonus (e.g. Advanced Projectile +25%)
+  // × barrel multiplier (minimal overrides to a flat 5 m). A spread (pellet/
+  // flechette) round uses the calibre's shorter pellet range, where given.
   const featureRangeMult = features.reduce((m, f) => m * (f.rangeMult ?? 1), 1);
+  const baseRange =
+    ammo.spread && calibre.pelletRange !== undefined
+      ? calibre.pelletRange
+      : calibre.range;
   let range = barrel.allDiceToD3
     ? 5
-    : Math.round(calibre.range * featureRangeMult * barrel.rangeMult);
+    : Math.round(baseRange * featureRangeMult * barrel.rangeMult);
 
   // Barrels lose penetration on high-velocity rounds; smoothbores are already
   // low-velocity (fixed base Penetration) so a short barrel doesn't reduce them.

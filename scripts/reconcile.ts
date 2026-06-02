@@ -53,6 +53,14 @@ interface BookFigures {
    */
   ammo?: Record<string, AmmoFigures>;
   /**
+   * Per-warhead figures for a launcher, keyed by the warhead / missile id (the
+   * `GrenadeTypeId` or `MissileWarheadId` the launcher loads — e.g.
+   * 'gasIncapacitant', 'baton'). `weightKg` / `costCr` are the *per-round* mass
+   * and price of a single munition (not the loaded magazine). Only emitted when
+   * the launcher loads more than one munition.
+   */
+  warheads?: Record<string, WarheadFigures>;
+  /**
    * Per-variant figures, keyed by the variant name on the built-in's `variants`.
    * Each is a full figure set (a variant changes the whole profile) and may carry
    * its own `ammo` / `ignore`.
@@ -78,6 +86,19 @@ interface AmmoFigures {
   magazineCr?: number;
   traits?: Record<string, number | string | boolean>;
   /** Field names (un-prefixed, e.g. 'damage') to skip for this ammo. */
+  ignore?: string[];
+}
+
+/** The per-round figures of one loaded launcher munition (warhead / missile). */
+interface WarheadFigures {
+  damage?: string;
+  range?: number;
+  /** Per-round weight of a single munition. */
+  weightKg?: number;
+  /** Per-round cost of a single munition. */
+  costCr?: number;
+  traits?: Record<string, number | string | boolean>;
+  /** Field names (un-prefixed, e.g. 'damage') to skip for this warhead. */
   ignore?: string[];
 }
 
@@ -119,6 +140,10 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
       'Sawed-Off': {
         range: 5,
         weightKg: 3,
+        // weight reads ~0.5 kg light: inherits the base shotgun's longarm-receiver
+        // quirk (worksheet 3 kg vs the rules' 2.5 kg) — with 3 kg it is exact.
+        // explosive Lo-Pen: book 2 (calibre only); engine 3 adds explosive's −1 pen.
+        note: "Sawed-Off weight/explosive-Lo-Pen residuals: see data.ts 'sawed-off' barrel + the longarm-receiver quirk.",
         ammo: {
           pellet: { traits: { 'Lo-Pen': 5, Spread: 3 } },
           explosive: { damage: '6D-4', traits: { 'Lo-Pen': 2 } },
@@ -685,7 +710,8 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
   'Light Munitions Launcher': {
     range: 200,
     warheads: {
-      incapacitantGas: { weightKg: 0.5, costCr: 125, traits: { Blast: 3 } },
+      // Book key 'incapacitant gas' → engine GrenadeTypeId 'gasIncapacitant'.
+      gasIncapacitant: { weightKg: 0.5, costCr: 125, traits: { Blast: 3 } },
       baton: {
         damage: '1D',
         weightKg: 0.3,
@@ -722,7 +748,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         costCr: 150,
         traits: { Distraction: 'potent' },
       },
-      incapacitantGas: { costCr: 125, traits: { Blast: 3 } },
+      gasIncapacitant: { costCr: 125, traits: { Blast: 3 } },
       baton: { costCr: 25, traits: { Stun: '2D' } },
       stun: { costCr: 75, traits: { Blast: 9, Stun: '3D' } },
     },
@@ -923,12 +949,12 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
   cmpStr('signature', `${p.signatureKind} (${p.signature})`, book.signature);
   cmpTraits(p.traits, book.traits);
 
-  // Per-ammo / per-munition rows: compare each loaded profile to its book figures.
+  // Per-ammo rows (firearms): match each loaded profile by its ammo *id*.
   const ignore = new Set(book.ignore ?? []);
-  const rows = e.ammoProfiles ?? e.munitionProfiles ?? [];
-  for (const [label, figs] of Object.entries(book.ammo ?? {})) {
-    const prefix = `${label} · `;
-    const row = rows.find((r) => r.label === label);
+  const ammoRows = e.ammoProfiles ?? [];
+  for (const [id, figs] of Object.entries(book.ammo ?? {})) {
+    const prefix = `${id} · `;
+    const row = ammoRows.find((r) => r.ammo === id);
     if (!row) {
       diffs.push({ field: `${prefix}(loaded)`, engine: '—', book: 'expected' });
       continue;
@@ -937,6 +963,24 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
     cmpNum('range', row.profile.range, figs.range, prefix);
     cmpNum('penetration', row.profile.penetration, figs.penetration, prefix);
     cmpNum('magazine', row.magazineCr, figs.magazineCr, prefix);
+    cmpTraits(row.profile.traits, figs.traits, prefix);
+    for (const f of figs.ignore ?? []) ignore.add(prefix + f);
+  }
+
+  // Per-warhead rows (launchers): match each loaded munition by its warhead id.
+  // `weightKg` / `costCr` here are the per-round figures the book lists.
+  const munitionRows = e.munitionProfiles ?? [];
+  for (const [key, figs] of Object.entries(book.warheads ?? {})) {
+    const prefix = `${key} · `;
+    const row = munitionRows.find((r) => r.key === key);
+    if (!row) {
+      diffs.push({ field: `${prefix}(loaded)`, engine: '—', book: 'expected' });
+      continue;
+    }
+    cmpStr('damage', formatDamage(row.profile.damage), figs.damage, prefix);
+    cmpNum('range', row.profile.range, figs.range, prefix);
+    cmpNum('weight', row.weightKg, figs.weightKg, prefix);
+    cmpNum('cost', row.costCr, figs.costCr, prefix);
     cmpTraits(row.profile.traits, figs.traits, prefix);
     for (const f of figs.ignore ?? []) ignore.add(prefix + f);
   }

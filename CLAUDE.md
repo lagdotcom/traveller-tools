@@ -222,6 +222,13 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   (a handgun/short barrel's −1 nets Lo-Pen 2); smoothbores keep base −1 and a
   barrel's penetration penalty doesn't apply to them (low-velocity). Pellet/
   flechette reduce penetration by the barrel's **Pellet Spread** (`PELLET_SPREAD`).
+  A **spread (pellet/flechette) round uses the calibre's shorter `pelletRange`**
+  (where given) as its range base instead of the solid `range` — so a pellet
+  primary's profile range is the pellet figure, not the slug figure. The
+  **`sawed-off`** barrel (a drastically shortened smoothbore, derived from the
+  Civilian Shotgun's Sawed-Off variant: rangeMult 0.25, Pellet Spread 3) reproduces
+  that variant; its ~0.5 kg weight gap is the documented longarm-receiver quirk, not
+  a barrel bug (see the `BARRELS['sawed-off']` comment).
 - **Receiver features carry options** (ship-component style). `params.features` is
   a `ReceiverFeatureRef[]`: a bare id for a plain feature, or `{ id, level }` for a
   _leveled_ one (Armoured/Bulwarked/Recoil Comp/Disguised/Low Quality), so one id
@@ -297,7 +304,10 @@ MissileWarheadId[]` loads them from `MISSILE_WARHEADS` (e.g. the AV-7) on a
   (plasma RAM is priced ×1, the anti-armour RPG is a _larger_ warhead than the hand
   payload), so the profile matches the book but round cost/weight are the text
   multipliers, and `evaluateLauncher` flags only RPG/missile "larger warhead"
-  damage as not-tabled. Don't invent the full munition table.
+  damage as not-tabled. Don't invent the full munition table. Each
+  `munitionProfiles` row carries a **`key`** (the warhead `GrenadeTypeId` / missile
+  id) plus the **per-round `weightKg` / `costCr`** (a single munition, as the book
+  lists), so the reconcile harness can match warheads by id (see below).
 - The whole FC weapon-design chapter (firearms, energy, projectors, launchers,
   grenades) is now implemented. The FC has **no armour-design system** — armour is
   catalogue gear, not built. Remaining FC content is reference/catalogue, not a
@@ -311,6 +321,11 @@ MissileWarheadId[]` loads them from `MISSILE_WARHEADS` (e.g. the AV-7) on a
   %, exact for integer stats) hides book rounding (13.1375≈13.1, 2190≈2200) so only
   real diffs show; `--rounding` reveals the suppressed ones. Distinct from
   `golden.test.ts` (which pins the engine's _current_ output); this pins the _book's_.
+  Per-component figures: **`ammo`** (firearms) is keyed by the **ammo id** (matched
+  against `ammoProfiles[].ammo`); **`warheads`** (launchers) is keyed by the
+  **warhead/missile id** (matched against `munitionProfiles[].key`) with
+  **per-round** `weightKg`/`costCr`; **`variants`** by the variant name (each a full
+  figure set, evaluated as base ← override via `variantParams`).
 - **Weapon-traits glossary** (`weaponTraits.ts`): the FC "Weapon Traits" chapter
   (the 13 FC-detailed traits — Burn, Corrosive, Lo-Pen, Spread, Hazardous, …) as
   `WEAPON_TRAITS` + `findWeaponTrait(key)`, with the Hazard/Flammability/Malfunction

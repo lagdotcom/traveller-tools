@@ -143,27 +143,41 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     .map((id) => MISSILE_WARHEADS[id])
     .filter((m): m is NonNullable<typeof m> => m !== undefined);
   type Munition = {
+    /** The warhead / missile id (matched against the book's `warheads` map). */
+    key: string;
     label: string;
+    /** Loaded weight (per-round weight × capacity). */
     weightKg: number;
+    /** Reload price of a full load. */
     magazineCr: number;
+    /** Per-round weight (a single munition), as the book lists it. */
+    roundWeightKg: number;
+    /** Per-round cost (a single munition), as the book lists it. */
+    roundCostCr: number;
     largerWarhead?: boolean;
     deliveryLabel?: string;
     profile: WeaponProfile;
   };
   const munitions: Munition[] =
     missiles.length > 0
-      ? missiles.map((m) => {
-          const mode = m.modes[0]!;
-          return {
-            label: m.label,
-            weightKg: round2(capacity * m.weight),
-            magazineCr: round2(capacity * m.cost),
-            profile: mkProfile(m.range, mode.damage, {
-              ...m.traits,
-              ...mode.traits,
-            }),
-          };
-        })
+      ? (params.missiles ?? [])
+          .filter((id) => MISSILE_WARHEADS[id] !== undefined)
+          .map((id) => {
+            const m = MISSILE_WARHEADS[id]!;
+            const mode = m.modes[0]!;
+            return {
+              key: id,
+              label: m.label,
+              weightKg: round2(capacity * m.weight),
+              magazineCr: round2(capacity * m.cost),
+              roundWeightKg: round2(m.weight),
+              roundCostCr: round2(m.cost),
+              profile: mkProfile(m.range, mode.damage, {
+                ...m.traits,
+                ...mode.traits,
+              }),
+            };
+          })
       : (params.warheads.length > 0
           ? params.warheads
           : ([{ type: 'fragmentation' }] as LauncherWarhead[])
@@ -175,10 +189,15 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
           const dlv =
             DELIVERY_SYSTEMS[w.delivery ?? params.delivery] ?? delivery;
           const sizeTag = params.warheadSize === 'mini' ? ' (Mini)' : '';
+          const roundWeightKg = round2(payload.weight * dlv.weightMult);
+          const roundCostCr = round2(payload.cost * dlv.costMult);
           return {
+            key: w.type,
             label: `${def.label}${sizeTag} (${dlv.label})`,
-            weightKg: round2(capacity * payload.weight * dlv.weightMult),
-            magazineCr: round2(capacity * payload.cost * dlv.costMult),
+            weightKg: round2(capacity * roundWeightKg),
+            magazineCr: round2(capacity * roundCostCr),
+            roundWeightKg,
+            roundCostCr,
             largerWarhead: dlv.largerWarhead === true,
             deliveryLabel: dlv.label,
             profile: mkProfile(
@@ -254,9 +273,12 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     ...(munitions.length > 1
       ? {
           munitionProfiles: munitions.map((m) => ({
+            key: m.key,
             label: m.label,
             profile: m.profile,
             magazineCr: m.magazineCr,
+            weightKg: m.roundWeightKg,
+            costCr: m.roundCostCr,
           })),
         }
       : {}),

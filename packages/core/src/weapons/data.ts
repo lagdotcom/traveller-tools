@@ -622,6 +622,7 @@ export const PELLET_SPREAD: Record<BarrelId, number> = {
   rifle: 2,
   long: 1,
   veryLong: 1,
+  'sawed-off': 3,
 };
 
 export const BARRELS: Record<BarrelId, BarrelDef> = {
@@ -706,6 +707,24 @@ export const BARRELS: Record<BarrelId, BarrelDef> = {
     quickdraw: 0,
     penetration: 0,
     signatureShift: 0,
+  },
+  // Sawed-off: a drastically shortened smoothbore barrel, derived from the
+  // Civilian Shotgun's Sawed-Off variant. rangeMult 0.25 reproduces its 5 m range
+  // (light-smoothbore pellet range 20 × 0.25); a Pellet Spread of 3 (PELLET_SPREAD
+  // above) gives the variant's Spread 3 / Lo-Pen 5. weightPct 0.1 reproduces the
+  // book's 3 kg *when paired with that worksheet's 3 kg longarm receiver* — with
+  // the rules' 2.5 kg longarm the engine reads ~0.5 kg light, the same documented
+  // longarm-weight quirk that makes the base shotgun read light (not a barrel bug).
+  // Quickdraw +5 (shorter than Short's +6, longer than Handgun's +4) and the
+  // Short-barrel penetration/signature shifts are derived, not book-stated.
+  'sawed-off': {
+    label: 'Sawed-Off',
+    costPct: 0.1,
+    weightPct: 0.1,
+    rangeMult: 0.25,
+    quickdraw: 5,
+    penetration: -1,
+    signatureShift: 1,
   },
 };
 
