@@ -24,6 +24,7 @@ import {
   DELIVERY_SYSTEMS,
   GUIDANCE_COST_MULT,
   LAUNCHER_RECEIVERS,
+  MISSILE_WARHEADS,
 } from './launcherData.js';
 import {
   base,
@@ -46,8 +47,14 @@ function validateLauncher(params: LauncherParams): Issue[] {
   const warhead = GRENADES[params.warhead];
   const delivery = DELIVERY_SYSTEMS[params.delivery];
   pushIf(issues, tlGate(tl, receiver?.label ?? '', receiver?.minTL));
-  pushIf(issues, tlGate(tl, `${warhead?.label} warhead`, warhead?.minTL));
-  pushIf(issues, tlGate(tl, `${delivery?.label} munition`, delivery?.minTL));
+  // A loaded missile is the munition (overrides the grenade payload + delivery).
+  const missile = params.missile ? MISSILE_WARHEADS[params.missile] : undefined;
+  if (missile) {
+    pushIf(issues, tlGate(tl, missile.label, missile.minTL));
+  } else {
+    pushIf(issues, tlGate(tl, `${warhead?.label} warhead`, warhead?.minTL));
+    pushIf(issues, tlGate(tl, `${delivery?.label} munition`, delivery?.minTL));
+  }
 
   // Receiver-feature TL gates + mutually-exclusive groups (reuses firearm data).
   const groups = new Map<string, string[]>();
@@ -93,14 +100,28 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     1,
     Math.round(features.reduce((c, f) => c * f.capacityMult, capacityBase)),
   );
-  const munitionWeight = round2(
-    capacity * payload.weight * delivery.weightMult,
-  );
-  const magazineCr = round2(capacity * payload.cost * delivery.costMult);
+  // The munition is either a loaded missile (a complete self-contained round —
+  // its own profile/cost/weight, no delivery multiplier) or a grenade payload
+  // delivered by the chosen system.
+  const missile = params.missile ? MISSILE_WARHEADS[params.missile] : undefined;
+  const missileMode = missile?.modes[0];
   const warheadLabel =
     params.warheadSize === 'mini'
       ? `${warheadDef.label} (Mini)`
       : warheadDef.label;
+  const munitionLabel = missile
+    ? `${missile.label} ×${capacity}`
+    : `${warheadLabel} (${delivery.label}) ×${capacity}`;
+  const munitionWeight = round2(
+    missile
+      ? capacity * missile.weight
+      : capacity * payload.weight * delivery.weightMult,
+  );
+  const magazineCr = round2(
+    missile
+      ? capacity * missile.cost
+      : capacity * payload.cost * delivery.costMult,
+  );
 
   // The receiver is firearm-style (base → multiplicative chain → baseline); the
   // barrel/stock are a % of that baseline (cost/weight only — a launcher's profile
@@ -120,7 +141,7 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
       pctComponent(`Stock: ${stock.label}`, stock.costPct, stock.weightPct),
     ),
     component(() => ({
-      label: `Munition: ${warheadLabel} (${delivery.label}) ×${capacity}`,
+      label: `Munition: ${munitionLabel}`,
       costCr: 0,
       weightKg: munitionWeight,
       notes: `Cr${magazineCr} to load`,
@@ -130,19 +151,22 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   const launcherCost = round2(build.cost);
   const totalWeight = round2(build.weight);
 
-  // --- Profile: payload damage/traits, delivery range + delivery traits ---
-  const damage: Damage = payload.damage ?? { dice: 0, die: 6, mod: 0 };
-  const traits: Traits = {
-    ...receiver.traits,
-    ...payload.traits,
-    ...delivery.traits,
+  // --- Profile: a missile uses its own (primary mode) stats + range; a grenade
+  // uses the payload's damage/traits and the delivery's range/traits ---
+  const damage: Damage = (missile ? missileMode!.damage : payload.damage) ?? {
+    dice: 0,
+    die: 6,
+    mod: 0,
   };
+  const traits: Traits = missile
+    ? { ...receiver.traits, ...missile.traits, ...missileMode!.traits }
+    : { ...receiver.traits, ...payload.traits, ...delivery.traits };
   if (params.guidance) traits.Smart = true;
 
   const profile: WeaponProfile = {
     tl: params.tl,
     damage,
-    range: delivery.range,
+    range: missile ? missile.range : delivery.range,
     auto: 0,
     recoil: 0,
     quickdraw: 0,
@@ -157,12 +181,19 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   };
 
   // Cartridge/RAM rounds use the hand payload's profile (the FC says they're
-  // "equivalent in effect"); RPG/missile carry a larger warhead whose own damage
-  // isn't tabled in the supplied text, so flag those.
-  if (delivery.largerWarhead)
+  // "equivalent in effect"); an RPG grenade carries a larger warhead whose own
+  // damage isn't tabled in the supplied text, so flag that (grenade path only).
+  if (!missile && delivery.largerWarhead)
     issues.push(
       warning(
         `${delivery.label} rounds carry a larger warhead than the hand-grenade payload; its damage/blast aren't in the supplied text and are shown as the payload's.`,
+      ),
+    );
+  // A missile with several firing modes shows only its primary (first) mode.
+  if (missile && missile.modes.length > 1)
+    issues.push(
+      warning(
+        `${missile.label} has ${missile.modes.length} firing modes (${missile.modes.map((m) => m.label).join(', ')}); the profile shows the primary mode (${missileMode!.label}).`,
       ),
     );
 

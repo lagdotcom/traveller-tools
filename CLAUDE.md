@@ -264,7 +264,11 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   the delivery system (`DELIVERY_SYSTEMS`: cartridge / RAM / RPG) sets the
   **range** (200/300/500) and multiplies the round's cost/weight (×2.5 / ×3 / ×5).
   (The old standalone `WARHEADS` table was the duplicated hand-grenade column and
-  has been retired in favour of `GRENADES`.)
+  has been retired in favour of `GRENADES`.) **Missiles** (FC Support Weapons) are
+  self-contained rounds, not grenade payloads: `LauncherParams.missile?` loads one
+  from `MISSILE_WARHEADS` (e.g. the AV-7) on a reusable/field launcher, overriding
+  the grenade path — the round's own damage/range/traits/cost/weight govern (no
+  delivery multiplier) and multi-mode missiles show the primary mode (flagged).
   reconcile: the worked munition examples don't follow these multipliers uniformly
   (plasma RAM is priced ×1, the anti-armour RPG is a _larger_ warhead than the hand
   payload), so the profile matches the book but round cost/weight are the text

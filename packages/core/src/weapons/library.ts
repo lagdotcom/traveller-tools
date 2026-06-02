@@ -22,7 +22,11 @@ import {
   ENERGY_WEAPON_TYPE_LABEL,
 } from './energyData.js';
 import { GRENADES } from './grenadeData.js';
-import { DELIVERY_SYSTEMS, LAUNCHER_RECEIVERS } from './launcherData.js';
+import {
+  DELIVERY_SYSTEMS,
+  LAUNCHER_RECEIVERS,
+  MISSILE_WARHEADS,
+} from './launcherData.js';
 import {
   PROJECTOR_FUELS,
   PROJECTOR_PROPELLANTS,
@@ -50,6 +54,7 @@ import type {
   LauncherReceiverId,
   MagazineSpec,
   MechanismId,
+  MissileWarheadId,
   PackSpec,
   ProjectorFuelId,
   ProjectorParams,
@@ -427,6 +432,9 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
       d.warheadSize,
     ),
     delivery: pick<DeliveryId>(p.delivery, DELIVERY_SYSTEMS, d.delivery),
+    ...(typeof p.missile === 'string' && p.missile in MISSILE_WARHEADS
+      ? { missile: p.missile as MissileWarheadId }
+      : {}),
   };
 }
 
@@ -1249,8 +1257,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
  * the larger RPG / missile warheads; and the multi-mode rounds (we show the
  * primary mode only). The "larger warhead" damage is flagged, not invented.
  *
- *   AV-7 Missile (TL10) — parked as data in launcherData `MISSILE_WARHEADS`
- *                          (doesn't fit payload × delivery; integration TBD)
+ *   AV-7 Missile (TL10) — in launcherData `MISSILE_WARHEADS`; load via
+ *                          LauncherParams.missile on a reusable / field launcher
  *   Grenade, Anti-Armour (TL6) — Hand 20m/4D/0.5kg/Cr50/AP8 Blast1;
  *                                 Rifle 100m/4D/0.625kg/Cr100/AP8 Blast1
  *   Grenade, Mini, Multi-purpose AP (TL9) — 30m/1D|3D|Distraction/0.3kg/Cr35/Blast4 Lo-Pen2

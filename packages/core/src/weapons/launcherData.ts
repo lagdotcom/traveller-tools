@@ -11,6 +11,7 @@ import type {
   Damage,
   DeliveryId,
   LauncherReceiverId,
+  MissileWarheadId,
   Traits,
 } from './types.js';
 
@@ -232,10 +233,13 @@ export interface MissileMode {
 
 /**
  * A complete, pre-built guided round (missile) with fixed stats and multiple
- * firing modes — NOT the grenade-payload × delivery model the launcher uses.
- * Parked here as typed data: the FC gives no construction rule for these, and how
- * a missile-class launcher selects/fires them isn't decided yet (it's not wired
- * into `evaluateLauncher`). When integrated, show the primary (first) mode.
+ * firing modes — NOT the grenade-payload × delivery model. Per FC "Support
+ * Weapons", missiles/RPGs are fired from reusable / field launchers (whose
+ * receiver includes barrel + stock) and are self-contained rounds: the round's
+ * own damage/range/traits/cost/weight govern (no delivery multiplier), and the
+ * full missile load weight is added to the weapon. `evaluateLauncher` loads one
+ * via `LauncherParams.missile` (overriding the grenade payload) and shows the
+ * primary (first) mode; the FC gives no construction rule, so these are tabled.
  */
 export interface MissileWarheadDef {
   label: string;
@@ -249,7 +253,7 @@ export interface MissileWarheadDef {
   modes: MissileMode[];
 }
 
-export const MISSILE_WARHEADS: Record<string, MissileWarheadDef> = {
+export const MISSILE_WARHEADS: Record<MissileWarheadId, MissileWarheadDef> = {
   av7: {
     label: 'AV-7 Missile',
     minTL: 10,

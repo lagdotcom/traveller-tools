@@ -236,6 +236,9 @@ export type LauncherReceiverId =
 /** How a launcher delivers its warhead (sets range + cost/weight of the round). */
 export type DeliveryId = 'cartridge' | 'ram' | 'rpg';
 
+/** A self-contained missile round (fired from a reusable / field launcher). */
+export type MissileWarheadId = 'av7';
+
 // --- Grenade selectable ids (thrown grenades) -------------------------------
 
 /** Thrown-grenade payload type, from the FC "Grenade Weapons" table. */
@@ -486,6 +489,13 @@ export interface LauncherParams {
   warheadSize: GrenadeSizeId;
   /** How the warhead is delivered (cartridge / RAM / RPG) — sets range + round cost. */
   delivery: DeliveryId;
+  /**
+   * A loaded missile (from `MISSILE_WARHEADS`). When set, the launcher fires this
+   * complete self-contained round — its own profile/cost/weight — instead of a
+   * grenade payload, and `warhead`/`delivery` are ignored. Needs a missile-capable
+   * (reusable / field) receiver.
+   */
+  missile?: MissileWarheadId;
 }
 
 /**

@@ -125,6 +125,36 @@ describe('launcher — validation', () => {
   });
 });
 
+describe('launcher — missiles (self-contained rounds)', () => {
+  it('fires a loaded missile with its own profile, overriding the grenade path', () => {
+    // A reusable single-shot heavy launcher loaded with the AV-7 missile.
+    const r = evaluateWeapon(
+      launcher({ tl: 10, receiver: 'reuseSingleHeavy', missile: 'av7' }),
+    );
+    // Profile is the missile's primary (Contact) mode + its own range.
+    expect(r.profile.damage.dice).toBe(6);
+    expect(r.profile.range).toBe(1000);
+    expect(r.profile.traits.AP).toBe(12);
+    expect(r.profile.traits.Blast).toBe(4);
+    expect(r.profile.traits.Smart).toBe(true);
+    // Round cost/weight are the missile's own (no delivery multiplier): one
+    // missile × Cr12000 / 6kg, the load weight added to the 15kg receiver.
+    expect(r.totals.magazineCr).toBeCloseTo(12000, 3);
+    expect(r.totals.weightKg).toBeCloseTo(21, 3);
+    // The dual-mode missile shows the primary mode + flags the others.
+    expect(r.issues.some((i) => /firing modes/.test(i.message))).toBe(true);
+  });
+
+  it('TL-gates the missile (AV-7 is TL10)', () => {
+    const r = evaluateWeapon(
+      launcher({ tl: 8, receiver: 'reuseSingleHeavy', missile: 'av7' }),
+    );
+    expect(
+      r.issues.some((i) => /AV-7 Missile requires TL10/.test(i.message)),
+    ).toBe(true);
+  });
+});
+
 describe('launcher — serialization', () => {
   it('round-trips the built-in grenade launcher', () => {
     const def = BUILTIN_WEAPONS.find(

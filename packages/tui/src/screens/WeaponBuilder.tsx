@@ -37,6 +37,8 @@ import {
   type MagazineSpec,
   type MechanismId,
   MECHANISMS,
+  MISSILE_WARHEADS,
+  type MissileWarheadId,
   type PackSpec,
   parseWeapon,
   PROJECTOR_FUELS,
@@ -116,6 +118,8 @@ const PSTRUCT = labelMap<ProjectorStructureId>(PROJECTOR_STRUCTURES);
 const PPROP = labelMap<ProjectorPropellantId>(PROJECTOR_PROPELLANTS);
 const PFUEL = labelMap<ProjectorFuelId>(PROJECTOR_FUELS);
 const LRECEIVER = labelMap<LauncherReceiverId>(LAUNCHER_RECEIVERS);
+const MISSILE = labelMap<MissileWarheadId>(MISSILE_WARHEADS);
+const NO_MISSILE = 'None (grenade)';
 const GTYPE = labelMap<GrenadeTypeId>(GRENADES);
 
 /** Small label list for a fixed set of ids (used for enum-like choices). */
@@ -230,6 +234,7 @@ const launcherValues = (l: LauncherParams) => ({
   warhead: GTYPE.toLabel(l.warhead),
   warheadSize: GSIZE.toLabel(l.warheadSize),
   delivery: DELIVERY.toLabel(l.delivery),
+  lMissile: l.missile ? MISSILE.toLabel(l.missile) : NO_MISSILE,
   guidance: l.guidance ? 'yes' : 'no',
   magazineSize: String(l.magazineSize),
 });
@@ -381,6 +386,7 @@ function buildLauncher(v: FormValues, lists: Lists): LauncherParams {
     warhead: GTYPE.toId(v.warhead),
     warheadSize: GSIZE.toId(v.warheadSize),
     delivery: DELIVERY.toId(v.delivery),
+    ...(v.lMissile !== NO_MISSILE ? { missile: MISSILE.toId(v.lMissile) } : {}),
   };
 }
 
@@ -842,6 +848,11 @@ export function WeaponBuilderScreen({
         { key: 'warhead', label: 'Warhead', options: GTYPE.labels },
         { key: 'warheadSize', label: 'Warhead size', options: GSIZE.labels },
         { key: 'delivery', label: 'Delivery', options: DELIVERY.labels },
+        {
+          key: 'lMissile',
+          label: 'Missile (overrides warhead)',
+          options: [NO_MISSILE, ...MISSILE.labels],
+        },
         { key: 'guidance', label: 'Guidance system', options: YN },
       ],
     },
