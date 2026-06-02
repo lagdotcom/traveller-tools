@@ -1,9 +1,21 @@
 import {
   BUILTIN_WEAPONS,
   parseWeapon,
+  variantParams,
   type WeaponDefinition,
 } from '@traveller-tools/core';
 import React, { useMemo, useState } from 'react';
+
+/** Flatten each built-in's variants into their own loadable (resolved) entries. */
+const BUILTIN_LIST: WeaponDefinition[] = BUILTIN_WEAPONS.flatMap((def) => [
+  def,
+  ...(def.variants ?? []).map((v) => ({
+    name: `${def.name} · ${v.name}`,
+    description: v.description ?? def.description,
+    ...(def.manufacturer ? { manufacturer: def.manufacturer } : {}),
+    params: variantParams(def.params, v.override),
+  })),
+]);
 
 import { useFileImport } from '../components/importFile.js';
 import { LibraryBrowser } from '../components/LibraryBrowser.js';
@@ -34,7 +46,7 @@ export function WeaponLibraryScreen({
     <LibraryBrowser<WeaponDefinition>
       title="Weapon Library"
       builtinTitle="Field Catalogue"
-      builtins={BUILTIN_WEAPONS}
+      builtins={BUILTIN_LIST}
       saved={saved}
       savedEmpty="(none — build one and Ctrl+S)"
       message={message || importer.message}
