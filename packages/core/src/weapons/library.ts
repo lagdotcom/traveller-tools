@@ -642,7 +642,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'rifle',
     stock: 'full',
     additionalBarrels: 1,
-    ammo: ['ball'],
+    ammo: ['pellet'],
   }),
   weapon('13mm Crunch Gun', 'Anti-materiel repeater with a very long barrel', {
     tl: 4,
