@@ -1346,22 +1346,29 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   ),
   weapon('MDD-15', 'heavy machine-gun', {
     tl: 8,
-    receiver: 'support', // Cr3000, 10kg, Quickdraw -8, base mag 50 rounds
+    receiver: 'heavy', // our 'Heavy Weapon' receiver = the FC support receiver: Cr3000, 10kg, QD-8, base mag 50
     calibre: 'antiMateriel',
     mechanism: 'fullAuto',
     barrel: 'long',
     heavyBarrel: true,
-    stock: 'supportMount', // Cr900, 10kg
+    stock: 'none',
+    furniture: ['supportMount'], // a mount, not a shoulder stock — Cr900, 10kg
     accessories: ['scope'],
+    // Belt feed: Mag 50 (Cr750) is a manual override (the % rule under-derives it).
+    magazines: [{ rounds: 50, costCr: 750 }],
 
     // all versions: 550m, 50 Mag (Cr750), Quickdraw -9, Bulky, Scope
+    // 5D / Auto 3 / Mag 50 (Cr750) reproduce. reconcile: the build runs high —
+    // r1100 / Cr20300 / 52.7kg / QD-10 vs the book's 550m / Cr9050 / 35.2kg / QD-9
+    // (the antiMateriel calibre's range + the support-mount cost/weight don't match
+    // the book's Heavy Machinegun figures).
     // reconcile: Heavy Machinegun - 5D, 35.2kg, Cr9050 - Auto 3
     // reconcile: Chain Gun - 5D, 56.7kg, Cr28100 - Auto 4 [needs powered feed system, pintle/ring mount]
     // reconcile: Twin Chain Gun - 7D, 113.4kg, Cr56200 - Auto 4 [needs small turret]
   }),
   weapon('MDS-15', 'heavy projectile weapon', {
     tl: 8,
-    receiver: 'support', // same as MDD
+    receiver: 'heavy', // same as MDD (FC support receiver)
     calibre: 'antiMateriel',
     mechanism: 'semiAuto',
     features: [
@@ -1377,26 +1384,36 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'full',
     accessories: ['scope'],
     furniture: ['bipod'],
+    // Mag 7 (Cr150) is a manual override (the book-listed count/price).
+    magazines: [{ rounds: 7, costCr: 150 }],
 
     // all versions: Mag 7, Quickdraw -9, Bulky
+    // 5D-3 / Mag 7 (Cr150) reproduce. reconcile: the build runs high — r1100 /
+    // Cr83961 / 20.29kg / QD-13 vs the book's 550m / Cr59720 / 13.61kg / QD-9.
     // reconcile: MDS-15 - 550m, 5D-3, 13.61kg, Cr59720, Mag Cr150 - Scope
     // reconcile: MDS-15 (advanced AP) - 550m, 5D-5, 13.61kg, Cr59720, Mag Cr480 - AP 6, Scope
     // reconcile: MDS-15 (cut down, explosive) - 250m, 7D-3, 10.76kg, Cr47435, Mag Cr650 - Lo-Pen 2
     // reconcile: MDS-15 (cut down, pellet) - 250m, 5D-3, 10.76kg, Cr47435, Mag Cr150 - Lo-Pen 4, Spread 3
   }),
   energyWeapon('TES-12', 'laser support weapon', {
-    tl: 8,
+    tl: 12, // prose places it at TL12 (and the Efficient Beam / Improved Focus mods need TL11)
     receiver: 'large',
     damageDice: 8,
+    // A heavy (8D) powerpack drives the 8D output without Unreliable.
+    powerpackRating: 'heavy',
     mods: ['efficientBeam', 'improvedFocus'],
     barrel: 'long',
     stock: 'full',
     accessories: ['scope'],
     furniture: ['bipod'],
-    // Accessory: Internal Power Pack (1kg) - Cr2500, Power 1000
-    // Accessory: Laser Designator - Cr1000, 0.2kg
+    // Accessory: Internal Power Pack (1kg) - Cr2500, Power 1000 (the heavy powerpack)
+    // Accessory: Laser Designator - Cr1000, 0.2kg (no such accessory yet — unmodelled)
 
     // all versions: 8D, Mag 125 (Cr2500), Bulky, Emis (low), Lo-Pen 2, Scope, Zero-G
+    // Mag 125 / Lo-Pen 2 / Zero-G / Scope reproduce; the heavy powerpack drives 8D
+    // without Unreliable. reconcile: build = Cr18487 / 13.5kg — the ~Cr1000 / 0.2kg
+    // gap is the un-modelled Laser Designator. range 688 / QD-13 / Emis(normal) /
+    // 8D+3 differ from the book's 625m / QD-9 / Emis(low) / 8D.
     // reconcile: TES-12 - 625m, 13.7kg, Cr19500, Quickdraw -9
     // reconcile: TEA-12 - 450m, 10.01kg, Cr17500, Quickdraw -4 [carbine, folding stock]
   }),

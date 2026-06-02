@@ -3587,6 +3587,295 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
 }
 `;
 
+exports[`golden master — built-in weapon evaluations > reproduces MDD-15 1`] = `
+{
+  "ammoProfiles": [
+    {
+      "ammo": "ball",
+      "label": "Ball",
+      "magazineCr": 750,
+      "profile": {
+        "auto": 3,
+        "capacity": 50,
+        "damage": {
+          "dice": 5,
+          "die": 6,
+          "mod": 0,
+        },
+        "heat": 8,
+        "heatDissipation": 12,
+        "heatThreshold": 30,
+        "penetration": 0,
+        "quickdraw": -10,
+        "range": 1100,
+        "recoil": 0,
+        "signature": "extreme",
+        "signatureKind": "physical",
+        "tl": 8,
+        "traits": {
+          "Auto": 3,
+          "Bulky": true,
+          "Scope": true,
+        },
+      },
+    },
+  ],
+  "breakdown": [
+    {
+      "costCr": 3000,
+      "label": "Receiver: Heavy Weapon",
+      "weightKg": 10,
+    },
+    {
+      "costCr": 600,
+      "costMod": "+20%",
+      "label": "Fully-Automatic",
+      "weightKg": 0,
+      "weightMod": "—",
+    },
+    {
+      "costCr": 5400,
+      "costMod": "+150%",
+      "label": "Anti-Materiel",
+      "weightKg": 5,
+      "weightMod": "+50%",
+    },
+    {
+      "costCr": 9000,
+      "label": "Receiver Totals",
+      "notes": "Capacity 50",
+      "weightKg": 15,
+    },
+    {
+      "costCr": 9000,
+      "costMod": "+100%",
+      "label": "Barrel: Long (Heavy)",
+      "weightKg": 22.5,
+      "weightMod": "+150%",
+    },
+    {
+      "costCr": 2250,
+      "costMod": "+25%",
+      "label": "Support Mount",
+      "weightKg": 15,
+      "weightMod": "+100%",
+    },
+    {
+      "costCr": 50,
+      "costMod": undefined,
+      "label": "Scope",
+      "weightKg": 0.2,
+      "weightMod": undefined,
+    },
+  ],
+  "issues": [],
+  "notes": [],
+  "profile": {
+    "auto": 3,
+    "capacity": 50,
+    "damage": {
+      "dice": 5,
+      "die": 6,
+      "mod": 0,
+    },
+    "heat": 8,
+    "heatDissipation": 12,
+    "heatThreshold": 30,
+    "penetration": 0,
+    "quickdraw": -10,
+    "range": 1100,
+    "recoil": 0,
+    "signature": "extreme",
+    "signatureKind": "physical",
+    "tl": 8,
+    "traits": {
+      "Auto": 3,
+      "Bulky": true,
+      "Scope": true,
+    },
+  },
+  "sources": [
+    "Field Catalogue",
+  ],
+  "totals": {
+    "costCr": 20300,
+    "magazineCr": 750,
+    "weightKg": 52.7,
+  },
+}
+`;
+
+exports[`golden master — built-in weapon evaluations > reproduces MDS-15 1`] = `
+{
+  "ammoProfiles": [
+    {
+      "ammo": "ball",
+      "label": "Ball",
+      "magazineCr": 150,
+      "profile": {
+        "auto": 0,
+        "capacity": 7,
+        "damage": {
+          "dice": 5,
+          "die": 6,
+          "mod": -3,
+        },
+        "heat": 0,
+        "heatDissipation": 10,
+        "heatThreshold": 30,
+        "penetration": 0,
+        "quickdraw": -13,
+        "range": 1100,
+        "recoil": 0,
+        "signature": "extreme",
+        "signatureKind": "physical",
+        "tl": 8,
+        "traits": {
+          "Bulky": true,
+          "Scope": true,
+        },
+      },
+    },
+  ],
+  "breakdown": [
+    {
+      "costCr": 3000,
+      "label": "Receiver: Heavy Weapon",
+      "weightKg": 10,
+    },
+    {
+      "costCr": 4500,
+      "costMod": "+150%",
+      "label": "Anti-Materiel",
+      "weightKg": 5,
+      "weightMod": "+50%",
+    },
+    {
+      "costCr": 1875,
+      "costMod": "+25%",
+      "label": "Compact",
+      "weightKg": -1.5,
+      "weightMod": "−10%",
+    },
+    {
+      "costCr": 2812.5,
+      "costMod": "+30%",
+      "label": "Rugged",
+      "weightKg": 1.35,
+      "weightMod": "+10%",
+    },
+    {
+      "costCr": 6093.75,
+      "costMod": "+50%",
+      "label": "Lightweight",
+      "weightKg": -2.97,
+      "weightMod": "−20%",
+    },
+    {
+      "costCr": 3656.25,
+      "costMod": "+20%",
+      "label": "Recoil Compensation (2)",
+      "weightKg": 1.188,
+      "weightMod": "+10%",
+    },
+    {
+      "costCr": 21937.5,
+      "costMod": "+100%",
+      "label": "Accurised",
+      "weightKg": 0,
+      "weightMod": "—",
+    },
+    {
+      "costCr": 21937.5,
+      "costMod": "+50%",
+      "label": "High Quality",
+      "weightKg": 0,
+      "weightMod": "—",
+    },
+    {
+      "costCr": -16453.125,
+      "costMod": "−25%",
+      "label": "Capacity 50%",
+      "weightKg": -3.267,
+      "weightMod": "−25%",
+    },
+    {
+      "costCr": 49359.375,
+      "label": "Receiver Totals",
+      "notes": "Capacity 7",
+      "weightKg": 9.801,
+    },
+    {
+      "costCr": 24679.6875,
+      "costMod": "+50%",
+      "label": "Barrel: Long",
+      "weightKg": 7.35075,
+      "weightMod": "+75%",
+    },
+    {
+      "costCr": 4935.9375,
+      "costMod": "+10%",
+      "label": "Stock: Full Stock",
+      "weightKg": 0.9801,
+      "weightMod": "+10%",
+    },
+    {
+      "costCr": 4935.9375,
+      "costMod": "+10%",
+      "label": "Bipod",
+      "weightKg": 1.9602,
+      "weightMod": "+20%",
+    },
+    {
+      "costCr": 50,
+      "costMod": undefined,
+      "label": "Scope",
+      "weightKg": 0.2,
+      "weightMod": undefined,
+    },
+  ],
+  "issues": [],
+  "notes": [
+    "Bipod: once deployed (a significant action), DM+1 to attack beyond 50m.",
+    "Rugged: DM+2 to rolls on the Malfunction table.",
+    "Lightweight: the +50% cost may instead be taken as the Hazardous (−1) trait.",
+    "Accurised: DM+1 to aimed fire at ranges beyond 25m.",
+    "High Quality: DM+1 to attack beyond 100m when using a scope or similar sight.",
+  ],
+  "profile": {
+    "auto": 0,
+    "capacity": 7,
+    "damage": {
+      "dice": 5,
+      "die": 6,
+      "mod": -3,
+    },
+    "heat": 0,
+    "heatDissipation": 10,
+    "heatThreshold": 30,
+    "penetration": 0,
+    "quickdraw": -13,
+    "range": 1100,
+    "recoil": 0,
+    "signature": "extreme",
+    "signatureKind": "physical",
+    "tl": 8,
+    "traits": {
+      "Bulky": true,
+      "Scope": true,
+    },
+  },
+  "sources": [
+    "Field Catalogue",
+  ],
+  "totals": {
+    "costCr": 83960.9375,
+    "magazineCr": 150,
+    "weightKg": 20.29205,
+  },
+}
+`;
+
 exports[`golden master — built-in weapon evaluations > reproduces MF-61 1`] = `
 {
   "breakdown": [
@@ -5218,6 +5507,79 @@ exports[`golden master — built-in weapon evaluations > reproduces Stowaway 1`]
     "costCr": 1358.28,
     "magazineCr": 72,
     "weightKg": 0.6336,
+  },
+}
+`;
+
+exports[`golden master — built-in weapon evaluations > reproduces TES-12 1`] = `
+{
+  "breakdown": [
+    {
+      "costCr": 9375,
+      "label": "Receiver: Laser · Large (Heavy)",
+      "notes": "Up to 8D",
+      "weightKg": 6,
+    },
+    {
+      "costCr": 4687.5,
+      "label": "Barrel: Long",
+      "weightKg": 4.5,
+    },
+    {
+      "costCr": 937.5,
+      "label": "Stock: Full Stock",
+      "weightKg": 0.6,
+    },
+    {
+      "costCr": 937.5,
+      "label": "Bipod",
+      "weightKg": 1.2,
+    },
+    {
+      "costCr": 50,
+      "label": "Scope",
+      "weightKg": 0.2,
+    },
+    {
+      "costCr": 2500,
+      "label": "Powerpack: Heavy 1kg",
+      "notes": "125 shots @ 8 power",
+      "weightKg": 1,
+    },
+  ],
+  "issues": [],
+  "notes": [
+    "Bipod: once deployed (a significant action), DM+1 to attack beyond 50m.",
+  ],
+  "profile": {
+    "auto": 0,
+    "capacity": 125,
+    "damage": {
+      "dice": 8,
+      "die": 6,
+      "mod": 3,
+    },
+    "heat": 0,
+    "penetration": -1,
+    "quickdraw": -13,
+    "range": 688,
+    "recoil": 0,
+    "signature": "normal",
+    "signatureKind": "emissions",
+    "tl": 12,
+    "traits": {
+      "Lo-Pen": 2,
+      "Scope": true,
+      "Zero-G": true,
+    },
+  },
+  "sources": [
+    "Field Catalogue",
+  ],
+  "totals": {
+    "costCr": 18487.5,
+    "magazineCr": 0,
+    "weightKg": 13.5,
   },
 }
 `;
