@@ -1249,8 +1249,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
  * the larger RPG / missile warheads; and the multi-mode rounds (we show the
  * primary mode only). The "larger warhead" damage is flagged, not invented.
  *
- *   AV-7 Missile (TL10) — Contact 1km/6D/6kg/Cr12000/AP12 Blast4 Smart;
- *                          Proximity 1km/4D/AP8 Blast12 Smart
+ *   AV-7 Missile (TL10) — parked as data in launcherData `MISSILE_WARHEADS`
+ *                          (doesn't fit payload × delivery; integration TBD)
  *   Grenade, Anti-Armour (TL6) — Hand 20m/4D/0.5kg/Cr50/AP8 Blast1;
  *                                 Rifle 100m/4D/0.625kg/Cr100/AP8 Blast1
  *   Grenade, Mini, Multi-purpose AP (TL9) — 30m/1D|3D|Distraction/0.3kg/Cr35/Blast4 Lo-Pen2

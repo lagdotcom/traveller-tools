@@ -7,7 +7,14 @@
  * are not considered part of the weapon itself" — so the warhead only shapes the
  * displayed profile and its price is the reload cost, not part of the build.
  */
-import type { DeliveryId, LauncherReceiverId, Traits } from './types.js';
+import type {
+  Damage,
+  DeliveryId,
+  LauncherReceiverId,
+  Traits,
+} from './types.js';
+
+const d = (dice: number, mod = 0): Damage => ({ dice, die: 6, mod });
 
 // --- Delivery systems -------------------------------------------------------
 
@@ -213,3 +220,46 @@ export const LAUNCHER_RECEIVERS: Record<
 
 /** A guidance system adds 50% to the cost of the launcher. */
 export const GUIDANCE_COST_MULT = 1.5;
+
+// --- Missile warheads (parked) ----------------------------------------------
+
+/** One firing mode of a missile warhead (the first listed is the primary). */
+export interface MissileMode {
+  label: string;
+  damage: Damage;
+  traits: Traits;
+}
+
+/**
+ * A complete, pre-built guided round (missile) with fixed stats and multiple
+ * firing modes — NOT the grenade-payload × delivery model the launcher uses.
+ * Parked here as typed data: the FC gives no construction rule for these, and how
+ * a missile-class launcher selects/fires them isn't decided yet (it's not wired
+ * into `evaluateLauncher`). When integrated, show the primary (first) mode.
+ */
+export interface MissileWarheadDef {
+  label: string;
+  minTL: number;
+  /** Range in metres. */
+  range: number;
+  weight: number;
+  cost: number;
+  /** Traits shared across every mode (e.g. Smart). */
+  traits: Traits;
+  modes: MissileMode[];
+}
+
+export const MISSILE_WARHEADS: Record<string, MissileWarheadDef> = {
+  av7: {
+    label: 'AV-7 Missile',
+    minTL: 10,
+    range: 1000,
+    weight: 6,
+    cost: 12000,
+    traits: { Smart: true },
+    modes: [
+      { label: 'Contact', damage: d(6), traits: { AP: 12, Blast: 4 } },
+      { label: 'Proximity', damage: d(4), traits: { AP: 8, Blast: 12 } },
+    ],
+  },
+};
