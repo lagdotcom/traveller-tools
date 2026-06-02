@@ -1404,16 +1404,16 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mods: ['efficientBeam', 'improvedFocus'],
     barrel: 'long',
     stock: 'full',
-    accessories: ['scope'],
+    accessories: ['scope', 'laserDesignator'],
     furniture: ['bipod'],
     // Accessory: Internal Power Pack (1kg) - Cr2500, Power 1000 (the heavy powerpack)
-    // Accessory: Laser Designator - Cr1000, 0.2kg (no such accessory yet — unmodelled)
 
     // all versions: 8D, Mag 125 (Cr2500), Bulky, Emis (low), Lo-Pen 2, Scope, Zero-G
-    // Mag 125 / Lo-Pen 2 / Zero-G / Scope reproduce; the heavy powerpack drives 8D
-    // without Unreliable. reconcile: build = Cr18487 / 13.5kg — the ~Cr1000 / 0.2kg
-    // gap is the un-modelled Laser Designator. range 688 / QD-13 / Emis(normal) /
-    // 8D+3 differ from the book's 625m / QD-9 / Emis(low) / 8D.
+    // Mag 125 / Lo-Pen 2 / Zero-G / Scope / cost (Cr19500) / weight (13.7kg) all
+    // reproduce — the heavy powerpack drives 8D without Unreliable and the
+    // weapon-mounted Laser Designator closes the last Cr1000 / 0.2kg.
+    // reconcile: range 688 / QD-13 / Emis(normal) / 8D+3 differ from the book's
+    // 625m / QD-9 / Emis(low) / 8D.
     // reconcile: TES-12 - 625m, 13.7kg, Cr19500, Quickdraw -9
     // reconcile: TEA-12 - 450m, 10.01kg, Cr17500, Quickdraw -4 [carbine, folding stock]
   }),

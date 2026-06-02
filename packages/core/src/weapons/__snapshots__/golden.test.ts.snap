@@ -5541,6 +5541,11 @@ exports[`golden master — built-in weapon evaluations > reproduces TES-12 1`] =
       "weightKg": 0.2,
     },
     {
+      "costCr": 1000,
+      "label": "Laser Designator",
+      "weightKg": 0.2,
+    },
+    {
       "costCr": 2500,
       "label": "Powerpack: Heavy 1kg",
       "notes": "125 shots @ 8 power",
@@ -5549,6 +5554,7 @@ exports[`golden master — built-in weapon evaluations > reproduces TES-12 1`] =
   ],
   "issues": [],
   "notes": [
+    "Laser Designator: paints a target for laser-guided munitions / homing weapons.",
     "Bipod: once deployed (a significant action), DM+1 to attack beyond 50m.",
   ],
   "profile": {
@@ -5577,9 +5583,9 @@ exports[`golden master — built-in weapon evaluations > reproduces TES-12 1`] =
     "Field Catalogue",
   ],
   "totals": {
-    "costCr": 18487.5,
+    "costCr": 19487.5,
     "magazineCr": 0,
-    "weightKg": 13.5,
+    "weightKg": 13.7,
   },
 }
 `;

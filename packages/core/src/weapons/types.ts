@@ -158,6 +158,7 @@ export type AccessoryId =
   | 'combinationScope'
   | 'multispectralScope'
   | 'laserPointer'
+  | 'laserDesignator'
   | 'integratedSight'
   | 'holographicSight'
   | 'bayonetLug'

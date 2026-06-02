@@ -1311,6 +1311,16 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
     minTL: 8,
     note: 'Laser Pointer: DM+1 to attack rolls out to 50m.',
   },
+  // Weapon-mounted designator (Personal Equipment). The handheld version (TL6,
+  // 5kg, Cr5000) is standalone gear, not a weapon accessory.
+  laserDesignator: {
+    label: 'Laser Designator',
+    cost: 1000,
+    weight: 0.2,
+    quickdraw: 0,
+    minTL: 9,
+    note: 'Laser Designator: paints a target for laser-guided munitions / homing weapons.',
+  },
   integratedSight: {
     label: 'Integrated Sighting System',
     cost: 500,
