@@ -18,6 +18,7 @@ import {
   BUILTIN_WEAPONS,
   evaluateWeapon,
   formatDamage,
+  type Traits,
 } from '@traveller-tools/core';
 
 const EL = 'emissions (low)';
@@ -43,13 +44,33 @@ interface BookFigures {
   /** Only the distinctive traits to check (AP, Lo-Pen, Blast, …). */
   traits?: Record<string, number | string | boolean>;
   /**
+   * Per-ammo figures for a multi-ammo (or multi-munition) weapon, keyed by the
+   * ammo/munition label as it appears on the sheet (e.g. 'Explosive', 'Pellet').
+   * Only the ammo-varying fields are compared against that loaded profile; the
+   * top-level figures still cover the weapon as a whole (the primary ammo).
+   */
+  ammo?: Record<string, AmmoFigures>;
+  /**
    * Spot exceptions: field names to skip (a confirmed book error the engine is
    * right about). Use a `note` to record why. Field names match the report's
-   * labels, e.g. 'damage', 'cost', 'trait Burn'.
+   * labels, e.g. 'damage', 'cost', 'trait Burn'. Per-ammo labels are prefixed,
+   * e.g. 'Pellet · damage'.
    */
   ignore?: string[];
   /** Free notes (page ref, "book error: …", etc.). */
   note?: string;
+}
+
+/** The ammo-varying fields of one loaded ammunition / munition type. */
+interface AmmoFigures {
+  damage?: string;
+  range?: number;
+  penetration?: number;
+  /** Reload price of a magazine loaded with this ammo. */
+  magazineCr?: number;
+  traits?: Record<string, number | string | boolean>;
+  /** Field names (un-prefixed, e.g. 'damage') to skip for this ammo. */
+  ignore?: string[];
 }
 
 // ── The book stat blocks. Fill in the `{}` stubs from the Field Catalogue. ──────
@@ -589,22 +610,51 @@ function diffWeapon(name: string, book: BookFigures): Diff[] {
   const e = evaluateWeapon(def.params);
   const p = e.profile;
   const diffs: Diff[] = [];
-  const cmpNum = (field: string, eng: number, bk: number | undefined) => {
+  // `field` is the base name (used for tolerance); `prefix` labels per-ammo rows.
+  const cmpNum = (
+    field: string,
+    eng: number,
+    bk: number | undefined,
+    prefix = '',
+  ) => {
     if (bk === undefined) return;
     const kind = classifyNum(field, eng, bk);
     if (kind === 'exact') return;
     const sign = eng - bk >= 0 ? '+' : '';
     diffs.push({
-      field,
+      field: prefix + field,
       engine: n(eng),
       book: n(bk),
       delta: `Δ${sign}${n(eng - bk)}`,
       rounding: kind === 'rounding',
     });
   };
-  const cmpStr = (field: string, eng: string, bk: string | undefined) => {
+  const cmpStr = (
+    field: string,
+    eng: string,
+    bk: string | undefined,
+    prefix = '',
+  ) => {
     if (bk !== undefined && eng !== bk)
-      diffs.push({ field, engine: eng, book: bk });
+      diffs.push({ field: prefix + field, engine: eng, book: bk });
+  };
+  const cmpTraits = (
+    engT: Traits,
+    bookT: Record<string, number | string | boolean> | undefined,
+    prefix = '',
+  ) => {
+    for (const [k, raw] of Object.entries(bookT ?? {})) {
+      const bv = TRAIT_NORMALIZE[k] ? TRAIT_NORMALIZE[k]!(raw) : raw;
+      const ev = engT[k];
+      const evStr = ev === undefined ? '—' : ev === true ? 'yes' : String(ev);
+      const bvStr = bv === true ? 'yes' : String(bv);
+      if (evStr !== bvStr)
+        diffs.push({
+          field: `${prefix}trait ${k}`,
+          engine: evStr,
+          book: bvStr,
+        });
+    }
   };
   cmpNum('cost', e.totals.costCr, book.costCr);
   cmpNum('weight', e.totals.weightKg, book.weightKg);
@@ -616,16 +666,27 @@ function diffWeapon(name: string, book: BookFigures): Diff[] {
   cmpNum('penetration', p.penetration, book.penetration);
   cmpNum('capacity', p.capacity, book.capacity);
   cmpStr('signature', `${p.signatureKind} (${p.signature})`, book.signature);
-  for (const [k, raw] of Object.entries(book.traits ?? {})) {
-    const bv = TRAIT_NORMALIZE[k] ? TRAIT_NORMALIZE[k]!(raw) : raw;
-    const ev = p.traits[k];
-    const evStr = ev === undefined ? '—' : ev === true ? 'yes' : String(ev);
-    const bvStr = bv === true ? 'yes' : String(bv);
-    if (evStr !== bvStr)
-      diffs.push({ field: `trait ${k}`, engine: evStr, book: bvStr });
-  }
-  // Drop spot exceptions (confirmed book errors the engine is right about).
+  cmpTraits(p.traits, book.traits);
+
+  // Per-ammo / per-munition rows: compare each loaded profile to its book figures.
   const ignore = new Set(book.ignore ?? []);
+  const rows = e.ammoProfiles ?? e.munitionProfiles ?? [];
+  for (const [label, figs] of Object.entries(book.ammo ?? {})) {
+    const prefix = `${label} · `;
+    const row = rows.find((r) => r.label === label);
+    if (!row) {
+      diffs.push({ field: `${prefix}(loaded)`, engine: '—', book: 'expected' });
+      continue;
+    }
+    cmpStr('damage', formatDamage(row.profile.damage), figs.damage, prefix);
+    cmpNum('range', row.profile.range, figs.range, prefix);
+    cmpNum('penetration', row.profile.penetration, figs.penetration, prefix);
+    cmpNum('magazine', row.magazineCr, figs.magazineCr, prefix);
+    cmpTraits(row.profile.traits, figs.traits, prefix);
+    for (const f of figs.ignore ?? []) ignore.add(prefix + f);
+  }
+
+  // Drop spot exceptions (confirmed book errors the engine is right about).
   return diffs.filter((d) => !ignore.has(d.field));
 }
 
