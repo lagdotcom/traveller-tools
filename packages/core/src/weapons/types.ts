@@ -246,6 +246,13 @@ export type DeliveryId = 'rifleGrenade' | 'cartridge' | 'ram' | 'rpg';
 /** A self-contained missile round (fired from a reusable / field launcher). */
 export type MissileWarheadId = 'av7';
 
+/** One loaded launcher warhead: a Grenade Weapons payload + optional delivery override. */
+export interface LauncherWarhead {
+  type: GrenadeTypeId;
+  /** Overrides the launcher's default `delivery` (omitted = use the default). */
+  delivery?: DeliveryId;
+}
+
 // --- Grenade selectable ids (thrown grenades) -------------------------------
 
 /** Thrown-grenade payload type, from the FC "Grenade Weapons" table. */
@@ -494,13 +501,14 @@ export interface LauncherParams {
    */
   /**
    * Loaded warheads — payloads drawn from the Grenade Weapons table (shared with
-   * thrown grenades), at the chosen body size, delivered by `delivery`. Like a
-   * firearm's `ammo` list, the build is fixed and each yields its own profile
-   * row; the first is the primary.
+   * thrown grenades), at the launcher's `warheadSize`. Like a firearm's `ammo`
+   * list, the build is fixed and each yields its own profile row; the first is the
+   * primary. Each may override the launcher's `delivery` (a tube can fire e.g. a
+   * RAM round and cartridge rounds), else it uses the launcher-level one.
    */
-  warheads: GrenadeTypeId[];
+  warheads: LauncherWarhead[];
   warheadSize: GrenadeSizeId;
-  /** How the warhead is delivered (cartridge / RAM / RPG) — sets range + round cost. */
+  /** Default delivery (cartridge / RAM / RPG) — per-warhead `delivery` overrides it. */
   delivery: DeliveryId;
   /**
    * Loaded missiles (from `MISSILE_WARHEADS`). When non-empty, the launcher fires

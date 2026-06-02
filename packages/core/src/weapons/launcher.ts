@@ -39,8 +39,8 @@ import {
 import { error, pushIf, round2, tlGate, warning } from './shared.js';
 import type {
   Damage,
-  GrenadeTypeId,
   LauncherParams,
+  LauncherWarhead,
   Traits,
   WeaponProfile,
 } from './types.js';
@@ -50,7 +50,6 @@ function validateLauncher(params: LauncherParams): Issue[] {
   const issues: Issue[] = [];
   const tl = params.tl;
   const receiver = LAUNCHER_RECEIVERS[params.receiver];
-  const delivery = DELIVERY_SYSTEMS[params.delivery];
   pushIf(issues, tlGate(tl, receiver?.label ?? '', receiver?.minTL));
   // Loaded missiles are the munition (overriding the grenade payloads + delivery).
   const missiles = (params.missiles ?? []).map((id) => MISSILE_WARHEADS[id]);
@@ -58,11 +57,18 @@ function validateLauncher(params: LauncherParams): Issue[] {
     for (const m of missiles)
       if (m) pushIf(issues, tlGate(tl, m.label, m.minTL));
   } else {
-    for (const id of params.warheads) {
-      const w = GRENADES[id];
+    for (const wh of params.warheads) {
+      const w = GRENADES[wh.type];
       pushIf(issues, tlGate(tl, `${w?.label} warhead`, w?.minTL));
     }
-    pushIf(issues, tlGate(tl, `${delivery?.label} munition`, delivery?.minTL));
+    // TL-gate each delivery in use (the launcher default + any per-warhead override).
+    const deliveryIds = new Set(
+      params.warheads.map((wh) => wh.delivery ?? params.delivery),
+    );
+    for (const id of deliveryIds) {
+      const dlv = DELIVERY_SYSTEMS[id];
+      pushIf(issues, tlGate(tl, `${dlv?.label} munition`, dlv?.minTL));
+    }
   }
 
   // Receiver-feature TL gates + mutually-exclusive groups (reuses firearm data).
@@ -140,6 +146,8 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     label: string;
     weightKg: number;
     magazineCr: number;
+    largerWarhead?: boolean;
+    deliveryLabel?: string;
     profile: WeaponProfile;
   };
   const munitions: Munition[] =
@@ -158,29 +166,31 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
         })
       : (params.warheads.length > 0
           ? params.warheads
-          : (['fragmentation'] as GrenadeTypeId[])
-        ).map((id) => {
-          const def = GRENADES[id] ?? GRENADES.fragmentation;
+          : ([{ type: 'fragmentation' }] as LauncherWarhead[])
+        ).map((w) => {
+          const def = GRENADES[w.type] ?? GRENADES.fragmentation;
           const payload =
             (params.warheadSize === 'mini' ? def.mini : def.hand) ?? def.hand;
-          const label =
-            params.warheadSize === 'mini' ? `${def.label} (Mini)` : def.label;
+          // Each warhead may override the launcher's default delivery.
+          const dlv =
+            DELIVERY_SYSTEMS[w.delivery ?? params.delivery] ?? delivery;
+          const sizeTag = params.warheadSize === 'mini' ? ' (Mini)' : '';
           return {
-            label,
-            weightKg: round2(capacity * payload.weight * delivery.weightMult),
-            magazineCr: round2(capacity * payload.cost * delivery.costMult),
+            label: `${def.label}${sizeTag} (${dlv.label})`,
+            weightKg: round2(capacity * payload.weight * dlv.weightMult),
+            magazineCr: round2(capacity * payload.cost * dlv.costMult),
+            largerWarhead: dlv.largerWarhead === true,
+            deliveryLabel: dlv.label,
             profile: mkProfile(
-              delivery.range,
+              dlv.range,
               payload.damage ?? { dice: 0, die: 6, mod: 0 },
-              { ...payload.traits, ...delivery.traits },
+              { ...payload.traits, ...dlv.traits },
             ),
           };
         });
   const primary = munitions[0]!;
-  const primaryLine =
-    missiles.length > 0
-      ? `Munition: ${primary.label} ×${capacity}`
-      : `Munition: ${primary.label} (${delivery.label}) ×${capacity}`;
+  // The grenade label already embeds its delivery; the missile label doesn't.
+  const primaryLine = `Munition: ${primary.label} ×${capacity}`;
 
   // The receiver is firearm-style (base → multiplicative chain → baseline); the
   // barrel/stock are a % of that baseline (cost/weight only — a launcher's profile
@@ -211,12 +221,14 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
   const totalWeight = round2(build.weight);
 
   // Cartridge/RAM rounds use the hand payload's profile (the FC says they're
-  // "equivalent in effect"); an RPG grenade carries a larger warhead whose own
-  // damage isn't tabled in the supplied text, so flag that (grenade path only).
-  if (missiles.length === 0 && delivery.largerWarhead)
+  // "equivalent in effect"); an RPG round carries a larger warhead whose own
+  // damage isn't tabled in the supplied text, so flag each such delivery.
+  for (const label of new Set(
+    munitions.filter((m) => m.largerWarhead).map((m) => m.deliveryLabel),
+  ))
     issues.push(
       warning(
-        `${delivery.label} rounds carry a larger warhead than the hand-grenade payload; its damage/blast aren't in the supplied text and are shown as the payload's.`,
+        `${label} rounds carry a larger warhead than the hand-grenade payload; its damage/blast aren't in the supplied text and are shown as the payload's.`,
       ),
     );
   // A missile with several firing modes shows only its primary (first) mode.

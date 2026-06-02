@@ -34,6 +34,7 @@ import {
   LAUNCHER_RECEIVERS,
   type LauncherParams,
   type LauncherReceiverId,
+  type LauncherWarhead,
   type MagazineSpec,
   type MechanismId,
   MECHANISMS,
@@ -285,7 +286,7 @@ interface Lists {
   accessories: AccessoryId[];
   mods: EnergyModId[];
   ammo: AmmoTypeId[];
-  warheads: GrenadeTypeId[];
+  warheads: LauncherWarhead[];
   missiles: MissileWarheadId[];
   // Carried through unedited so loaded designs keep their magazine / power-pack
   // options (the builder edits the standard magazine via Capacity %).
@@ -390,7 +391,8 @@ function buildLauncher(v: FormValues, lists: Lists): LauncherParams {
     stock: STOCK.toId(v.lStock),
     guidance: v.guidance === 'yes',
     magazineSize: num(v.magazineSize, 1),
-    warheads: lists.warheads.length > 0 ? lists.warheads : ['fragmentation'],
+    warheads:
+      lists.warheads.length > 0 ? lists.warheads : [{ type: 'fragmentation' }],
     warheadSize: GSIZE.toId(v.warheadSize),
     delivery: DELIVERY.toId(v.delivery),
     ...(lists.missiles.length > 0 ? { missiles: lists.missiles } : {}),
@@ -448,8 +450,10 @@ export function WeaponBuilderScreen({
   const [ammo, setAmmo] = useState<AmmoTypeId[]>(
     startParams.kind === 'firearm' ? startParams.ammo : ['ball'],
   );
-  const [warheads, setWarheads] = useState<GrenadeTypeId[]>(
-    startParams.kind === 'launcher' ? startParams.warheads : ['fragmentation'],
+  const [warheads, setWarheads] = useState<LauncherWarhead[]>(
+    startParams.kind === 'launcher'
+      ? startParams.warheads
+      : [{ type: 'fragmentation' }],
   );
   const [missiles, setMissiles] = useState<MissileWarheadId[]>(
     startParams.kind === 'launcher' ? (startParams.missiles ?? []) : [],
@@ -668,16 +672,26 @@ export function WeaponBuilderScreen({
     },
     warheads: {
       items: warheads,
-      itemLabel: (i) => GTYPE.toLabel(warheads[i]!),
+      // Show the per-munition delivery when it overrides the launcher default.
+      itemLabel: (i) => {
+        const w = warheads[i]!;
+        return w.delivery
+          ? `${GTYPE.toLabel(w.type)} (${DELIVERY.toLabel(w.delivery)})`
+          : GTYPE.toLabel(w.type);
+      },
       // Keep at least one warhead loaded (the primary munition).
       remove: (i) =>
         setWarheads((p) => (p.length > 1 ? p.filter((_, k) => k !== i) : p)),
-      available: GTYPE.labels.filter((l) => !warheads.includes(GTYPE.toId(l))),
+      // New warheads use the launcher's default delivery (set per-munition in data).
+      available: GTYPE.labels.filter(
+        (l) => !warheads.some((w) => w.type === GTYPE.toId(l)),
+      ),
       addValue: addWarhead,
       onAddChange: setAddWarhead,
       onAdd: () => {
         const id = GTYPE.toId(effective(addWarhead, lists.warheads.available));
-        if (id && !warheads.includes(id)) setWarheads((p) => [...p, id]);
+        if (id && !warheads.some((w) => w.type === id))
+          setWarheads((p) => [...p, { type: id }]);
         setAddWarhead('');
       },
     },

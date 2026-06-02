@@ -259,12 +259,14 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   %s match the worksheet weight exactly but over-count cost by ~Cr35 (flagged).
 - **Launcher munitions** are a **payload × delivery** pair: the warhead is a
   **Grenade Weapons table** payload (`GRENADES`, shared with thrown grenades),
-  supplying damage/blast/traits. **`LauncherParams.warheads: GrenadeTypeId[]` is a
-  list** (the firearm-`ammo` analogue) at a shared `warheadSize: 'hand' | 'mini'`
-  (mini falling back to hand when not made as a mini): the build is fixed and each
-  warhead yields its own profile row (`WeaponEvaluation.munitionProfiles`, first =
-  primary, each with its own reload price), emitted only when >1 is loaded;
-  the delivery system (`DELIVERY_SYSTEMS`: rifle-grenade / cartridge / RAM / RPG)
+  supplying damage/blast/traits. **`LauncherParams.warheads: LauncherWarhead[]` is
+  a list** (the firearm-`ammo` analogue) of `{ type, delivery? }` at a shared
+  `warheadSize: 'hand' | 'mini'` (mini falling back to hand when not made as a
+  mini): the build is fixed and each warhead yields its own profile row
+  (`WeaponEvaluation.munitionProfiles`, first = primary, each with its own reload
+  price), emitted only when >1 is loaded. Each warhead's `delivery` overrides the
+  launcher-level default, so one launcher can fire a RAM round + cartridge rounds
+  (e.g. the ASSW); the delivery (`DELIVERY_SYSTEMS`: rifle-grenade / cartridge / RAM / RPG)
   sets the **range** (100/200/300/500) and multiplies the round's cost/weight
   (×2/×1.25 · ×2.5/×1 · ×3/×1 · ×5/×5). reconcile: the FC prose says a rifle
   grenade weighs +50% but the worked Anti-Armour Rifle Grenade is ×1.25 (0.625kg)

@@ -18,7 +18,10 @@ const launcher = (overrides: Partial<LauncherParams>): LauncherParams => ({
 describe('launcher — receiver + warhead', () => {
   it('TL6 single-shot light tube launcher with a frag cartridge', () => {
     const r = evaluateWeapon(
-      launcher({ receiver: 'tubeSingleLight', warheads: ['fragmentation'] }),
+      launcher({
+        receiver: 'tubeSingleLight',
+        warheads: [{ type: 'fragmentation' }],
+      }),
     );
     expect(r.totals.costCr).toBeCloseTo(200, 3);
     // 1.5kg receiver + 1 round × 0.5kg × 1 (cartridge) = 2.0kg loaded.
@@ -37,7 +40,7 @@ describe('launcher — receiver + warhead', () => {
     const r = evaluateWeapon(
       launcher({
         receiver: 'reuseSingleHeavy',
-        warheads: ['antiArmour'],
+        warheads: [{ type: 'antiArmour' }],
         delivery: 'rpg',
       }),
     );
@@ -59,7 +62,7 @@ describe('launcher — receiver + warhead', () => {
       launcher({
         receiver: 'tubeSupportStandard',
         magazineSize: 5,
-        warheads: ['fragmentation'],
+        warheads: [{ type: 'fragmentation' }],
       }),
     );
     expect(r.profile.capacity).toBe(5);
@@ -70,7 +73,7 @@ describe('launcher — receiver + warhead', () => {
   });
 
   it('an effect-only warhead (smoke) has no damage dice', () => {
-    const r = evaluateWeapon(launcher({ warheads: ['smoke'] }));
+    const r = evaluateWeapon(launcher({ warheads: [{ type: 'smoke' }] }));
     expect(r.profile.damage.dice).toBe(0);
     expect(r.profile.traits['Blast']).toBe(9);
   });
@@ -85,7 +88,7 @@ describe('launcher — receiver + warhead', () => {
         features: ['lightweight', 'bullpup'],
         barrel: 'assault',
         stock: 'full',
-        warheads: ['fragmentation'],
+        warheads: [{ type: 'fragmentation' }],
       }),
     );
     const totals = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
@@ -108,7 +111,7 @@ describe('launcher — multiple munitions', () => {
     const r = evaluateWeapon(
       launcher({
         receiver: 'tubeSingleLight',
-        warheads: ['fragmentation', 'smoke'],
+        warheads: [{ type: 'fragmentation' }, { type: 'smoke' }],
       }),
     );
     expect(r.munitionProfiles).toHaveLength(2);
@@ -120,22 +123,44 @@ describe('launcher — multiple munitions', () => {
     expect(r.munitionProfiles![0]!.magazineCr).toBeCloseTo(75, 3);
     expect(r.munitionProfiles![1]!.magazineCr).toBeCloseTo(37.5, 3);
     // A single munition adds no munitionProfiles (mirrors firearm ammoProfiles).
-    const one = evaluateWeapon(launcher({ warheads: ['fragmentation'] }));
+    const one = evaluateWeapon(
+      launcher({ warheads: [{ type: 'fragmentation' }] }),
+    );
     expect(one.munitionProfiles).toBeUndefined();
   });
 
   it('migrates a legacy single warhead/missile to a list', () => {
     const g = normalizeWeaponParams({ kind: 'launcher', warhead: 'smoke' });
-    expect((g as LauncherParams).warheads).toEqual(['smoke']);
+    expect((g as LauncherParams).warheads).toEqual([{ type: 'smoke' }]);
     const m = normalizeWeaponParams({ kind: 'launcher', missile: 'av7' });
     expect((m as LauncherParams).missiles).toEqual(['av7']);
+  });
+
+  it('honours a per-munition delivery override', () => {
+    const r = evaluateWeapon(
+      launcher({
+        receiver: 'reuseSingleHeavy',
+        delivery: 'ram',
+        warheads: [
+          { type: 'fragmentation', delivery: 'ram' },
+          { type: 'smoke', delivery: 'cartridge' },
+        ],
+      }),
+    );
+    // The RAM frag (300m) and the cartridge smoke (200m) keep their own ranges.
+    expect(r.munitionProfiles![0]!.profile.range).toBe(300);
+    expect(r.munitionProfiles![1]!.profile.range).toBe(200);
   });
 });
 
 describe('launcher — validation', () => {
   it('gates the receiver and the warhead by tech level', () => {
     const r = evaluateWeapon(
-      launcher({ tl: 5, receiver: 'tubeSingleLight', warheads: ['plasma'] }),
+      launcher({
+        tl: 5,
+        receiver: 'tubeSingleLight',
+        warheads: [{ type: 'plasma' }],
+      }),
     );
     expect(
       r.issues.some((i) => /Single Shot, Light requires TL6/.test(i.message)),
@@ -160,7 +185,7 @@ describe('launcher — rifle-grenade delivery', () => {
       launcher({
         tl: 6,
         receiver: 'tubeSingleLight',
-        warheads: ['antiArmour'],
+        warheads: [{ type: 'antiArmour' }],
         delivery: 'rifleGrenade',
       }),
     );

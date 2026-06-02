@@ -52,6 +52,7 @@ import type {
   GrenadeTypeId,
   LauncherParams,
   LauncherReceiverId,
+  LauncherWarhead,
   MagazineSpec,
   MechanismId,
   MissileWarheadId,
@@ -152,7 +153,7 @@ export const DEFAULT_LAUNCHER_PARAMS: LauncherParams = {
   stock: 'none',
   guidance: false,
   magazineSize: 6,
-  warheads: ['fragmentation'],
+  warheads: [{ type: 'fragmentation' }],
   warheadSize: 'hand',
   delivery: 'cartridge',
 };
@@ -444,15 +445,28 @@ function normalizeLauncherParams(p: Record<string, unknown>): LauncherParams {
   };
 }
 
-/** Coerce a launcher warhead list, mapping the legacy 'incendiary' id; defaults if empty. */
+/**
+ * Coerce a launcher warhead list. Accepts bare ids (a legacy single `warhead` or
+ * the earlier string list) and `{type, delivery?}` objects; maps the legacy
+ * 'incendiary' id; drops unknowns and falls back to the default if empty.
+ */
 function normalizeWarheads(
   v: unknown[],
-  fallback: GrenadeTypeId[],
-): GrenadeTypeId[] {
-  const list = v
-    .map((x) => (x === 'incendiary' ? 'incendiaryAntipersonnel' : x))
-    .filter((x): x is GrenadeTypeId => typeof x === 'string' && x in GRENADES);
-  return list.length > 0 ? list : fallback;
+  fallback: LauncherWarhead[],
+): LauncherWarhead[] {
+  const out: LauncherWarhead[] = [];
+  for (const item of v) {
+    const rawType =
+      typeof item === 'string' ? item : (item as { type?: unknown })?.type;
+    const type = rawType === 'incendiary' ? 'incendiaryAntipersonnel' : rawType;
+    if (typeof type !== 'string' || !(type in GRENADES)) continue;
+    const wh: LauncherWarhead = { type: type as GrenadeTypeId };
+    const dlv = isObject(item) ? item.delivery : undefined;
+    if (typeof dlv === 'string' && dlv in DELIVERY_SYSTEMS)
+      wh.delivery = dlv as DeliveryId;
+    out.push(wh);
+  }
+  return out.length > 0 ? out : fallback;
 }
 
 /** Coerce arbitrary parsed JSON into a complete, valid GrenadeParams. */
@@ -1250,7 +1264,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 8,
       receiver: 'tubeSingleLight', // reconcile: Disposable Launcher - 0.25kg, Quickdraw -8, Bulky
-      warheads: ['incendiaryAntipersonnel'], // reconcile: Incendiary Rocket-Propelled Grenade - Cr75, 0.5kg
+      warheads: [{ type: 'incendiaryAntipersonnel' }], // reconcile: Incendiary Rocket-Propelled Grenade - Cr75, 0.5kg
       delivery: 'rpg',
     },
     'Krabbine Heavy Industries',
@@ -1258,7 +1272,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   launcher('Spigot Mortar', 'General-purpose RPG launcher', {
     tl: 6,
     receiver: 'reuseSingleLight',
-    warheads: ['antiArmour'], // reconcile: Rocket-Propelled Grenade - Cr150, 5kg
+    warheads: [{ type: 'antiArmour' }], // reconcile: Rocket-Propelled Grenade - Cr150, 5kg
     delivery: 'rpg',
     // reconcile: Damage 10D, AP 12, Blast 4
   }),
@@ -1277,10 +1291,10 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // book also lists incapacitant gas, baton and distraction (each its own
       // profile row). gasIncapacitant isn't made as a mini, so it falls back to hand.
       warheads: [
-        'multipleProjectile',
-        'gasIncapacitant',
-        'baton',
-        'distraction',
+        { type: 'multipleProjectile' },
+        { type: 'gasIncapacitant' },
+        { type: 'baton' },
+        { type: 'distraction' },
       ],
       warheadSize: 'mini',
       delivery: 'cartridge',
@@ -1298,11 +1312,23 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 9,
       receiver: 'reuseSingleHeavy', // reconcile: Semi-Automatic Grenade Launcher, Standard - Quickdraw -8
-      warheads: ['fragmentation'],
-      delivery: 'ram', // reconcile: Standard RAM (or cartridge grenade) - 300m, 3 rounds, Bulky
+      // Primary is the guided-frag RAM round; the other five are cartridge grenades
+      // (per-munition delivery). Guidance is launcher-wide here (it adds Smart to
+      // every round + 50% receiver cost), so the cartridge rounds also read Smart.
+      guidance: true,
+      delivery: 'ram',
+      warheads: [
+        { type: 'fragmentation', delivery: 'ram' },
+        { type: 'multipleProjectile', delivery: 'cartridge' },
+        { type: 'distraction', delivery: 'cartridge' },
+        { type: 'gasIncapacitant', delivery: 'cartridge' },
+        { type: 'baton', delivery: 'cartridge' },
+        { type: 'stun', delivery: 'cartridge' },
+      ],
       // book error: Receiver Totals Cr6500 (extra 0), 3.85kg
       // reconcile: Accessories: Fixed Drum - Cr325, 3kg - Capacity 6 rounds
-      // reconcile: RAM Grenade, Guided Fragmentation - TL9, 300m, 5D, 0.5kg, Cr90, Blast 3, Lo-Pen 2
+      // reconcile: guided fragmentation is plain fragmentation + guidance (so Blast
+      // reads 9, not the book's reduced 3); RAM Guided Frag - TL9, 300m, 5D, Cr90.
     },
     'Interstellar Ordnance',
   ),
