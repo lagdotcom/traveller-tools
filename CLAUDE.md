@@ -294,8 +294,10 @@ MissileWarheadId[]` loads them from `MISSILE_WARHEADS` (e.g. the AV-7) on a
   printed stat block** (transcribed in `BOOK_FIGURES`, errors and all) and prints
   the exact per-field differences. Not a pass/fail test — the issue list is used
   to classify each diff (book error / missing general rule / bug) and to fill the
-  `{}` stubs from the book. Distinct from `golden.test.ts` (which pins the engine's
-  _current_ output); this pins the _book's_.
+  `{}` stubs from the book. A per-field **rounding tolerance** (`abs` floor + `rel`
+  %, exact for integer stats) hides book rounding (13.1375≈13.1, 2190≈2200) so only
+  real diffs show; `--rounding` reveals the suppressed ones. Distinct from
+  `golden.test.ts` (which pins the engine's _current_ output); this pins the _book's_.
 - **Weapon-traits glossary** (`weaponTraits.ts`): the FC "Weapon Traits" chapter
   (the 13 FC-detailed traits — Burn, Corrosive, Lo-Pen, Spread, Hazardous, …) as
   `WEAPON_TRAITS` + `findWeaponTrait(key)`, with the Hazard/Flammability/Malfunction

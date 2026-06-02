@@ -307,13 +307,40 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
 };
 
 // ── Runner ──────────────────────────────────────────────────────────────────
-const near = (a: number, b: number) => Math.abs(a - b) < 0.01;
+/**
+ * Per-field rounding tolerance: a difference counts as "rounding" (not a real
+ * issue) when |engine − book| ≤ max(abs, rel × |book|). The relative term absorbs
+ * the book rounding prices to round numbers (e.g. 2190.24 → 2200) and printing
+ * fewer decimals (13.1375 → 13.1); the absolute floor catches the tiny ones. It
+ * scales correctly: 0.04kg is noise on a 13kg gun but a real diff on a 0.9kg one.
+ * Fields with no entry (quickdraw / auto / capacity / penetration) are compared
+ * EXACTLY — any difference there is meaningful. Pass `--rounding` to also list the
+ * suppressed rounding diffs; tighten these to see more.
+ */
+const TOLERANCE: Record<string, { abs: number; rel: number }> = {
+  cost: { abs: 1, rel: 0.01 },
+  weight: { abs: 0.01, rel: 0.01 },
+  magazine: { abs: 1, rel: 0.01 },
+  range: { abs: 1, rel: 0 },
+};
+const SHOW_ROUNDING = process.argv.includes('--rounding');
+
 const n = (v: number) => String(Math.round(v * 10000) / 10000);
+
+type Kind = 'exact' | 'rounding' | 'diff';
+function classifyNum(field: string, eng: number, bk: number): Kind {
+  if (eng === bk) return 'exact';
+  const t = TOLERANCE[field] ?? { abs: 0, rel: 0 };
+  const tol = Math.max(t.abs, t.rel * Math.abs(bk));
+  return Math.abs(eng - bk) <= tol ? 'rounding' : 'diff';
+}
 
 interface Diff {
   field: string;
   engine: string;
   book: string;
+  delta?: string;
+  rounding?: boolean;
 }
 
 function diffWeapon(name: string, book: BookFigures): Diff[] {
@@ -323,8 +350,17 @@ function diffWeapon(name: string, book: BookFigures): Diff[] {
   const p = e.profile;
   const diffs: Diff[] = [];
   const cmpNum = (field: string, eng: number, bk: number | undefined) => {
-    if (bk !== undefined && !near(eng, bk))
-      diffs.push({ field, engine: n(eng), book: n(bk) });
+    if (bk === undefined) return;
+    const kind = classifyNum(field, eng, bk);
+    if (kind === 'exact') return;
+    const sign = eng - bk >= 0 ? '+' : '';
+    diffs.push({
+      field,
+      engine: n(eng),
+      book: n(bk),
+      delta: `Δ${sign}${n(eng - bk)}`,
+      rounding: kind === 'rounding',
+    });
   };
   const cmpStr = (field: string, eng: string, bk: string | undefined) => {
     if (bk !== undefined && eng !== bk)
@@ -352,9 +388,13 @@ function diffWeapon(name: string, book: BookFigures): Diff[] {
 
 function main() {
   const stubs: string[] = [];
-  let matched = 0;
-  let totalDiffs = 0;
+  let reconciled = 0; // exact, or every diff within rounding tolerance
+  let realDiffTotal = 0;
+  let roundingTotal = 0;
   const lines: string[] = [];
+
+  const row = (d: Diff) =>
+    `      ${(d.rounding ? '≈ ' : '  ') + d.field.padEnd(14)} engine ${d.engine.padEnd(16)} book ${(d.book + ' ' + (d.delta ?? '')).trim()}`;
 
   for (const def of BUILTIN_WEAPONS) {
     const book = BOOK_FIGURES[def.name];
@@ -366,19 +406,24 @@ function main() {
       stubs.push(def.name);
       continue;
     }
-    const diffs = diffWeapon(def.name, book);
-    if (diffs.length === 0) {
-      matched++;
-      lines.push(`✓  ${def.name} — all provided fields match`);
-      continue;
+    const all = diffWeapon(def.name, book);
+    const real = all.filter((d) => !d.rounding);
+    const rounding = all.filter((d) => d.rounding);
+    roundingTotal += rounding.length;
+
+    if (real.length === 0) {
+      reconciled++;
+      const tag = rounding.length
+        ? ` (${rounding.length} within rounding)`
+        : '';
+      lines.push(`✓  ${def.name}${tag}`);
+    } else {
+      realDiffTotal += real.length;
+      lines.push(`✗  ${def.name}`);
+      for (const d of real) lines.push(row(d));
+      if (book.note) lines.push(`      note: ${book.note}`);
     }
-    totalDiffs += diffs.length;
-    lines.push(`✗  ${def.name}`);
-    for (const d of diffs)
-      lines.push(
-        `      ${d.field.padEnd(14)} engine ${d.engine.padEnd(18)} book ${d.book}`,
-      );
-    if (book.note) lines.push(`      note: ${book.note}`);
+    if (SHOW_ROUNDING) for (const d of rounding) lines.push(row(d));
   }
 
   console.log('\n=== Book reconciliation ===\n');
@@ -390,7 +435,7 @@ function main() {
     console.log(stubs.map((s) => `   ${s}`).join('\n'));
   }
   console.log(
-    `\n${BUILTIN_WEAPONS.length} weapons · ${matched} fully match · ${stubs.length} stubs · ${totalDiffs} mismatched fields\n`,
+    `\n${BUILTIN_WEAPONS.length} weapons · ${reconciled} reconcile (±rounding) · ${stubs.length} stubs · ${realDiffTotal} real diffs · ${roundingTotal} within rounding${SHOW_ROUNDING ? '' : ' (--rounding to show)'}\n`,
   );
 }
 
