@@ -670,8 +670,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       capacityPct: 130,
       barrel: 'assault',
       stock: 'full',
-      // reconcile: 3D+5 and AP 4 reproduce; magazine reads Cr34.5 vs the book's
-      // Cr55 (gauss-shotgun ammo cost).
+      // reconcile: magazine reads Cr34.5 vs the book's Cr55 (gauss-shotgun ammo cost).
     },
     'Anhur Industries',
   ),
@@ -687,8 +686,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       autoIncrease: 2,
       capacityPct: 120,
       barrel: 'short',
-      // reconcile: weight (0.7744kg), AP 3 and Emissions (low) reproduce; receiver
-      // cost reads Cr1212.75 vs the book's Cr808.5 (unresolved).
+      // reconcile: AP 3 and Emissions (low) reproduce; receiver cost reads
+      // Cr1212.75 vs the book's Cr808.5 (unresolved). Verify weight: note's
+      // 0.7744kg no longer holds (current ~0.852kg, likely the 120% capacity).
     },
     'Anhur Industries',
   ),
@@ -701,7 +701,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       calibre: 'smallGauss',
       mechanism: 'burst',
       barrel: 'handgun',
-      // AP 3 and Emissions (low) reproduce.
     },
     'Anhur Industries',
   ),
@@ -750,8 +749,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       accessories: ['laserPointer'],
       ammo: ['ball', 'pellet'],
-      // reconcile: Bulky now reproduces (smoothbore Recoil table); Physical
-      // Signature reads high vs the book's normal (smoothbore signature).
+      // reconcile: Physical Signature reads high vs the book's normal (smoothbore signature).
       // TODO Pointguard variant: shorter, no stock - TL10, 125m range, 3.25Kg, Cr180, Mag 3 (Cr4.5), Quickdraw +2, pellet only
     },
     'Harrix Industries',
@@ -815,7 +813,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       autoIncrease: 1,
       barrel: 'handgun',
       accessories: ['scope'],
-      // Semi-Bullpup (+20% cost, +2 Quickdraw) and Lo-Pen 2 both reproduce.
     },
     'Tactical Systems Incorporated',
   ),
@@ -826,8 +823,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mechanism: 'fullAuto',
     barrel: 'assault',
     stock: 'full',
-    // reconcile: no Lo-Pen reproduces; the book's Desperado also lists Inaccurate
-    // -1 (not modelled) and seems to charge +10% for full-auto, not the +20% rule.
+    // reconcile: the book's Desperado also lists Inaccurate -1 (not modelled) and
+    // seems to charge +10% for full-auto, not the +20% rule.
   }),
   weapon('Eliminator', 'Extreme close quarters smg', {
     tl: 9,
@@ -839,9 +836,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'assault',
     stock: 'folding',
     ammo: ['ball', 'apAdvanced', 'enhancedWounding'],
-    // reconcile: no Lo-Pen reproduces; still off — receiver weight 1.25 vs the
-    // book's 2.079kg, Mag 18 vs 24 (the book ignores the Compact penalty), and
-    // Physical Signature low vs normal.
+    // reconcile: receiver weight reads 1.25 vs the book's 2.079kg, Mag 18 vs 24
+    // (the book ignores the Compact penalty), and Physical Signature low vs normal.
   }),
   weapon(
     'IAW-12',
@@ -855,8 +851,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       autoIncrease: 1,
       barrel: 'assault',
       accessories: ['laserPointer'],
-      // reconcile: Damage 3D-1, AP 4 and Emissions (low) reproduce; the book
-      // worksheet oddly charges 15% for 'No Stock'.
+      // reconcile: the book worksheet oddly charges 15% for 'No Stock' (not modelled).
     },
     'Interstellar Ordnance',
   ),
@@ -898,8 +893,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'carbine',
       stock: 'full',
       accessories: ['multispectralScope'],
-      // reconcile: Emissions (low) reproduces; AP reads 5 vs the book's 3 (standard
-      // gauss AP) — and the book calls it both GR-80 and GR-90.
+      // reconcile: AP reads 5 vs the book's 3 (standard gauss AP) — and the book
+      // calls it both GR-80 and GR-90.
       // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
     },
     'Anhur Industries',
