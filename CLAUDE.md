@@ -92,6 +92,12 @@ Conventions that matter:
   saves directly using them (no save dialog). Built-in weapons pass the maker as
   the helper's 4th arg (`weapon(name, desc, overrides, mfr?)`); ships use
   `ship(name, desc, overrides, mfr?)`.
+- **Weapon variants.** `WeaponDefinition.variants?: WeaponVariant[]` — named
+  **partial overrides** of the base `params` (`variantParams(base, override)`
+  shallow-merges, keeps the base `kind`, normalises). Round-trip through
+  serialize/parse (`normalizeVariants`). The library flattens them into loadable
+  `Base · Variant` entries; the reconcile harness checks each against
+  `BookFigures.variants`. (In-TUI authoring editor still TODO.)
 - **Provenance.** `ComponentDef.source` tags a non-base book (e.g.
   `'High Guard'`); `evaluateShip` collects these into `sources` and the sheet
   shows a "Sources" panel of the rulebooks a design needs. Orthogonal to the
