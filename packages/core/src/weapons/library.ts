@@ -1273,14 +1273,16 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 7,
       receiver: 'tubeSemiLight', // reconcile: Quickdraw -8
-      // Primary is the multiple-projectile round; the book also lists incapacitant
-      // gas, baton and distraction cartridges (each its own profile row).
+      // Light (mini) cartridges. Primary is the multiple-projectile round; the
+      // book also lists incapacitant gas, baton and distraction (each its own
+      // profile row). gasIncapacitant isn't made as a mini, so it falls back to hand.
       warheads: [
         'multipleProjectile',
         'gasIncapacitant',
         'baton',
         'distraction',
       ],
+      warheadSize: 'mini',
       delivery: 'cartridge',
       features: ['lightweight', 'bullpup'],
       barrel: 'assault',

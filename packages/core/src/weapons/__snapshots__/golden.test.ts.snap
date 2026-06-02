@@ -3205,21 +3205,21 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     },
     {
       "costCr": 0,
-      "label": "Munition: Multiple Projectile (Cartridge) ×3",
-      "notes": "Cr112.5 to load",
-      "weightKg": 2.7,
+      "label": "Munition: Multiple Projectile (Mini) (Cartridge) ×3",
+      "notes": "Cr75 to load",
+      "weightKg": 1.2,
     },
   ],
   "issues": [],
   "munitionProfiles": [
     {
-      "label": "Multiple Projectile",
-      "magazineCr": 112.5,
+      "label": "Multiple Projectile (Mini)",
+      "magazineCr": 75,
       "profile": {
         "auto": 0,
         "capacity": 3,
         "damage": {
-          "dice": 6,
+          "dice": 5,
           "die": 6,
           "mod": 0,
         },
@@ -3234,12 +3234,12 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
         "traits": {
           "Bulky": true,
           "Lo-Pen": 3,
-          "Spread": 4,
+          "Spread": 2,
         },
       },
     },
     {
-      "label": "Gas, Incapacitant",
+      "label": "Gas, Incapacitant (Mini)",
       "magazineCr": 375,
       "profile": {
         "auto": 0,
@@ -3265,8 +3265,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
       },
     },
     {
-      "label": "Baton",
-      "magazineCr": 75,
+      "label": "Baton (Mini)",
+      "magazineCr": 37.5,
       "profile": {
         "auto": 0,
         "capacity": 3,
@@ -3285,13 +3285,13 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
         "tl": 7,
         "traits": {
           "Bulky": true,
-          "Stun (2D)": true,
+          "Stun (1D)": true,
         },
       },
     },
     {
-      "label": "Distraction",
-      "magazineCr": 450,
+      "label": "Distraction (Mini)",
+      "magazineCr": 187.5,
       "profile": {
         "auto": 0,
         "capacity": 3,
@@ -3310,7 +3310,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
         "tl": 7,
         "traits": {
           "Bulky": true,
-          "Distraction (Potent)": true,
+          "Distraction (Typical)": true,
         },
       },
     },
@@ -3323,7 +3323,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     "auto": 0,
     "capacity": 3,
     "damage": {
-      "dice": 6,
+      "dice": 5,
       "die": 6,
       "mod": 0,
     },
@@ -3338,7 +3338,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
     "traits": {
       "Bulky": true,
       "Lo-Pen": 3,
-      "Spread": 4,
+      "Spread": 2,
     },
   },
   "sources": [
@@ -3346,8 +3346,8 @@ exports[`golden master — built-in weapon evaluations > reproduces Light Muniti
   ],
   "totals": {
     "costCr": 975,
-    "magazineCr": 112.5,
-    "weightKg": 5.5,
+    "magazineCr": 75,
+    "weightKg": 4,
   },
 }
 `;
