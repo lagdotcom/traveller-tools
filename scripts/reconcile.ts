@@ -115,6 +115,16 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: -1,
     signature: PN,
     traits: { Inaccurate: -1, 'Lo-Pen': 4, Spread: 2 },
+    variants: {
+      'Sawed-Off': {
+        range: 5,
+        weightKg: 3,
+        ammo: {
+          pellet: { traits: { 'Lo-Pen': 5, Spread: 3 } },
+          explosive: { damage: '6D-4', traits: { 'Lo-Pen': 2 } },
+        },
+      },
+    },
   },
   '13mm Crunch Gun': {
     range: 1250,
@@ -181,6 +191,15 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 8,
     signature: EL,
     traits: { AP: 3, Auto: 2 },
+    variants: {
+      Navy: {
+        range: 50,
+        weightKg: 1.42,
+        costCr: 500,
+        quickdraw: 4,
+        traits: { AP: 4, Scope: true },
+      },
+    },
   },
   Stowaway: {
     range: 4,
@@ -201,11 +220,30 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     capacity: 4,
     magazineCr: 4,
     quickdraw: 12,
-    signature: 'physical (very high)',
-    traits: { 'Lo-Pen': 3, 'Slow Loader': 4 },
+    signature: 'physical (normal)',
+    traits: { 'Slow Loader': 4 },
+    ammo: {
+      lowPenetration: {
+        signature: 'physical (very high)',
+        traits: { 'Lo-Pen': 3 },
+      },
+      heap: { magazineCr: 40, signature: 'physical (extreme)' },
+    },
+    variants: {
+      Defender: {
+        range: 30,
+        weightKg: 2,
+        costCr: 190,
+        quickdraw: 6,
+        ammo: {
+          ball: { damage: '3D-1' },
+          distraction: { magazineCr: 40, traits: { Distraction: 'standard' } },
+          explosive: { signature: 'physical (high)', traits: { 'Lo-Pen': 2 } },
+        },
+      },
+    },
   },
-  'Bodyguard Shotgun': {
-    range: 100,
+  Bodyguard: {
     damage: '4D',
     weightKg: 4.1,
     costCr: 260,
@@ -214,6 +252,21 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 0,
     signature: PN,
     traits: { Bulky: true, Inaccurate: 1 },
+    ammo: {
+      ball: { range: 100 },
+      pellet: { range: 25, traits: { 'Lo-Pen': 4, Spread: 2 } },
+    },
+    variants: {
+      Pointguard: {
+        range: 12.5,
+        weightKg: 3.25,
+        costCr: 180,
+        capacity: 3,
+        magazineCr: 4.5,
+        quickdraw: 2,
+        traits: { 'Lo-Pen': 5, Spread: 2 },
+      },
+    },
   },
   Standard: {
     range: 135,
@@ -235,6 +288,14 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     magazineCr: 10,
     quickdraw: 8,
     signature: PN,
+    variants: {
+      suppressed: {
+        costCr: 415,
+        quickdraw: 5,
+        signature: 'physical (small)',
+        traits: { 'Lo-Pen': 2 },
+      },
+    },
   },
   'Posi-9': {
     range: 12.5,
@@ -246,6 +307,13 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 8,
     signature: PN,
     traits: { 'Lo-Pen': 2 },
+    variants: {
+      burst: { costCr: 435, traits: { Auto: 2 } },
+      auto: {
+        costCr: 435, // '+ conversion cost'
+        traits: { Auto: 4 },
+      },
+    },
   },
   Crewmate: {
     range: 50,
@@ -278,6 +346,15 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     magazineCr: 25,
     quickdraw: 4,
     signature: PN,
+    ammo: {
+      ball: { magazineCr: 25 },
+      apAdvanced: { magazineCr: 68, traits: { AP: 3 } },
+      enhancedWounding: {
+        damage: '2D+1',
+        magazineCr: 39,
+        traits: { 'Lo-Pen': 3 },
+      },
+    },
   },
   'IAW-12': {
     range: 50,
@@ -311,6 +388,15 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 0,
     signature: EL,
     traits: { AP: 3, Auto: 3, Scope: true },
+    variants: {
+      'GR-80A': {
+        range: 600,
+        costCr: 3120,
+        capacity: 150,
+        magazineCr: 100,
+        quickdraw: -2,
+      },
+    },
   },
   AIWS: {
     range: 310,
@@ -322,6 +408,23 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 0,
     signature: PL,
     traits: { Auto: 3 },
+    variants: {
+      carbine: { range: 280, damage: '3D-1', weightKg: 3.6, costCr: 1434 },
+      support: {
+        weightKg: 5,
+        costCr: 1695,
+        capacity: 64,
+        magazineCr: 70,
+        quickdraw: -1,
+      },
+      assault: {
+        range: 125,
+        damage: '2D',
+        weightKg: 3.4,
+        costCr: 1211,
+        quickdraw: 2,
+      },
+    },
   },
   Intruder: {
     range: 225,
@@ -332,6 +435,14 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     magazineCr: 40,
     quickdraw: 3,
     signature: PN,
+    secondary: {
+      range: 5,
+      damage: '4D',
+      capacity: 3,
+      magazineCr: 5,
+      signature: PN,
+      traits: { 'Lo-Pen': 5, Spread: 4 },
+    },
   },
   Squadmate: {
     range: 300,
@@ -342,6 +453,9 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     magazineCr: 28,
     quickdraw: 0,
     signature: PN,
+    variants: {
+      Marksman: { weightKg: 4.825, costCr: 1280, traits: { Accurised: true } },
+    },
   },
   Sentinel: {
     range: 250,
@@ -353,8 +467,9 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 8,
     signature: PN,
     traits: { Inaccurate: -1, 'Zero-G': true },
+    ammo: { explosive: { damage: '5D-3', costCr: 160, magazineCr: 48 } },
   },
-  'Shipmate Handgun': {
+  Shipmate: {
     range: 8,
     damage: '3D-3',
     weightKg: 1.4,
@@ -364,6 +479,26 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 6,
     signature: PN,
     traits: { Auto: 4, Inaccurate: -2, 'Lo-Pen': 3, 'Zero-G': true },
+    variants: {
+      assault: {
+        range: 20,
+        weightKg: 1.5,
+        costCr: 610,
+        capacity: 20,
+        magazineCr: 50,
+        quickdraw: 4,
+        traits: { 'Lo-Pen': 0 },
+      },
+      carbine: {
+        range: 45,
+        weightKg: 1.6,
+        costCr: 610,
+        capacity: 20,
+        magazineCr: 50,
+        quickdraw: 0,
+        traits: { 'Lo-Pen': 0 },
+      },
+    },
   },
   'Ten-Six': {
     range: 5,
@@ -375,9 +510,17 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 7,
     signature: PN,
     traits: { Inaccurate: -2, 'Lo-Pen': 3, 'Zero-G': true },
+    secondary: {
+      range: 2,
+      damage: '4D-3',
+      capacity: 1,
+      magazineCr: 1.25,
+      signature: PN,
+      traits: { Inaccurate: -1, 'Lo-Pen': 3, Spread: 4 },
+    },
   },
   Guardian: {
-    range: 275,
+    range: 250,
     damage: '4D',
     weightKg: 10.3,
     costCr: 4520,
@@ -386,6 +529,15 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: -4,
     signature: PN,
     traits: { Auto: 3, Inaccurate: -1, 'Zero-G': true },
+    ammo: {
+      ball: { range: 275 },
+      explosive: { damage: '6D', magazineCr: 1400 },
+      heap: {
+        magazineCr: 2300,
+        signature: 'physical (high)',
+        traits: { AP: 4 },
+      },
+    },
   },
   Solo: {
     range: 715,
@@ -397,6 +549,10 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 0,
     signature: EL,
     traits: { AP: 6, Auto: 3, Scope: true },
+    ammo: {
+      ball: {},
+      apAdvanced: { damage: '5D-5', magazineCr: 275, traits: { AP: 15 } },
+    },
   },
   Reliant: {
     range: 280,
@@ -407,6 +563,10 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: -5,
     signature: PL,
     traits: { Auto: 4, Scope: true },
+    ammo: {
+      ball: {},
+      apAdvanced: { damage: '3D-1', magazineCr: 180, traits: { AP: 4 } },
+    },
   },
   'Jimpy-G': {
     range: 375,
@@ -453,8 +613,20 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
       Hazardous: -6,
       Incendiary: true,
     },
-    // The book stat block lists Burn/Incendiary, but the Cryojet burns cryogenic
-    // fluid (no fire) — a transcription carry-over; the engine is right to omit them.
+    secondary: {
+      range: 15,
+      damage: '3D',
+      capacity: 4,
+      magazineCr: 70,
+      traits: {
+        Blast: 0,
+        Bulky: true,
+        Burn: undefined,
+        Inaccurate: 1,
+        Incendiary: undefined,
+        'Lo-Pen': 3,
+      },
+    },
     ignore: ['trait Burn', 'trait Incendiary'],
   },
   'BL-3': {
@@ -478,6 +650,12 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 0,
     signature: EN,
     traits: { 'Lo-Pen': 2, 'Zero-G': true },
+    packs: {
+      internal: { capacity: 14, magazineCr: 0 },
+      'belt pack': { capacity: 140, magazineCr: 1500 },
+      'back pack': { capacity: 420, magazineCr: 4500 },
+    },
+    variants: { rifle: { range: 250, damage: '5D+3', weightKg: 5 } },
   },
   Nefertem: {
     range: 50,
@@ -506,16 +684,48 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
   },
   'Light Munitions Launcher': {
     range: 200,
-    weightKg: 0.5,
-    costCr: 125,
-    traits: { Blast: 3 },
+    warheads: {
+      incapacitantGas: { weightKg: 0.5, costCr: 125, traits: { Blast: 3 } },
+      baton: {
+        damage: '1D',
+        weightKg: 0.3,
+        costCr: 13,
+        traits: { 'Lo-Pen': 3, Stun: true },
+      },
+      distraction: { weightKg: 0.3, costCr: 30 },
+      multipleProjectile: {
+        damage: '5D',
+        weightKg: 0.4,
+        costCr: 25,
+        traits: { 'Lo-Pen': 3, Spread: 2 },
+      },
+    },
   },
   ASSW: {
-    range: 300,
-    damage: '5D',
+    range: 200,
     weightKg: 0.5,
-    costCr: 90,
-    traits: { Blast: 3, 'Lo-Pen': 2 },
+    warheads: {
+      fragmentation: {
+        range: 300,
+        damage: '5D',
+        costCr: 90,
+        traits: { Blast: 3, 'Lo-Pen': 2 },
+      },
+      multipleProjectile: {
+        damage: '6D',
+        weightKg: 0.9,
+        costCr: 40,
+        traits: { 'Lo-Pen': 3, Spread: 4 },
+      },
+      distraction: {
+        weightKg: 0.6,
+        costCr: 150,
+        traits: { Distraction: 'potent' },
+      },
+      incapacitantGas: { costCr: 125, traits: { Blast: 3 } },
+      baton: { costCr: 25, traits: { Stun: '2D' } },
+      stun: { costCr: 75, traits: { Blast: 9, Stun: '3D' } },
+    },
   },
   TMMS: {
     range: 1000,
@@ -533,6 +743,15 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     magazineCr: 750,
     quickdraw: -9,
     traits: { Auto: 3, Bulky: true, Scope: true },
+    variants: {
+      'Chain Gun': { weightKg: 56.7, costCr: 28100, traits: { Auto: 4 } },
+      'Twin Chain Gun': {
+        damage: '7D',
+        weightKg: 113.4,
+        costCr: 56200,
+        traits: { Auto: 4 },
+      },
+    },
   },
   'MDS-15': {
     range: 550,
@@ -542,7 +761,34 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     capacity: 7,
     magazineCr: 150,
     quickdraw: -9,
-    traits: { Bulky: true, Scope: true },
+    traits: { Bulky: true },
+    ammo: {
+      ball: { traits: { Scope: true } },
+      apAdvanced: {
+        damage: '5D-5',
+        magazineCr: 480,
+        traits: { AP: 6, Scope: true },
+      },
+    },
+    variants: {
+      'cut down': {
+        range: 250,
+        weightKg: 10.76,
+        costCr: 47435,
+        ammo: {
+          explosive: {
+            damage: '7D-3',
+            magazineCr: 650,
+            traits: { 'Lo-Pen': 2 },
+          },
+          pellet: {
+            damage: '5D-3',
+            magazineCr: 150,
+            traits: { 'Lo-Pen': 4, Spread: 3 },
+          },
+        },
+      },
+    },
   },
   'TES-12': {
     range: 625,
@@ -557,6 +803,9 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     // Book error: the table prints 8D but omits Improved Beam Focus's +3 (the
     // engine's 8D+3 is correct). Spot-ignored so it doesn't clutter the list.
     ignore: ['damage'],
+    variants: {
+      'TEA-12': { range: 450, weightKg: 10.01, costCr: 17500, quickdraw: -4 },
+    },
   },
 };
 

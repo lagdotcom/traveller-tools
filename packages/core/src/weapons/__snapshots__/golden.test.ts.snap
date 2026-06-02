@@ -861,7 +861,7 @@ exports[`golden master — built-in weapon evaluations > reproduces BL-3 1`] = `
 }
 `;
 
-exports[`golden master — built-in weapon evaluations > reproduces Bodyguard Shotgun 1`] = `
+exports[`golden master — built-in weapon evaluations > reproduces Bodyguard 1`] = `
 {
   "ammoProfiles": [
     {
@@ -4742,7 +4742,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Sentinel 1`]
 }
 `;
 
-exports[`golden master — built-in weapon evaluations > reproduces Shipmate Handgun 1`] = `
+exports[`golden master — built-in weapon evaluations > reproduces Shipmate 1`] = `
 {
   "ammoProfiles": [
     {

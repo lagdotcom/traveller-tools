@@ -678,18 +678,6 @@ function launcher(
   );
 }
 
-// function grenade(
-//   name: string,
-//   description: string,
-//   overrides: Partial<GrenadeParams>,
-// ): WeaponDefinition {
-//   return {
-//     name,
-//     description,
-//     params: { ...DEFAULT_GRENADE_PARAMS, ...overrides },
-//   };
-// }
-
 export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   weapon('Generic 6 Revolver', 'Medium-calibre repeater revolver', {
     tl: 6,
@@ -711,17 +699,28 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'none',
     capacityPct: 70,
   }),
-  weapon('Civilian Shotgun', 'Single-shot double-barrel light smoothbore', {
-    tl: 4,
-    receiver: 'longarm',
-    calibre: 'lightSmoothbore',
-    mechanism: 'singleShot',
-    features: ['partialMultiBarrel'],
-    barrel: 'rifle',
-    stock: 'full',
-    additionalBarrels: 1,
-    ammo: ['pellet'],
-  }),
+  weapon(
+    'Civilian Shotgun',
+    'Single-shot double-barrel light smoothbore',
+    {
+      tl: 4,
+      receiver: 'longarm',
+      calibre: 'lightSmoothbore',
+      mechanism: 'singleShot',
+      features: ['partialMultiBarrel'],
+      barrel: 'rifle',
+      stock: 'full',
+      additionalBarrels: 1,
+      ammo: ['pellet'],
+    },
+    undefined,
+    [
+      {
+        name: 'Sawed-Off',
+        override: { barrel: 'sawed-off', ammo: ['pellet', 'explosive'] },
+      },
+    ],
+  ),
   weapon('13mm Crunch Gun', 'Anti-materiel repeater with a very long barrel', {
     tl: 4,
     receiver: 'lsw',
@@ -732,8 +731,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'full',
     furniture: ['bipod'],
     accessories: ['scope'],
-    // Listed firing ball, explosive, incendiary and advanced AP (the latter
-    // three carry their own TL availability, flagged as warnings on a TL4 build).
     ammo: ['ball', 'explosive', 'incendiary', 'apAdvanced'],
   }),
   weapon('Flintlock Jazail', 'Long-barrelled archaic black-powder rifle', {
@@ -744,15 +741,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'rifle',
     stock: 'full',
     ammo: ['ball'],
-    // Representative build (no FC worksheet). A book jazail (a smoothbore) would
-    // read ~3D-2 / Inaccurate -1 / Lo-Pen 3; this archaic-rifle build gives 3D-3
-    // and no Inaccurate.
   }),
-  // reconcile: the worked Adjudicator lists its Handgun barrel at 0.12kg, which
-  // is 15% of the 0.8kg receiver — the barrel's *cost* fraction. The FC barrel
-  // table gives a Handgun barrel 20% weight (→ 0.16kg here), matching the
-  // Bodyguard worksheet's rifle barrel, so we follow the rules table (0.16kg)
-  // and treat the worksheet's 0.12kg as using the cost figure by mistake.
   weapon(
     'Adjudicator',
     'Small-smoothbore revolver',
@@ -779,7 +768,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       capacityPct: 130,
       barrel: 'assault',
       stock: 'full',
-      // reconcile: magazine reads Cr34.5 vs the book's Cr55 (gauss-shotgun ammo cost).
     },
     'Anhur Industries',
   ),
@@ -795,9 +783,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       autoIncrease: 2,
       capacityPct: 120,
       barrel: 'short',
-      // reconcile: AP 3 and Emissions (low) reproduce; receiver cost reads
-      // Cr1212.75 vs the book's Cr808.5 (unresolved). Verify weight: note's
-      // 0.7744kg no longer holds (current ~0.852kg, likely the 120% capacity).
     },
     'Anhur Industries',
   ),
@@ -812,6 +797,12 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'handgun',
     },
     'Anhur Industries',
+    [
+      {
+        name: 'Navy',
+        override: { barrel: 'assault', stock: 'full' },
+      },
+    ],
   ),
   weapon(
     'Stowaway',
@@ -837,17 +828,24 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       calibre: 'heavyHandgun',
       mechanism: 'repeater',
       features: ['partialMultiBarrel'],
-      barrel: 'minimal',
       stock: 'none',
-      additionalBarrels: 3, // '3x Extra Barrel, Minimal'
+      additionalBarrels: 3,
+      barrel: 'minimal',
       ammo: ['lowPenetration', 'heap'],
-      // reconcile: Quickdraw +12, Lo-Pen 3, Slow Loader 4
-      // TODO: Liberator Defender variant: short smg, supports ball/distraction/explosive
     },
     'Hangul Arms and Tactical',
+    [
+      {
+        name: 'Defender',
+        override: {
+          barrel: 'short',
+          ammo: ['ball', 'distraction', 'explosive'],
+        },
+      },
+    ],
   ),
   weapon(
-    'Bodyguard Shotgun',
+    'Bodyguard',
     'Standard-smoothbore repeater longarm',
     {
       tl: 8,
@@ -858,10 +856,18 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       accessories: ['laserPointer'],
       ammo: ['ball', 'pellet'],
-      // reconcile: Physical Signature reads high vs the book's normal (smoothbore signature).
-      // TODO Pointguard variant: shorter, no stock - TL10, 125m range, 3.25Kg, Cr180, Mag 3 (Cr4.5), Quickdraw +2, pellet only
     },
     'Harrix Industries',
+    [
+      {
+        name: 'Pointguard',
+        override: {
+          barrel: 'assault',
+          stock: 'none',
+          ammo: ['pellet'],
+        },
+      },
+    ],
   ),
   weapon(
     'Standard',
@@ -881,19 +887,22 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'carbine',
       stock: 'full',
       accessories: ['scope'],
-      // reconcile: (thinks Bullpup is +20% cost?), Mag Cost Cr30, Damage 2D, Physical Signature (normal)
     },
     'Interstellar Ordnance',
   ),
-  weapon('Mk 1 Handgun', 'Generic early semi-automatic pistol', {
-    tl: 5,
-    receiver: 'handgun',
-    calibre: 'heavyHandgun',
-    mechanism: 'semiAuto',
-    barrel: 'handgun',
-    // reconcile: does not list Bulky or Lo-Pen 2
-    // TODO: suppressed variant, Cr415, Quickdraw +5, Lo-Pen 2, Phys Sig (small)
-  }),
+  weapon(
+    'Mk 1 Handgun',
+    'Generic early semi-automatic pistol',
+    {
+      tl: 5,
+      receiver: 'handgun',
+      calibre: 'heavyHandgun',
+      mechanism: 'semiAuto',
+      barrel: 'handgun',
+    },
+    undefined,
+    [{ name: 'suppressed', override: { accessories: ['suppressor'] } }],
+  ),
   weapon(
     'Posi-9',
     'Upmarket semi-auto pistol',
@@ -905,10 +914,12 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       capacityPct: 150,
       features: ['advancedProjectile'],
       barrel: 'handgun',
-      // reconcile: Physical Signature (normal)
-      // TODO: burst and auto variants
     },
     'Tacload Armaments',
+    [
+      { name: 'burst', override: { mechanism: 'burst' } },
+      { name: 'auto', override: { mechanism: 'fullAuto' } },
+    ],
   ),
   weapon(
     'Crewmate',
@@ -932,8 +943,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     mechanism: 'fullAuto',
     barrel: 'assault',
     stock: 'full',
-    // reconcile: the book's Desperado also lists Inaccurate -1 (not modelled) and
-    // seems to charge +10% for full-auto, not the +20% rule.
   }),
   weapon('Eliminator', 'Extreme close quarters smg', {
     tl: 9,
@@ -945,8 +954,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     barrel: 'assault',
     stock: 'folding',
     ammo: ['ball', 'apAdvanced', 'enhancedWounding'],
-    // reconcile: receiver weight reads 1.25 vs the book's 2.079kg, Mag 18 vs 24
-    // (the book ignores the Compact penalty), and Physical Signature low vs normal.
   }),
   weapon(
     'IAW-12',
@@ -960,7 +967,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       autoIncrease: 1,
       barrel: 'assault',
       accessories: ['laserPointer'],
-      // reconcile: the book worksheet oddly charges 15% for 'No Stock' (not modelled).
     },
     'Interstellar Ordnance',
   ),
@@ -983,19 +989,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'carbine',
       stock: 'full',
       accessories: ['scope', 'laserPointer'],
-      // The standard 150% magazine (29 rounds), plus the book's two larger
-      // options: a 40-round casket (Cr40) and a heavy 70-round drum (Cr100). The
-      // FC gives no magazine weights, so `pct` sizes the loaded weight via the
-      // capacity-% rule (drum heavier than casket). Book note (not modelled): with
-      // any magazine fitted the Planetsider's mass absorbs recoil, dropping Bulky.
       magazines: [
         { label: 'Standard' },
         { label: 'Casket', rounds: 40, costCr: 40, pct: 210 },
-        { label: 'Drum', rounds: 70, costCr: 100, pct: 360 },
+        { label: 'Drum', rounds: 70, costCr: 100, pct: 360 }, // TODO drops Bulky
       ],
-      // reconcile: 'Heavy Handgun ammo' adds +15% weight but no cost
-      // reconcile: Receiver Totals Cr1264, 3.13kg
-      // reconcile: Range 55m, Quickdraw +5, no Lo-Pen
     },
     'Unified Space Industries',
   ),
@@ -1011,11 +1009,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       barrel: 'carbine',
       stock: 'full',
       accessories: ['multispectralScope'],
-      // reconcile: AP reads 5 vs the book's 3 (standard gauss AP) — and the book
-      // calls it both GR-80 and GR-90.
-      // extra thing: "In addition to the standard GR-90, a light support variant is offered, built on the same receiver but using a heavy, heat-dissipating barrel. This is significantly longer than the standard carbine barrel, but in all other ways the support version is identical to the infantry  weapon. As a result any trooper in a squad can take over the support weapon at need. A 150-round extension magazine is issued to support gunners, though since the weapon can use either it is often ‘borrowed’ by rifle-armed soldiers when their own ammunition runs low." -- GR-90A, Range 600m, Cr3120, Mag 150 (Cr100), Quickdraw -2, AP 3, Auto 3, Emissions Signature (low), Scope -- I have no idea how to build this???
     },
     'Anhur Industries',
+    [{ name: 'GR-80A', override: { heavyBarrel: true } }],
   ),
   weapon(
     'AIWS',
@@ -1031,9 +1027,13 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       furniture: ['modularisation'],
       accessories: ['scope'],
-      // TODO: carbine, support, assault configurations
     },
     'Interstellar Ordnance',
+    [
+      { name: 'carbine', override: { barrel: 'carbine', stock: 'folding' } },
+      { name: 'lsw', override: { heavyBarrel: true, feed: 'extended' } },
+      { name: 'assault', override: { barrel: 'assault', stock: 'none' } },
+    ],
   ),
   weapon(
     'Intruder',
@@ -1045,7 +1045,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       mechanism: 'fullAuto',
       features: ['bullpup', 'highCapacity', 'quickdraw'],
       barrel: 'carbine',
-      stock: 'fixed', // a fixed stock (+10% cost / +10% weight)
+      stock: 'fixed',
       secondary: {
         tl: 8,
         receiver: 'assault',
@@ -1063,10 +1063,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         capacityPct: 100,
         accessories: [],
         ammo: ['ball'],
-        // reconcile: "Accessory: Secondary Receiver (Standard Smoothbore, Complete)" Cr+10%, Weight+10%
-        // reconcile: "Accessory: Secondary Barrel (Handgun)" Cr+20%, Weight+20%
       },
-      // The worked example's "Optical Sight" (Cr500/0.5kg) is the Long-Range Scope.
       accessories: ['laserPointer', 'longRangeScope'],
     },
     'Tacload Armaments',
@@ -1084,6 +1081,16 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // TODO: marksman variant - accurised, longer barrel, scope - 4.825kg, Cr1280
     },
     'Tactical Systems Incorporated',
+    [
+      {
+        name: 'Marksman',
+        override: {
+          features: ['accurised'],
+          barrel: 'long',
+          accessories: ['scope'],
+        },
+      },
+    ],
   ),
   weapon(
     'Sentinel',
@@ -1101,7 +1108,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     'BeraTech',
   ),
   weapon(
-    'Shipmate Handgun',
+    'Shipmate',
     'Configurable low-recoil weapon',
     {
       tl: 9,
@@ -1112,16 +1119,16 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       features: ['highCapacity', 'rugged', 'vacuum'],
       barrel: 'handgun',
       furniture: ['modularisation'],
-      // TODO 'assault weapon' and 'carbine' variants
     },
     'Unified Space Industries',
+    [
+      { name: 'assault', override: { barrel: 'assault', stock: 'folding' } },
+      {
+        name: 'carbine',
+        override: { barrel: 'carbine', stock: 'fixed', accessories: ['scope'] },
+      },
+    ],
   ),
-  // reconcile: cost matches (Cr170.625 vs the worksheet's Cr170.25, ~Cr0.4 of
-  // rounding) and the primary damage/Lo-Pen reproduce. Still off: weight (0.99 vs
-  // 0.928875kg — the worksheet bases the handgun at 0.75kg, the FC table at 0.8kg)
-  // and Quickdraw (9 vs 7). The secondary's pellet profile (range, Spread, damage)
-  // isn't reproduced: the worksheet's smoothbore figures don't follow the pellet
-  // range / Pellet Spread tables.
   weapon(
     'Ten-Six',
     'snub revolver with an under-barrel smoothbore',
@@ -1160,20 +1167,18 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 9,
       receiver: 'lsw',
-      calibre: 'heavyRifle', // Heavy Rifle (Rocket)
+      calibre: 'heavyRifle',
       mechanism: 'fullAuto',
       features: ['vacuum'],
       barrel: 'long',
       stock: 'full',
-      accessories: ['laserPointer'], // book error: says 'Scope', but Cr200 0.1kg
+      accessories: ['laserPointer'],
       ammo: ['ball', 'explosive', 'heap'],
-      // Book lists Mag 45 (a rocket-calibre quirk we don't derive), one per ammo.
       magazines: [
         { ammo: 'ball', rounds: 45, costCr: 270 },
         { ammo: 'explosive', rounds: 45, costCr: 1400 },
         { ammo: 'heap', rounds: 45, costCr: 2300 },
       ],
-      // reconcile: ball - 275m, 4D, QD -4, Inaccurate -1, Phys Sig (normal), Zero-G (rocket calibre not modelled)
     },
     'BeraTech',
   ),
@@ -1190,19 +1195,16 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         'rugged',
         'lightweight',
         'accurised',
-        'highQuality', // book error: says Cost +100%
+        'highQuality',
       ],
       barrel: 'long',
       stock: 'full',
       accessories: ['holographicSight'],
       ammo: ['ball', 'apAdvanced'],
-      // Book reloads: ball Cr200, advanced AP Cr275 (the derived prices miss a
-      // gauss ammo premium); capacity 45 derives correctly.
       magazines: [
         { ammo: 'ball', costCr: 200 },
         { ammo: 'apAdvanced', costCr: 275 },
       ],
-      // reconcile: Quickdraw +0
     },
     'Diversified Military Systems',
   ),
@@ -1302,46 +1304,44 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       receiver: 'minimal',
       damageDice: 2,
       barrel: 'minimal',
-      // Fed by 3 disposable weak energy cartridges (3 × 0.01 = 0.03kg).
-      powerSource: 'cartridge',
-      cartridgeRating: 'weak',
-      cartridgeCount: 3,
+      packs: [{ kind: 'powerpack', rating: 'weak', kg: 0.3 }],
     },
     'Personal Security Solutions',
   ),
-  energyWeapon('M-84', 'Battlefield configurable laser weapon', {
-    tl: 11,
-    receiver: 'medium',
-    damageDice: 5,
-    mods: ['efficientBeam', 'improvedFocus'],
-    barrel: 'carbine',
-    stock: 'folding',
-    // Internal powerpack: 0.1kg → Power 70 at TL11 (perKg 700). The standard
-    // belt pack (1kg) and backpack (3kg) are larger options.
-    powerSource: 'powerpack',
-    powerpackRating: 'standard',
-    powerpackKg: 0.1,
-  }),
+  energyWeapon(
+    'M-84',
+    'Battlefield configurable laser weapon',
+    {
+      tl: 11,
+      receiver: 'medium',
+      damageDice: 5,
+      mods: ['efficientBeam', 'improvedFocus'],
+      barrel: 'carbine',
+      stock: 'folding',
+      packs: [
+        { kind: 'powerpack', label: 'internal', kg: 0.1, rating: 'standard' },
+        { kind: 'powerpack', label: 'belt pack', kg: 1, rating: 'standard' },
+        { kind: 'powerpack', label: 'back pack', kg: 3, rating: 'standard' },
+      ],
+    },
+    undefined,
+    [{ name: 'rifle', override: { barrel: 'rifle' } }],
+  ),
   energyWeapon('Nefertem', 'Compact TL9 laser pistol', {
     tl: 9,
     receiver: 'small',
     damageDice: 3,
     barrel: 'assault',
     stock: 'none',
-    // Body Cr960 / 1.95kg (Small Cr800/1.5 + Assault barrel); + a 1kg light
-    // powerpack. Small receiver → Quickdraw +4 (pistol-class); base pen −1 →
-    // Lo-Pen 2.
-    powerSource: 'powerpack',
-    powerpackRating: 'light',
-    powerpackKg: 1,
+    packs: [{ kind: 'powerpack', rating: 'light', kg: 1 }],
   }),
   launcher(
     'IP-2',
     'Standoff incendiary weapon',
     {
       tl: 8,
-      receiver: 'tubeSingleLight', // reconcile: Disposable Launcher - 0.25kg, Quickdraw -8, Bulky
-      warheads: [{ type: 'incendiaryAntipersonnel' }], // reconcile: Incendiary Rocket-Propelled Grenade - Cr75, 0.5kg
+      receiver: 'tubeSingleLight',
+      warheads: [{ type: 'incendiaryAntipersonnel' }],
       delivery: 'rpg',
     },
     'Krabbine Heavy Industries',
@@ -1349,37 +1349,27 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
   launcher('Spigot Mortar', 'General-purpose RPG launcher', {
     tl: 6,
     receiver: 'reuseSingleLight',
-    warheads: [{ type: 'antiArmour' }], // reconcile: Rocket-Propelled Grenade - Cr150, 5kg
+    warheads: [{ type: 'antiArmour' }],
     delivery: 'rpg',
-    // reconcile: Damage 10D, AP 12, Blast 4
   }),
   launcher(
     'Light Munitions Launcher',
-    // Whaite Industries worked example: a semi-auto light tube made Lightweight +
-    // Bullpup with an Assault barrel and full stock. Receiver Cr750/2.0kg, +Assault
-    // barrel +full stock → 2.8kg. reconcile: the worksheet totals Cr940; the
-    // firearm-style barrel/stock percentages give Cr975 (a ~Cr35 over-count we keep
-    // flagged rather than fudge — the user is the authority on the exact figure).
     'semi-auto light tube launcher',
     {
       tl: 7,
-      receiver: 'tubeSemiLight', // reconcile: Quickdraw -8
-      // Light (mini) cartridges. Primary is the multiple-projectile round; the
-      // book also lists incapacitant gas, baton and distraction (each its own
-      // profile row). gasIncapacitant isn't made as a mini, so it falls back to hand.
-      warheads: [
-        { type: 'gasIncapacitant' },
-        { type: 'baton' },
-        { type: 'distraction' },
-        { type: 'multipleProjectile' },
-      ],
+      receiver: 'tubeSemiLight',
       warheadSize: 'mini',
       delivery: 'cartridge',
       features: ['lightweight', 'bullpup'],
       barrel: 'assault',
       stock: 'fixed',
-      // reconcile: Totals = Cr940, 2.8kg (does not count the warhead)
-      // reconcile: multiple projectile = 0.4kg, Cr25
+      warheads: [
+        { type: 'fragmentation', delivery: 'ram' },
+        { type: 'gasIncapacitant' },
+        { type: 'baton' },
+        { type: 'distraction' },
+        { type: 'multipleProjectile' },
+      ],
     },
     'Whaite Industries',
   ),
@@ -1388,10 +1378,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     'Rotary-fed RAM grenade launcher',
     {
       tl: 9,
-      receiver: 'reuseSingleHeavy', // reconcile: Semi-Automatic Grenade Launcher, Standard - Quickdraw -8
-      // Primary is the guided-frag RAM round; the other five are cartridge grenades
-      // (per-munition delivery). Guidance is launcher-wide here (it adds Smart to
-      // every round + 50% receiver cost), so the cartridge rounds also read Smart.
+      receiver: 'reuseSingleHeavy',
       guidance: true,
       delivery: 'ram',
       warheads: [
@@ -1402,10 +1389,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         { type: 'baton', delivery: 'cartridge' },
         { type: 'stun', delivery: 'cartridge' },
       ],
-      // book error: Receiver Totals Cr6500 (extra 0), 3.85kg
-      // reconcile: Accessories: Fixed Drum - Cr325, 3kg - Capacity 6 rounds
-      // reconcile: guided fragmentation is plain fragmentation + guidance (so Blast
-      // reads 9, not the book's reduced 3); RAM Guided Frag - TL9, 300m, 5D, Cr90.
     },
     'Interstellar Ordnance',
   ),
@@ -1415,93 +1398,77 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     {
       tl: 10,
       receiver: 'reuseMagLight',
-      missiles: ['av7'], // Ammunition Type: Light Tac Missile
+      missiles: ['av7'],
       features: ['lightweight', 'veryCompact'],
-      guidance: true, // TODO: why is this not a feature?
-      // book error: Receiver Totals Cr1127.9, 7.68kg
+      guidance: true,
     },
     'Xeirbin Components',
   ),
-  weapon('MDD-15', 'heavy machine-gun', {
-    tl: 8,
-    receiver: 'heavy', // our 'Heavy Weapon' receiver = the FC support receiver: Cr3000, 10kg, QD-8, base mag 50
-    calibre: 'antiMateriel',
-    mechanism: 'fullAuto',
-    barrel: 'long',
-    heavyBarrel: true,
-    stock: 'none',
-    furniture: ['supportMount'], // a mount, not a shoulder stock — Cr900, 10kg
-    accessories: ['scope'],
-    // Belt feed: Mag 50 (Cr750) is a manual override (the % rule under-derives it).
-    magazines: [{ rounds: 50, costCr: 750 }],
-
-    // all versions: 550m, 50 Mag (Cr750), Quickdraw -9, Bulky, Scope
-    // 5D / Auto 3 / Mag 50 (Cr750) / range 550m reproduce. reconcile: cost/weight
-    // run high (Cr20300/52.7kg vs Cr9050/35.2kg) — the book applies no anti-materiel
-    // calibre cost/weight multiplier on the support receiver, but the engine does
-    // (the ×2.5/×1.5 is needed & correct for the Crunch Gun on an LSW, so it's a
-    // receiver-dependent rule the model doesn't capture). QD-10 vs -9: long + heavy
-    // barrel each cost -1, the book counts the pair as -1.
-    // reconcile: Heavy Machinegun - 5D, 35.2kg, Cr9050 - Auto 3
-    // reconcile: Chain Gun - 5D, 56.7kg, Cr28100 - Auto 4 [needs powered feed system, pintle/ring mount]
-    // reconcile: Twin Chain Gun - 7D, 113.4kg, Cr56200 - Auto 4 [needs small turret]
-  }),
-  weapon('MDS-15', 'heavy projectile weapon', {
-    tl: 8,
-    receiver: 'heavy', // same as MDD (FC support receiver)
-    calibre: 'antiMateriel',
-    mechanism: 'semiAuto',
-    features: [
-      'compact',
-      'rugged',
-      'lightweight',
-      { id: 'recoilComp', level: 2 },
-      'accurised',
-      'highQuality',
+  weapon(
+    'MDD-15',
+    'heavy machine-gun',
+    {
+      tl: 8,
+      receiver: 'heavy',
+      calibre: 'antiMateriel',
+      mechanism: 'fullAuto',
+      barrel: 'long',
+      heavyBarrel: true,
+      stock: 'none',
+      furniture: ['supportMount'],
+      accessories: ['scope'],
+      magazines: [{ rounds: 50, costCr: 750 }],
+    },
+    undefined,
+    [
+      { name: 'Chain Gun', override: { feed: 'belt' } },
+      { name: 'Twin Chain Gun', override: { feed: 'belt' } },
     ],
-    capacityPct: 50,
-    barrel: 'long',
-    stock: 'full',
-    accessories: ['scope'],
-    furniture: ['bipod'],
-    // Mag 7 (Cr150) is a manual override (the book-listed count/price).
-    magazines: [{ rounds: 7, costCr: 150 }],
-
-    // all versions: Mag 7, Quickdraw -9, Bulky
-    // 5D-3 / Mag 7 (Cr150) / range 550m reproduce. reconcile: cost/weight run high
-    // (Cr83961/20.29kg vs Cr59720/13.61kg) — same receiver-dependent anti-materiel
-    // multiplier as the MDD-15 (correct for the Crunch on an LSW, not applied by the
-    // book on the support receiver). QD-13 vs -9.
-    // reconcile: MDS-15 - 550m, 5D-3, 13.61kg, Cr59720, Mag Cr150 - Scope
-    // reconcile: MDS-15 (advanced AP) - 550m, 5D-5, 13.61kg, Cr59720, Mag Cr480 - AP 6, Scope
-    // reconcile: MDS-15 (cut down, explosive) - 250m, 7D-3, 10.76kg, Cr47435, Mag Cr650 - Lo-Pen 2
-    // reconcile: MDS-15 (cut down, pellet) - 250m, 5D-3, 10.76kg, Cr47435, Mag Cr150 - Lo-Pen 4, Spread 3
-  }),
-  energyWeapon('TES-12', 'laser support weapon', {
-    tl: 12, // prose places it at TL12 (and the Efficient Beam / Improved Focus mods need TL11)
-    receiver: 'large',
-    damageDice: 8,
-    // A heavy (8D) powerpack drives the 8D output without Unreliable.
-    powerpackRating: 'heavy',
-    mods: ['efficientBeam', 'improvedFocus'],
-    barrel: 'long',
-    stock: 'full',
-    accessories: ['scope', 'laserDesignator'],
-    furniture: ['bipod'],
-    // Accessory: Internal Power Pack (1kg) - Cr2500, Power 1000 (the heavy powerpack)
-
-    // all versions: 8D, Mag 125 (Cr2500), Bulky, Emis (low), Lo-Pen 2, Scope, Zero-G
-    // Mag 125 / Lo-Pen 2 / Zero-G / Scope / cost (Cr19500) / weight (13.7kg) all
-    // reproduce — the heavy powerpack drives 8D without Unreliable and the
-    // weapon-mounted Laser Designator closes the last Cr1000 / 0.2kg.
-    // book error: damage is 8D+3 — the table omits Improved Beam Focus's +3.
-    // range 688m reproduces the listed components (500 base × Efficient Beam ×1.25
-    // × Long barrel ×1.1). reconcile: QD-13 vs the book's -9 (the model counts the
-    // stock/bipod/scope QD the book's receiver+barrel breakdown omits); signature
-    // Emis(normal) vs (low).
-    // reconcile: TES-12 - 625m, 13.7kg, Cr19500, Quickdraw -9
-    // reconcile: TEA-12 - 450m, 10.01kg, Cr17500, Quickdraw -4 [carbine, folding stock]
-  }),
+  ),
+  weapon(
+    'MDS-15',
+    'heavy projectile weapon',
+    {
+      tl: 8,
+      receiver: 'heavy',
+      calibre: 'antiMateriel',
+      mechanism: 'semiAuto',
+      features: [
+        'compact',
+        'rugged',
+        'lightweight',
+        { id: 'recoilComp', level: 2 },
+        'accurised',
+        'highQuality',
+      ],
+      capacityPct: 50,
+      barrel: 'long',
+      stock: 'full',
+      accessories: ['scope'],
+      furniture: ['bipod'],
+      magazines: [{ rounds: 7, costCr: 150 }],
+      ammo: ['ball', 'apAdvanced'],
+    },
+    undefined,
+    [{ name: 'cut down', override: { barrel: 'assault' } }],
+  ),
+  energyWeapon(
+    'TES-12',
+    'laser support weapon',
+    {
+      tl: 12,
+      receiver: 'large',
+      damageDice: 8,
+      powerpackRating: 'heavy',
+      mods: ['efficientBeam', 'improvedFocus'],
+      barrel: 'long',
+      stock: 'full',
+      accessories: ['scope', 'laserDesignator'],
+      furniture: ['bipod'],
+    },
+    undefined,
+    [{ name: 'TEA-12', override: { barrel: 'carbine', stock: 'folding' } }],
+  ),
 ];
 
 // Closeguard point-defence system → weapons/heavyWeapons.ts (POINT_DEFENCE_SYSTEMS):

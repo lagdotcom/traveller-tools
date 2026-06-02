@@ -48,8 +48,8 @@ describe('worked examples — base receiver & grand totals', () => {
     expect(r.issues.filter((i) => i.severity === 'error')).toEqual([]);
   });
 
-  it('Bodyguard Shotgun (longarm · standard smoothbore · repeater)', () => {
-    const r = evalNamed('Bodyguard Shotgun');
+  it('Bodyguard (longarm · standard smoothbore · repeater)', () => {
+    const r = evalNamed('Bodyguard');
     expect(r.breakdown[0].costCr).toBeCloseTo(400, 3); // base longarm
     expect(r.breakdown[0].weightKg).toBeCloseTo(2.5, 3);
     // Weight matches the worksheet exactly; the cost total differs only because
@@ -291,7 +291,7 @@ describe('penetration / Lo-Pen / AP (Final Penetration table)', () => {
 describe('smoothbore Bulky (Recoil Effects table) & gauss signature', () => {
   it('a small-smoothbore handgun is Bulky; standard-smoothbore handgun is impossible', () => {
     expect(evalNamed('Adjudicator').profile.traits['Bulky']).toBe(true);
-    expect(evalNamed('Bodyguard Shotgun').profile.traits['Bulky']).toBe(true);
+    expect(evalNamed('Bodyguard').profile.traits['Bulky']).toBe(true);
     const bad = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
       receiver: 'handgun',
@@ -637,7 +637,7 @@ describe('robustness & serialization', () => {
   });
 
   it('resolves a variant as a shallow override of the base (kind kept)', () => {
-    const base = byName('Bodyguard Shotgun'); // longarm, rifle barrel, full stock
+    const base = byName('Bodyguard'); // longarm, rifle barrel, full stock
     const v = variantParams(base, { barrel: 'short', stock: 'none' });
     expect(v.kind).toBe('firearm');
     expect((v as { barrel: string }).barrel).toBe('short');

@@ -720,7 +720,6 @@ export interface StockDef {
 export const STOCKS: Record<StockId, StockDef> = {
   none: { label: 'No Stock', costPct: 0, weightPct: 0 },
   folding: { label: 'Folding Stock', costPct: 0.15, weightPct: 0.05 },
-  // A fixed (non-folding) stock — same +10%/+10% as a full stock.
   fixed: { label: 'Fixed Stock', costPct: 0.1, weightPct: 0.1 },
   full: { label: 'Full Stock', costPct: 0.1, weightPct: 0.1 },
 };
