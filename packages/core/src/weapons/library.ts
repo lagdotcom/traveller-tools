@@ -1290,10 +1290,10 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // book also lists incapacitant gas, baton and distraction (each its own
       // profile row). gasIncapacitant isn't made as a mini, so it falls back to hand.
       warheads: [
-        { type: 'multipleProjectile' },
         { type: 'gasIncapacitant' },
         { type: 'baton' },
         { type: 'distraction' },
+        { type: 'multipleProjectile' },
       ],
       warheadSize: 'mini',
       delivery: 'cartridge',
