@@ -3941,7 +3941,7 @@ exports[`golden master — built-in weapon evaluations > reproduces MF-61 1`] = 
       "Bulwarked": 3,
       "Burn": "D3+1",
       "Hazardous": -6,
-      "Incendiary": 1,
+      "Incendiary": 0,
     },
   },
   "sources": [

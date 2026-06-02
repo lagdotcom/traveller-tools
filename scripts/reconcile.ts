@@ -41,7 +41,7 @@ interface BookFigures {
   /** '<kind> (<level>)', e.g. 'physical (extreme)'. */
   signature?: string;
   /** Only the distinctive traits to check (AP, Lo-Pen, Blast, …). */
-  traits?: Record<string, number | boolean>;
+  traits?: Record<string, number | string | boolean>;
   /**
    * Spot exceptions: field names to skip (a confirmed book error the engine is
    * right about). Use a `note` to record why. Field names match the report's
@@ -424,6 +424,9 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
       Hazardous: -6,
       Incendiary: true,
     },
+    // The book stat block lists Burn/Incendiary, but the Cryojet burns cryogenic
+    // fluid (no fire) — a transcription carry-over; the engine is right to omit them.
+    ignore: ['trait Burn', 'trait Incendiary'],
   },
   'BL-3': {
     range: 5,
@@ -554,9 +557,12 @@ const SHOW_ROUNDING = process.argv.includes('--rounding');
  */
 const TRAIT_NORMALIZE: Record<
   string,
-  (v: number | boolean) => number | boolean
+  (v: number | string | boolean) => number | string | boolean
 > = {
+  // Inaccurate is always a penalty; the book prints its sign at random (OCR).
   Inaccurate: (v) => (typeof v === 'number' ? -Math.abs(v) : v),
+  // "Incendiary" with no modifier means Incendiary 0 (Weapon Traits chapter).
+  Incendiary: (v) => (v === true ? 0 : v),
 };
 
 const n = (v: number) => String(Math.round(v * 10000) / 10000);

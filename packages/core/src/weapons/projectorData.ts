@@ -172,7 +172,8 @@ export const PROJECTOR_FUELS: Record<ProjectorFuelId, ProjectorFuelDef> = {
     minTL: 9,
     damage: d(5),
     costPerKg: 150,
-    traits: { Incendiary: 1, Burn: 'D3+1' },
+    // FC prose lists advanced fuel as just "Incendiary" (no modifier) = Incendiary 0.
+    traits: { Incendiary: 0, Burn: 'D3+1' },
   },
   cryogenic: {
     label: 'Cryogenic',
