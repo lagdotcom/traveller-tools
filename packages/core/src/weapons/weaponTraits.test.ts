@@ -9,6 +9,10 @@ describe('weapon traits glossary', () => {
       expect(t.key).toBeTruthy();
       expect(t.description.length).toBeGreaterThan(20);
       expect(t.source).toBe('Field Catalogue');
+      // The summary is a one-liner for the sheet's Notes list (matches the
+      // length of the existing component notes, ~ up to one wrapped line).
+      expect(t.summary.length).toBeGreaterThan(10);
+      expect(t.summary.length).toBeLessThanOrEqual(80);
     }
   });
 

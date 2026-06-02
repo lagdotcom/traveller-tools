@@ -13,6 +13,7 @@ import type {
   AccessoryId,
   AmmoTypeId,
   BarrelId,
+  BookSource,
   CalibreId,
   Damage,
   FeedId,
@@ -27,7 +28,7 @@ import type {
   Traits,
 } from './types.js';
 
-export const SOURCE = 'Field Catalogue';
+export const SOURCE: BookSource = 'Field Catalogue';
 
 const d = (dice: number, mod = 0, die: 3 | 6 = 6): Damage => ({
   dice,

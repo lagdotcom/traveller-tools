@@ -38,6 +38,13 @@ export type SignatureLevel = (typeof SIGNATURE_LEVELS)[number];
 /** A weapon trait with an optional numeric score (e.g. `Auto 3`, `Bulky`). */
 export type Traits = Record<string, number | true>;
 
+/** The MgT2 rulebooks a piece of data can come from (provenance, for the sheet). */
+export type BookSource =
+  | 'Core Rulebook'
+  | 'High Guard'
+  | 'Field Catalogue'
+  | 'Central Supply Catalogue';
+
 // --- Selectable ids ---------------------------------------------------------
 
 export type ReceiverTypeId =

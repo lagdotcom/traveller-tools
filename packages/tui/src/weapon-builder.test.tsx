@@ -135,6 +135,9 @@ describe('Weapon builder (real Ink)', () => {
     await ui.waitFor('Weapon Library');
     await ui.type(ENTER); // load the first built-in (Generic 6 Revolver)
     await ui.waitFor('Weapon Builder — Generic 6 Revolver');
+    // The sheet links the traits glossary into the Notes list: the revolver's
+    // Lo-Pen trait gets its one-line summary.
+    await ui.waitFor('Lo-Pen:');
     ui.unmount();
     expect(ui.errors()).toEqual([]);
   });

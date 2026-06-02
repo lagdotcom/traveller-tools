@@ -1,4 +1,5 @@
 import {
+  findWeaponTrait,
   formatDamage,
   type WeaponEvaluation,
   type WeaponProfile,
@@ -7,6 +8,15 @@ import { Box, Text, useStdout } from 'ink';
 import React from 'react';
 
 import { SourcesPanel } from './SourcesPanel.js';
+
+/** Glossary one-liners for the FC traits this weapon carries (sheet Notes list). */
+function traitNotes(profile: WeaponProfile): string[] {
+  return Object.keys(profile.traits)
+    .map((key) => findWeaponTrait(key))
+    .filter((t) => t !== undefined)
+    .map((t) => `${t.key}: ${t.summary}`)
+    .sort((a, b) => a.localeCompare(b));
+}
 
 /** Format the trait map the way the book lists them: `Auto 3, Lo-Pen 2`. */
 function formatTraits(profile: WeaponProfile): string {
@@ -199,16 +209,20 @@ export function WeaponSheet({
         </Box>
       ) : null}
 
-      {evaluation.notes && evaluation.notes.length > 0 ? (
-        <Box marginTop={1} flexDirection="column">
-          <Text bold>Notes</Text>
-          {evaluation.notes.map((n, i) => (
-            <Text key={i} dimColor wrap="wrap">
-              · {n}
-            </Text>
-          ))}
-        </Box>
-      ) : null}
+      {(() => {
+        // Component play-rule notes plus a glossary one-liner per FC trait.
+        const notes = [...(evaluation.notes ?? []), ...traitNotes(profile)];
+        return notes.length > 0 ? (
+          <Box marginTop={1} flexDirection="column">
+            <Text bold>Notes</Text>
+            {notes.map((n, i) => (
+              <Text key={i} dimColor wrap="wrap">
+                · {n}
+              </Text>
+            ))}
+          </Box>
+        ) : null;
+      })()}
 
       <SourcesPanel sources={sources} />
     </Box>

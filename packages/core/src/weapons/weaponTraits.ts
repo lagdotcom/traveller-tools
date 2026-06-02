@@ -9,6 +9,8 @@
  * profile, so `findWeaponTrait` can look one up from a built weapon's traits.
  */
 
+import type { BookSource } from './types.js';
+
 /** A reference sub-table shown under a trait (Hazard Levels, Flammability, …). */
 export interface TraitTable {
   columns: [string, string];
@@ -20,7 +22,10 @@ export interface WeaponTraitDef {
   key: string;
   /** Display name including its score notation, e.g. 'Lo-Pen X', 'Hazardous -X'. */
   label: string;
-  source: string;
+  source: BookSource;
+  /** One-line gist, sized for the weapon sheet's Notes list. */
+  summary: string;
+  /** The full glossary entry shown on the Weapon traits reference screen. */
   description: string;
   table?: TraitTable;
 }
@@ -30,6 +35,7 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Burn',
     label: 'Burn X',
     source: 'Field Catalogue',
+    summary: 'Deals half its initial damage each round for Burn-score rounds.',
     description:
       'Delivers half its initial damage for a number of rounds equal to its Burn score.',
   },
@@ -37,6 +43,7 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Corrosion-Resistant',
     label: 'Corrosion-Resistant (+X)',
     source: 'Field Catalogue',
+    summary: 'Reduces the corrosive damage the item takes by its score.',
     description:
       'An item or device degraded by corrosion to a lesser degree (the score reduces corrosive damage it takes).',
   },
@@ -44,6 +51,7 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Corrosive',
     label: 'Corrosive',
     source: 'Field Catalogue',
+    summary: 'Does damage over time and can destroy armour.',
     description:
       'Does damage over time and can destroy armour (see the Corrosive weapons rules).',
   },
@@ -51,6 +59,8 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Emissions Signature',
     label: 'Emissions Signature (level)',
     source: 'Field Catalogue',
+    summary:
+      'Shows on sensors; the DM applies when they try to detect/locate it.',
     description:
       'Carried by any weapon with a power source or that generates heat (lasers, gauss, flame/cryo, plasma, fusion) — they show up readily on sensors. The Emissions Signature DM applies when sensors are used to detect and locate the weapon. A weapon without it is only found by specialist devices using human-like cues (e.g. acoustic), which use its Physical Signature instead.',
   },
@@ -58,6 +68,8 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Hazardous',
     label: 'Hazardous -X',
     source: 'Field Catalogue',
+    summary:
+      'On a malfunction (or if penetrated), a negative DM on the Malfunction table.',
     description:
       'Uses hazardous materials (generated plasma, flammable gels). It does not make the weapon dangerous to use, but increases the severity of a malfunction: on a malfunction, or if the weapon is penetrated by enemy fire, apply the Hazardous score as a negative DM on the Malfunction table. Typical propellants and batteries are a zero-DM hazard and do not grant the trait.',
     table: {
@@ -84,6 +96,7 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Inaccurate',
     label: 'Inaccurate -X',
     source: 'Field Catalogue',
+    summary: 'Negative DM to hit targets more than 10m away.',
     description:
       'A negative DM to hit a target more than 10m away (normally -1 or -2, more for a very ill-made weapon). Most smoothbores suffer it, though it rarely matters at shotgun ranges.',
   },
@@ -91,6 +104,8 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Incendiary',
     label: 'Incendiary X',
     source: 'Field Catalogue',
+    summary:
+      'Can set materials alight; the score is a positive DM to ignite them.',
     description:
       'Sets materials alight on a successful check determined by the material; the Incendiary score is a positive modifier to that check (default +0). A hot enough incendiary can ignite even metals.',
     table: {
@@ -108,6 +123,7 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Lo-Pen',
     label: 'Lo-Pen X',
     source: 'Field Catalogue',
+    summary: "Multiplies the target's armour by its score (poor penetration).",
     description:
       "Performs poorly against armour (score typically 2 or 3). The score is a multiple applied to the target's armour — a Lo-Pen (3) weapon vs Protection +5 treats it as +15. Low-velocity and pellet-firing weapons typically have it; it is sometimes desirable (e.g. aboard a spacecraft).",
   },
@@ -115,6 +131,8 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Physical Signature',
     label: 'Physical Signature (level)',
     source: 'Field Catalogue',
+    summary:
+      'Noise/flash level used to detect it when it has no Emissions Signature.',
     description:
       'Based on the noise, flash and disturbance of small objects from the propulsion mechanism or the passage of the beam/bolt/projectile. All firearms and energy weapons have some; when it is about handgun/rifle level there is no need to note it (detection and location are as normal).',
   },
@@ -122,6 +140,8 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Ramshackle',
     label: 'Ramshackle -X',
     source: 'Field Catalogue',
+    summary:
+      'Negative DM to attack rolls and malfunction results (crude/below-TL).',
     description:
       'Thrown together from available parts or poorly engineered (usually -1 to -4, sometimes more). The DM applies to attack rolls and to malfunction results. Building or repairing a weapon below its Tech Level imposes Ramshackle equal to the TL difference; it can be reduced by the Effect of a Mechanics check when repairing. Being Ramshackle does not by itself make a weapon Unreliable.',
   },
@@ -129,6 +149,7 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Slow Loader',
     label: 'Slow Loader X',
     source: 'Field Catalogue',
+    summary: 'Takes this many minor actions to reload.',
     description:
       'Fiddly to load: the score is how many minor actions are required to load the weapon (a fiddly SMG magazine ~2-4, a black-powder rifle 10+). An Average (8+) Gun Combat check reduces the loading time by its Effect, to a minimum of one minor action.',
   },
@@ -136,6 +157,7 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Spread',
     label: 'Spread X',
     source: 'Field Catalogue',
+    summary: 'Adds its score to attack rolls within base range.',
     description:
       'Fires multiple projectiles at once or in rapid succession (score usually 1-4). Within the weapon’s base range the firer adds the Spread value to all attack rolls. Combining with Inaccurate: Inaccurate does not apply within 10m (so Spread alone helps); between 10m and base range both apply — e.g. Spread (2) + Inaccurate (-1) nets +1.',
   },
@@ -143,6 +165,8 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
     key: 'Unreliable',
     label: 'Unreliable X',
     source: 'Field Catalogue',
+    summary:
+      'Roll an extra 1D; on a result ≤ the score the weapon malfunctions.',
     description:
       'Prone to malfunctions (score 1-5). Throw an extra 1D of a different colour with the usual 2D check; if it comes up equal to or less than the Unreliable score the weapon malfunctions — roll 2D on the Malfunction table (the user adds their combat skill as a positive DM; Weapon Power gives -1 per damage die and Hazardous applies its score).',
     table: {
