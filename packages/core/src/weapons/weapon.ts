@@ -608,6 +608,8 @@ function firearmComponents(
         const a = ACCESSORIES[id];
         if (!a) return noop;
         // Cost may be a flat Credit amount or a % of the receiver; weight likewise.
+        // A fully flat-priced accessory (no % of baseline) doesn't scale with it.
+        const isFlat = a.costPct === undefined && a.weightPct === undefined;
         return component((b) => ({
           label: a.label,
           cost: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
@@ -616,11 +618,13 @@ function firearmComponents(
           ),
           costMod: a.cost !== undefined ? undefined : pctOf(a.costPct ?? 0),
           weightMod: a.weightPct !== undefined ? pctOf(a.weightPct) : undefined,
+          ...(isFlat ? { flat: true } : {}),
         }));
       }),
       // A mounted secondary weapon is a complete extra barrel/receiver (FC p.34):
       // +10% of the host baseline (cost & weight) + the secondary's own barrel
       // (full cost, half weight). It keeps its own profile as a separate line.
+      // (The Ten-Six worked example reproduces on this half-weight basis.)
       when(
         !!params.secondary,
         component((b) => {

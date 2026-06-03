@@ -648,6 +648,13 @@ export interface WeaponLineItem {
   costMod?: string;
   /** Display override for the weight column (see `costMod`). */
   weightMod?: string;
+  /**
+   * This line is a flat-Cr / flat-kg add-on (a fixed-price accessory) that does
+   * NOT scale with the receiver baseline — unlike the receiver chain and the
+   * %-of-baseline components. The reconcile harness uses this to rescale only the
+   * baseline-derived portion when reproducing a book computation quirk.
+   */
+  flat?: boolean;
   /** Free-text notes for the "Other Factors" column. */
   notes?: string;
 }

@@ -176,6 +176,7 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,
@@ -339,6 +340,7 @@ exports[`golden master — built-in weapon evaluations > reproduces AIWS 1`] = `
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,
@@ -986,6 +988,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Bodyguard 1`
     {
       "cost": 200,
       "costMod": undefined,
+      "flat": true,
       "label": "Laser Pointer",
       "weight": 0.1,
       "weightMod": undefined,
@@ -1361,6 +1364,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Crewmate 1`]
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,
@@ -2272,6 +2276,7 @@ exports[`golden master — built-in weapon evaluations > reproduces GR-80 1`] = 
     {
       "cost": 600,
       "costMod": undefined,
+      "flat": true,
       "label": "Multispectral Scope",
       "weight": 0.5,
       "weightMod": undefined,
@@ -2659,6 +2664,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Guardian 1`]
     {
       "cost": 200,
       "costMod": undefined,
+      "flat": true,
       "label": "Laser Pointer",
       "weight": 0.1,
       "weightMod": undefined,
@@ -2818,6 +2824,7 @@ exports[`golden master — built-in weapon evaluations > reproduces IAW-12 1`] =
     {
       "cost": 200,
       "costMod": undefined,
+      "flat": true,
       "label": "Laser Pointer",
       "weight": 0.1,
       "weightMod": undefined,
@@ -3022,6 +3029,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Intruder 1`]
     {
       "cost": 200,
       "costMod": undefined,
+      "flat": true,
       "label": "Laser Pointer",
       "weight": 0.1,
       "weightMod": undefined,
@@ -3029,6 +3037,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Intruder 1`]
     {
       "cost": 500,
       "costMod": undefined,
+      "flat": true,
       "label": "Long-Range Scope",
       "weight": 0.5,
       "weightMod": undefined,
@@ -3764,6 +3773,7 @@ exports[`golden master — built-in weapon evaluations > reproduces MDD-15 1`] =
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,
@@ -3963,6 +3973,7 @@ exports[`golden master — built-in weapon evaluations > reproduces MDS-15 1`] =
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,
@@ -4358,6 +4369,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Planetsider 
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,
@@ -4365,6 +4377,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Planetsider 
     {
       "cost": 200,
       "costMod": undefined,
+      "flat": true,
       "label": "Laser Pointer",
       "weight": 0.1,
       "weightMod": undefined,
@@ -4665,6 +4678,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Reliant 1`] 
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,
@@ -5165,6 +5179,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Solo 1`] = `
     {
       "cost": 750,
       "costMod": undefined,
+      "flat": true,
       "label": "Holographic Sight",
       "weight": 0,
       "weightMod": undefined,
@@ -5488,6 +5503,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Standard 1`]
     {
       "cost": 50,
       "costMod": undefined,
+      "flat": true,
       "label": "Scope",
       "weight": 0.2,
       "weightMod": undefined,

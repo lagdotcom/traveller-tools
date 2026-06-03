@@ -560,11 +560,18 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     signature: PN,
     // Book errors (engine is right): damage applied the carbine barrel's −10% range
     // (→225) but not its −1 damage (cf. the AIWS carbine, also 3D-1); Auto 3
-    // (full-auto) and the long-range scope's Scope trait are omitted; and the weight
-    // applied bullpup's +25% to weight as well as cost — but the FC bullpup is +25%
-    // cost / +2 Quickdraw only (no weight), so the engine is lighter (the AIWS, same
-    // intermediate-rifle longarm without bullpup, reconciles at the lighter baseline).
-    ignore: ['damage', 'trait Auto', 'trait Scope', 'weight'],
+    // (full-auto) and the long-range scope's Scope trait are omitted.
+    ignore: ['damage', 'trait Auto', 'trait Scope'],
+    // The book applied bullpup's +25% to weight as well as cost — but the FC bullpup
+    // is +25% cost / +2 Quickdraw only (no weight). Reproduce that over-application
+    // (the AIWS, same intermediate-rifle longarm without bullpup, reconciles at the
+    // lighter baseline). A ~0.28 kg residual remains: the book also used the FULL
+    // secondary-barrel weight, where the FC (and the Ten-Six worked example) halve an
+    // extra barrel — a second book error that can't be reproduced until quirks can
+    // override a single additive component (not just a multiplicative receiver step).
+    quirks: [
+      { step: 'Bullpup', weight: 1.25, note: 'book: bullpup +25% weight' },
+    ],
     secondary: {
       range: 5,
       damage: '4D',
@@ -1059,9 +1066,20 @@ function applyQuirks(
   e: ReturnType<typeof evaluateWeapon>,
   quirks: BookQuirk[] | undefined,
 ): { cost: number; weight: number; unmatched: string[] } {
-  let cost = e.totals.cost;
-  let weight = e.totals.weight;
-  if (!quirks || quirks.length === 0) return { cost, weight, unmatched: [] };
+  if (!quirks || quirks.length === 0)
+    return { cost: e.totals.cost, weight: e.totals.weight, unmatched: [] };
+  // Flat add-ons (fixed-price accessories) don't scale with the receiver baseline,
+  // so hold them aside and rescale only the baseline-derived remainder — a quirk
+  // on a receiver-chain step otherwise wrongly inflates the flat lines too.
+  let flatCost = 0;
+  let flatWeight = 0;
+  for (const line of e.breakdown)
+    if (line.flat) {
+      flatCost += line.cost ?? 0;
+      flatWeight += line.weight ?? 0;
+    }
+  let cost = e.totals.cost - flatCost;
+  let weight = e.totals.weight - flatWeight;
   const matched = new Set<BookQuirk>();
   let runCost = 0;
   let runWeight = 0;
@@ -1073,9 +1091,9 @@ function applyQuirks(
     for (const q of quirks) {
       if (!line.label.includes(q.step)) continue;
       matched.add(q);
-      // Rescale the total by (book multiplier ÷ the engine's actual multiplier)
-      // for this step — covers omission (book ×1 → divide it out) and
-      // over-application (book ×1.25 where the engine had none → multiply it in).
+      // Rescale the baseline-derived total by (book multiplier ÷ the engine's
+      // actual multiplier) for this step — covers omission (book ×1 → divide it
+      // out) and over-application (book ×1.25 where the engine had none → multiply).
       if (q.cost !== undefined && beforeCost > 0)
         cost *= q.cost / (runCost / beforeCost);
       if (q.weight !== undefined && beforeWeight > 0)
@@ -1083,7 +1101,7 @@ function applyQuirks(
     }
   }
   const unmatched = quirks.filter((q) => !matched.has(q)).map((q) => q.step);
-  return { cost, weight, unmatched };
+  return { cost: cost + flatCost, weight: weight + flatWeight, unmatched };
 }
 
 /**
