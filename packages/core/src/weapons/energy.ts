@@ -140,6 +140,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   }
 
   const traits: Traits = { 'Zero-G': true };
+  // The Large (support/crew-served) receiver is Bulky (TES-12).
+  if (receiver.bulky) traits.Bulky = true;
 
   // --- Power source: capacity (shots), reload price, traits — computed up front;
   // its breakdown line (`powerLine`) is emitted last by the pipeline below. ---

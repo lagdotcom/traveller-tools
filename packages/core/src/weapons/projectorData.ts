@@ -34,6 +34,8 @@ export interface ProjectorStructureDef {
   quickdraw: number;
   /** Hand projectors halve the weapon's effective range. */
   halfRange?: boolean;
+  /** Support/crew-served class (the Large structure) → Bulky. */
+  bulky?: boolean;
 }
 
 export const PROJECTOR_STRUCTURES: Record<
@@ -47,6 +49,7 @@ export const PROJECTOR_STRUCTURES: Record<
     costPerKg: 50,
     blast: 3,
     quickdraw: 2,
+    bulky: true, // support/crew-served class → Bulky (Cryojet)
   },
   compact: {
     label: 'Compact',

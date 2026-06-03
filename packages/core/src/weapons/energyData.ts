@@ -49,6 +49,8 @@ export interface EnergyReceiverDef {
    * small laser, reads +4; the worked large laser reads −8). minimal is derived.
    */
   quickdraw: number;
+  /** Support/crew-served class (the Large receiver) → Bulky. */
+  bulky?: boolean;
 }
 
 export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
@@ -83,6 +85,7 @@ export const ENERGY_RECEIVERS: Record<EnergyReceiverId, EnergyReceiverDef> = {
     baseRange: 500,
     maxPower: 'heavy',
     quickdraw: -8, // support-class (the worked large laser reads −8 from its receiver)
+    bulky: true, // support/crew-served class → Bulky (TES-12)
   },
 };
 

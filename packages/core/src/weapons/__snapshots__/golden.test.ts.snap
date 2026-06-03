@@ -1472,6 +1472,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Cryojet 1`] 
     "traits": {
       "Armoured": 2,
       "Blast": 3,
+      "Bulky": true,
       "Bulwarked": 2,
       "Cryogenic": true,
       "Hazardous": -6,
@@ -5741,6 +5742,7 @@ exports[`golden master — built-in weapon evaluations > reproduces TES-12 1`] =
     "signatureKind": "emissions",
     "tl": 12,
     "traits": {
+      "Bulky": true,
       "Lo-Pen": 2,
       "Scope": true,
       "Zero-G": true,

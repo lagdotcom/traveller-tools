@@ -151,6 +151,8 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     Blast: structure.blast,
     ...fuel.traits,
     ...featureTraits,
+    // The Large (support/crew-served) structure is Bulky (Cryojet).
+    ...(structure.bulky ? { Bulky: true } : {}),
   };
 
   const profile: WeaponProfile = {
