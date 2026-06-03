@@ -90,10 +90,11 @@ interface BookFigures {
   ignore?: string[];
   /**
    * Book computation quirks to *reproduce* the printed stat block when the book's
-   * own maths skipped a step. Each names a cost/weight breakdown step (by label
-   * substring) and which of its multipliers the book left out; the harness divides
-   * that factor back out of the total before comparing, so the engine matches the
-   * (quirky) book figure instead of flagging a diff. See `BookQuirk`.
+   * own maths differs from the engine's at a breakdown step. Each names a step (by
+   * label substring) and the cost/weight multiplier the book applied there,
+   * *overriding* the engine's; the harness rescales the total by book÷engine for
+   * that step before comparing, so the engine matches the (quirky) book figure
+   * instead of flagging a diff. See `BookQuirk`.
    */
   quirks?: BookQuirk[];
   /** Free notes (page ref, "book error: …", etc.). */
@@ -101,17 +102,22 @@ interface BookFigures {
 }
 
 /**
- * One book-computation quirk: "the book forgot to apply step X's cost/weight".
- * The step's multiplier is recovered from the breakdown (running subtotal after ÷
- * before) and divided back out. Assumes the step is a receiver-baseline multiplier
- * — so the whole printed total scales with it (barrel/stock/% accessories are a %
- * of the baseline); flat-Cr add-ons (rare) aren't re-derived.
+ * One book-computation quirk: "at step X the book applied a different cost/weight
+ * multiplier than the engine". The engine's actual multiplier for the step is
+ * recovered from the breakdown (running subtotal after ÷ before) and the total is
+ * rescaled by `override ÷ engine`. So `cost: 1` reproduces the book *omitting* a
+ * step (×1), and `weight: 1.25` reproduces it *over-applying* one. Assumes the
+ * step is a receiver-baseline multiplier — the whole printed total scales with it
+ * (barrel/stock/% accessories are a % of the baseline); flat-Cr add-ons aren't
+ * re-derived, so this is only exact when the total scales cleanly with the step.
  */
 interface BookQuirk {
   /** Substring matched against a cost/weight breakdown line-item label. */
   step: string;
-  /** Which of the step's multipliers the book omitted. */
-  drop: ('cost' | 'weight')[];
+  /** The cost multiplier the book applied at this step (1 = it omitted the step). */
+  cost?: number;
+  /** The weight multiplier the book applied at this step (1 = it omitted the step). */
+  weight?: number;
   /** Why — suspected book error, house ruling, etc. (shown in the report). */
   note?: string;
 }
@@ -268,12 +274,12 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quirks: [
       {
         step: 'Increased Auto',
-        drop: ['cost'],
+        cost: 1, // book omitted the Increased-RoF cost increase
         note: 'book omitted the Increased-RoF cost increase',
       },
       {
         step: 'Capacity 120%',
-        drop: ['cost'],
+        cost: 1, // book omitted the capacity-% cost increase
         note: 'book omitted the capacity-% cost increase',
       },
     ],
@@ -1067,10 +1073,13 @@ function applyQuirks(
     for (const q of quirks) {
       if (!line.label.includes(q.step)) continue;
       matched.add(q);
-      if (q.drop.includes('cost') && beforeCost > 0)
-        cost /= runCost / beforeCost;
-      if (q.drop.includes('weight') && beforeWeight > 0)
-        weight /= runWeight / beforeWeight;
+      // Rescale the total by (book multiplier ÷ the engine's actual multiplier)
+      // for this step — covers omission (book ×1 → divide it out) and
+      // over-application (book ×1.25 where the engine had none → multiply it in).
+      if (q.cost !== undefined && beforeCost > 0)
+        cost *= q.cost / (runCost / beforeCost);
+      if (q.weight !== undefined && beforeWeight > 0)
+        weight *= q.weight / (runWeight / beforeWeight);
     }
   }
   const unmatched = quirks.filter((q) => !matched.has(q)).map((q) => q.step);
@@ -1331,10 +1340,17 @@ function main() {
       if (book.note) lines.push(`      note: ${book.note}`);
     }
     // Surface applied book quirks (on ✓ and ✗) so the reproduction isn't silent.
-    for (const q of book.quirks ?? [])
+    for (const q of book.quirks ?? []) {
+      const over = [
+        q.cost !== undefined ? `cost ×${q.cost}` : '',
+        q.weight !== undefined ? `weight ×${q.weight}` : '',
+      ]
+        .filter(Boolean)
+        .join(', ');
       lines.push(
-        `      quirk: dropped ${q.drop.join('+')} of '${q.step}'${q.note ? ` — ${q.note}` : ''}`,
+        `      quirk: '${q.step}' → ${over}${q.note ? ` — ${q.note}` : ''}`,
       );
+    }
     if (SHOW_ROUNDING) for (const d of rounding) lines.push(row(d));
   };
 
