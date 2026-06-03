@@ -264,11 +264,15 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         costCr: 500,
         quickdraw: 4,
         traits: { AP: 4, Scope: true },
-        // Book prints 3D; the engine's 3D-1 is the AP-4 damage penalty (net pen +2,
-        // −1 per 2 dice) — the same rule that correctly gives GA-100 its 3D+5. The
-        // book applies it to GA-100 but not here, so it's a book inconsistency.
-        ignore: ['damage'],
-        note: 'damage: book 3D omits the AP-4 −1 penalty it applies to GA-100 (3D+5); engine 3D-1 is consistent.',
+        // Two unmodelled book features here:
+        // • damage: book prints 3D; engine 3D-1 is the AP-4 penalty (net pen +2)
+        //   that the book *does* apply to GA-100 (3D+5) — a book inconsistency.
+        // • Scope / Quickdraw 4 / +0.02kg: the Navy's detachable stock houses an
+        //   integrated holographic sight (→ Scope, −2 Quickdraw). The FC describes
+        //   it but gives it no stats, and the Cr500 total leaves no room for the
+        //   standard Cr750 sight, so it isn't modelled.
+        ignore: ['damage', 'trait Scope', 'quickdraw', 'weight'],
+        note: 'Navy: book 3D omits the AP-4 penalty (vs GA-100 3D+5); detachable stock houses an unstatted holographic sight (Scope, Quickdraw 4, +0.02kg).',
       },
     },
   },
