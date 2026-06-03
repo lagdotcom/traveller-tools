@@ -264,6 +264,11 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         costCr: 500,
         quickdraw: 4,
         traits: { AP: 4, Scope: true },
+        // Book prints 3D; the engine's 3D-1 is the AP-4 damage penalty (net pen +2,
+        // −1 per 2 dice) — the same rule that correctly gives GA-100 its 3D+5. The
+        // book applies it to GA-100 but not here, so it's a book inconsistency.
+        ignore: ['damage'],
+        note: 'damage: book 3D omits the AP-4 −1 penalty it applies to GA-100 (3D+5); engine 3D-1 is consistent.',
       },
     },
   },
