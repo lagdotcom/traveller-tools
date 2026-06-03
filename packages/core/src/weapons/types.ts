@@ -469,6 +469,8 @@ export type PackSpec =
       /** Number of cartridges in the holder. */
       count: number;
       rating: EnergyPowerClass;
+      /** Cartridges eject after firing; a non-ejecting holder gains Hazardous −2. */
+      ejects?: boolean;
     };
 
 /**
@@ -494,21 +496,15 @@ export interface EnergyParams {
   /** Energy-weapon-exclusive modifications. */
   mods: EnergyModId[];
   accessories: AccessoryId[];
-  powerSource: EnergyPowerSourceId;
-  /** Powerpack mass in kg (capacity = power-per-kg × kg ÷ damage dice). */
-  powerpackKg: number;
-  /** Powerpack power class (≥ weapon output, else Unreliable). */
-  powerpackRating: EnergyPowerClass;
-  /** Cartridge power class (≥ weapon output, else Unreliable). */
-  cartridgeRating: EnergyPowerClass;
-  /** Cartridge magazine size in shots. */
-  cartridgeCount: number;
-  /** Cartridges eject after firing; non-ejecting holders gain Hazardous -2. */
-  cartridgeEjects: boolean;
   /**
-   * Alternative power sources beyond the primary one (defined by the fields
-   * above). Each is shown as its own shots / reload / weight row — e.g. a weapon
-   * sold with internal, belt and backpack packs.
+   * The built-in (primary) power source — a powerpack or cartridge holder — baked
+   * into the weapon's loaded weight/cost. A `PackSpec`, like the alternatives, so
+   * primary and alternatives share one shape.
+   */
+  source: PackSpec;
+  /**
+   * Alternative power sources beyond the primary. Each is shown as its own shots /
+   * reload / weight row — e.g. a weapon sold with internal, belt and backpack packs.
    */
   packs?: PackSpec[];
 }

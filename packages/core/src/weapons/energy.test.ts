@@ -47,9 +47,7 @@ describe('energy weapon — receiver baseline & totals', () => {
         barrel: 'rifle',
         stock: 'full',
         mods: ['improvedFocus'],
-        powerSource: 'powerpack',
-        powerpackKg: 2,
-        powerpackRating: 'standard',
+        source: { kind: 'powerpack', kg: 2, rating: 'standard' },
       }),
     );
     // Receiver 2500 × Improved Focus 1.25 = 3125; weight 3kg unchanged.
@@ -104,9 +102,7 @@ describe('energy weapon — power source mismatches', () => {
         receiver: 'large',
         damageDice: 8,
         barrel: 'rifle',
-        powerSource: 'powerpack',
-        powerpackRating: 'light',
-        powerpackKg: 1,
+        source: { kind: 'powerpack', kg: 1, rating: 'light' },
       }),
     );
     // Light pack handles 3D; weapon draws 8D → Unreliable 5.
@@ -119,9 +115,7 @@ describe('energy weapon — power source mismatches', () => {
         tl: 12,
         receiver: 'medium',
         damageDice: 5,
-        powerSource: 'cartridge',
-        cartridgeRating: 'heavy',
-        cartridgeCount: 10,
+        source: { kind: 'cartridge', count: 10, rating: 'heavy' },
       }),
     );
     // Heavy cartridge (8D) in a 5D weapon → Unreliable 3.
@@ -132,9 +126,7 @@ describe('energy weapon — power source mismatches', () => {
         tl: 12,
         receiver: 'medium',
         damageDice: 5,
-        powerSource: 'cartridge',
-        cartridgeRating: 'light',
-        cartridgeCount: 10,
+        source: { kind: 'cartridge', count: 10, rating: 'light' },
       }),
     );
     // Light cartridge (3D) only delivers 3D.
@@ -147,9 +139,7 @@ describe('energy weapon — power source mismatches', () => {
         tl: 9,
         receiver: 'minimal',
         damageDice: 2,
-        powerSource: 'cartridge',
-        cartridgeRating: 'weak',
-        cartridgeCount: 3,
+        source: { kind: 'cartridge', count: 3, rating: 'weak' },
       }),
     );
     const holder = r.breakdown.find((l) => /Cartridge holder/.test(l.label))!;
@@ -162,9 +152,7 @@ describe('energy weapon — power source mismatches', () => {
         tl: 11,
         receiver: 'medium',
         damageDice: 5,
-        powerSource: 'powerpack',
-        powerpackRating: 'standard',
-        powerpackKg: 0.1,
+        source: { kind: 'powerpack', kg: 0.1, rating: 'standard' },
       }),
     );
     // 0.1kg × 700 power/kg = 70 power; 5D delivered → floor(70/5) = 14 shots.
@@ -175,9 +163,12 @@ describe('energy weapon — power source mismatches', () => {
     const r = evaluateWeapon(
       energy({
         tl: 12,
-        powerSource: 'cartridge',
-        cartridgeEjects: false,
-        cartridgeCount: 10,
+        source: {
+          kind: 'cartridge',
+          count: 10,
+          rating: 'light',
+          ejects: false,
+        },
       }),
     );
     expect(r.profile.traits['Hazardous']).toBe(-2);
@@ -187,7 +178,11 @@ describe('energy weapon — power source mismatches', () => {
 describe('energy weapon — tech-level gates', () => {
   it('powerpacks require TL8 and energy mods enforce their minTL', () => {
     const r = evaluateWeapon(
-      energy({ tl: 7, powerSource: 'powerpack', mods: ['intensifiedPulse'] }),
+      energy({
+        tl: 7,
+        source: { kind: 'powerpack', kg: 1, rating: 'light' },
+        mods: ['intensifiedPulse'],
+      }),
     );
     expect(r.issues.some((i) => /powerpacks require TL8/.test(i.message))).toBe(
       true,
@@ -199,7 +194,10 @@ describe('energy weapon — tech-level gates', () => {
 
   it('cartridges require TL9', () => {
     const r = evaluateWeapon(
-      energy({ tl: 8, powerSource: 'cartridge', cartridgeCount: 5 }),
+      energy({
+        tl: 8,
+        source: { kind: 'cartridge', count: 5, rating: 'light' },
+      }),
     );
     expect(r.issues.some((i) => /cartridges require TL9/.test(i.message))).toBe(
       true,
@@ -240,8 +238,7 @@ describe('alternative power packs', () => {
   it('lists the primary source plus each alternative pack', () => {
     const r = evaluateWeapon(
       energy({
-        powerSource: 'powerpack',
-        powerpackKg: 1,
+        source: { kind: 'powerpack', kg: 1, rating: 'light' },
         packs: [
           { kind: 'powerpack', kg: 3, rating: 'standard', label: 'Backpack' },
         ],
@@ -263,7 +260,7 @@ describe('alternative power packs', () => {
     const back = parseWeapon(serializeWeapon({ name: 'E', params })).params;
     if (back.kind !== 'energy') throw new Error('expected energy');
     expect(back.packs).toEqual([
-      { kind: 'cartridge', count: 5, rating: 'standard' },
+      { kind: 'cartridge', count: 5, rating: 'standard', ejects: true },
     ]);
   });
 });

@@ -41,7 +41,6 @@ import type {
   EnergyModId,
   EnergyParams,
   EnergyPowerClass,
-  EnergyPowerSourceId,
   EnergyReceiverId,
   EnergyWeaponTypeId,
   FeedId,
@@ -148,12 +147,7 @@ export const DEFAULT_ENERGY_PARAMS: EnergyParams = {
   features: [],
   mods: [],
   accessories: [],
-  powerSource: 'powerpack',
-  powerpackKg: 1,
-  powerpackRating: 'light',
-  cartridgeRating: 'light',
-  cartridgeCount: 20,
-  cartridgeEjects: true,
+  source: { kind: 'powerpack', kg: 1, rating: 'light' },
 };
 
 /** A valid starting projector: a TL5 Compact jellied-fuel flamethrower. */
@@ -282,7 +276,13 @@ function normalizePacks(v: unknown): PackSpec[] | undefined {
     );
     const label = typeof item.label === 'string' ? item.label : undefined;
     if (item.kind === 'cartridge') {
-      out.push({ kind: 'cartridge', label, count: num(item.count, 1), rating });
+      out.push({
+        kind: 'cartridge',
+        label,
+        count: num(item.count, 1),
+        rating,
+        ejects: bool(item.ejects, true),
+      });
     } else {
       out.push({ kind: 'powerpack', label, kg: num(item.kg, 1), rating });
     }
@@ -300,7 +300,6 @@ function normalizeAmmo(v: unknown, fallback: AmmoTypeId[]): AmmoTypeId[] {
 }
 
 const POWER_CLASSES = ENERGY_POWER_CLASS_DICE;
-const POWER_SOURCES = { powerpack: 0, cartridge: 0 };
 
 /** Coerce arbitrary parsed JSON into a complete, valid FirearmParams. */
 function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
@@ -383,25 +382,34 @@ function normalizeEnergyParams(p: Record<string, unknown>): EnergyParams {
     features: normalizeFeatures(p.features),
     mods: pickList<EnergyModId>(p.mods, ENERGY_MODS),
     accessories: pickList<AccessoryId>(p.accessories, ACCESSORIES),
-    powerSource: pick<EnergyPowerSourceId>(
-      p.powerSource,
-      POWER_SOURCES,
-      d.powerSource,
-    ),
-    powerpackKg: num(p.powerpackKg, d.powerpackKg),
-    powerpackRating: pick<EnergyPowerClass>(
-      p.powerpackRating,
-      POWER_CLASSES,
-      d.powerpackRating,
-    ),
-    cartridgeRating: pick<EnergyPowerClass>(
-      p.cartridgeRating,
-      POWER_CLASSES,
-      d.cartridgeRating,
-    ),
-    cartridgeCount: num(p.cartridgeCount, d.cartridgeCount),
-    cartridgeEjects: bool(p.cartridgeEjects, d.cartridgeEjects),
+    source: normalizeSource(p),
     ...(packs ? { packs } : {}),
+  };
+}
+
+/**
+ * Resolve the primary power source. New shape: a single `PackSpec` under `source`.
+ * Legacy migration: rebuild it from the old flat fields (`powerSource` +
+ * `powerpackKg`/`powerpackRating` or `cartridgeRating`/`cartridgeCount`/
+ * `cartridgeEjects`) so saved energy weapons still load.
+ */
+function normalizeSource(p: Record<string, unknown>): PackSpec {
+  if (isObject(p.source)) {
+    const one = normalizePacks([p.source]);
+    if (one && one[0]) return one[0];
+  }
+  if (p.powerSource === 'cartridge') {
+    return {
+      kind: 'cartridge',
+      rating: pick<EnergyPowerClass>(p.cartridgeRating, POWER_CLASSES, 'light'),
+      count: num(p.cartridgeCount, 20),
+      ejects: bool(p.cartridgeEjects, true),
+    };
+  }
+  return {
+    kind: 'powerpack',
+    rating: pick<EnergyPowerClass>(p.powerpackRating, POWER_CLASSES, 'light'),
+    kg: num(p.powerpackKg, 1),
   };
 }
 
@@ -1471,7 +1479,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       tl: 12,
       receiver: 'large',
       damageDice: 8,
-      powerpackRating: 'heavy',
+      source: { kind: 'powerpack', kg: 1, rating: 'heavy' },
       mods: ['efficientBeam', 'improvedFocus'],
       barrel: 'long',
       stock: 'full',

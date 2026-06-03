@@ -160,7 +160,7 @@ const EWTYPE = choiceMap<EnergyWeaponTypeId>([
   ['laser', 'Laser'],
   ['microwave', 'Microwave'],
 ]);
-const PSOURCE = choiceMap<EnergyParams['powerSource']>([
+const PSOURCE = choiceMap<PackSpec['kind']>([
   ['powerpack', 'Powerpack'],
   ['cartridge', 'Cartridge'],
 ]);
@@ -210,17 +210,23 @@ const firearmValues = (f: FirearmParams) => ({
   secAmmo: AMMO.toLabel(f.secondary?.ammo[0] ?? 'pellet'),
 });
 
-const energyValues = (e: EnergyParams) => ({
-  eWeaponType: EWTYPE.toLabel(e.weaponType),
-  eReceiver: ERECEIVER.toLabel(e.receiver),
-  damageDice: String(e.damageDice),
-  powerSource: PSOURCE.toLabel(e.powerSource),
-  powerpackKg: String(e.powerpackKg),
-  powerpackRating: PCLASS.toLabel(e.powerpackRating),
-  cartridgeRating: PCLASS.toLabel(e.cartridgeRating),
-  cartridgeCount: String(e.cartridgeCount),
-  cartridgeEjects: e.cartridgeEjects ? 'yes' : 'no',
-});
+const energyValues = (e: EnergyParams) => {
+  // The primary source is a single PackSpec; the form keeps a flat editing surface,
+  // defaulting the inactive kind's fields (they aren't stored on the param).
+  const pp = e.source.kind === 'powerpack' ? e.source : undefined;
+  const ct = e.source.kind === 'cartridge' ? e.source : undefined;
+  return {
+    eWeaponType: EWTYPE.toLabel(e.weaponType),
+    eReceiver: ERECEIVER.toLabel(e.receiver),
+    damageDice: String(e.damageDice),
+    powerSource: PSOURCE.toLabel(e.source.kind),
+    powerpackKg: String(pp?.kg ?? 1),
+    powerpackRating: PCLASS.toLabel(pp?.rating ?? 'light'),
+    cartridgeRating: PCLASS.toLabel(ct?.rating ?? 'light'),
+    cartridgeCount: String(ct?.count ?? 20),
+    cartridgeEjects: ct?.ejects === false ? 'no' : 'yes',
+  };
+};
 
 const projectorValues = (pr: ProjectorParams) => ({
   pStructure: PSTRUCT.toLabel(pr.structure),
@@ -359,12 +365,19 @@ function buildEnergy(v: FormValues, lists: Lists): EnergyParams {
     features: lists.features,
     mods: lists.mods,
     accessories: lists.accessories,
-    powerSource: PSOURCE.toId(v.powerSource),
-    powerpackKg: num(v.powerpackKg, 1),
-    powerpackRating: PCLASS.toId(v.powerpackRating),
-    cartridgeRating: PCLASS.toId(v.cartridgeRating),
-    cartridgeCount: num(v.cartridgeCount, 10),
-    cartridgeEjects: v.cartridgeEjects === 'yes',
+    source:
+      PSOURCE.toId(v.powerSource) === 'cartridge'
+        ? {
+            kind: 'cartridge',
+            rating: PCLASS.toId(v.cartridgeRating),
+            count: num(v.cartridgeCount, 10),
+            ejects: v.cartridgeEjects === 'yes',
+          }
+        : {
+            kind: 'powerpack',
+            rating: PCLASS.toId(v.powerpackRating),
+            kg: num(v.powerpackKg, 1),
+          },
     ...(lists.packs && lists.packs.length > 0 ? { packs: lists.packs } : {}),
   };
 }

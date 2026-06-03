@@ -149,17 +149,16 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   let primaryReloadCr = 0;
   let powerLine: WeaponLineItem;
 
-  if (params.powerSource === 'powerpack') {
+  const source = params.source;
+  if (source.kind === 'powerpack') {
     const perKg = powerPerKg(params.tl);
     if (perKg === 0)
       issues.push(error('Energy-weapon powerpacks require TL8+'));
-    const kg = Math.max(0, params.powerpackKg);
+    const kg = Math.max(0, source.kg);
     capacity = dice > 0 ? Math.floor((perKg * kg) / dice) : 0;
     primaryPackWeight = kg;
-    primaryPackLabel = `Powerpack: ${ENERGY_POWER_CLASS_LABEL[params.powerpackRating]} ${kg}kg`;
-    primaryReloadCr = round2(
-      POWERPACK_COST_PER_KG[params.powerpackRating] * kg,
-    );
+    primaryPackLabel = `Powerpack: ${ENERGY_POWER_CLASS_LABEL[source.rating]} ${kg}kg`;
+    primaryReloadCr = round2(POWERPACK_COST_PER_KG[source.rating] * kg);
     powerLine = {
       label: primaryPackLabel,
       costCr: primaryReloadCr,
@@ -167,7 +166,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       notes: `${capacity} shots @ ${dice} power`,
     };
     // An under-rated pack suffers excessive draw → Unreliable.
-    const packDice = ENERGY_POWER_CLASS_DICE[params.powerpackRating];
+    const packDice = ENERGY_POWER_CLASS_DICE[source.rating];
     if (packDice < dice) {
       addTrait(traits, 'Unreliable', dice - packDice);
       issues.push(
@@ -179,27 +178,27 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   } else {
     if (cartridgeMaxAt(params.tl) === null)
       issues.push(error('Energy-weapon cartridges require TL9+'));
-    capacity = Math.max(0, Math.floor(params.cartridgeCount));
-    const cart = ENERGY_CARTRIDGE[params.cartridgeRating];
+    capacity = Math.max(0, Math.floor(source.count));
+    const cart = ENERGY_CARTRIDGE[source.rating];
     // Loaded cartridges weigh their own mass (BL-3: 3 × weak 0.01 = 0.03kg); the
     // build cost is one cartridge (the rest are the reload price).
     magazineCr = round2(capacity * cart.cost);
     primaryPackWeight = capacity * cart.weight;
-    primaryPackLabel = `Cartridge: ${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} ×${capacity}`;
+    primaryPackLabel = `Cartridge: ${ENERGY_POWER_CLASS_LABEL[source.rating]} ×${capacity}`;
     primaryReloadCr = magazineCr;
     powerLine = {
-      label: `Cartridge holder: ${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} ×${capacity}`,
+      label: `Cartridge holder: ${ENERGY_POWER_CLASS_LABEL[source.rating]} ×${capacity}`,
       costCr: round2(cart.cost),
       weightKg: round2(capacity * cart.weight),
       notes: `${capacity} shots`,
     };
-    const cartDice = ENERGY_POWER_CLASS_DICE[params.cartridgeRating];
+    const cartDice = ENERGY_POWER_CLASS_DICE[source.rating];
     if (cartDice > dice) {
       // An over-powered cartridge stresses the weapon → Unreliable.
       addTrait(traits, 'Unreliable', cartDice - dice);
       issues.push(
         warning(
-          `${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} cartridge exceeds the weapon's ${dice}D handling → Unreliable ${cartDice - dice}`,
+          `${ENERGY_POWER_CLASS_LABEL[source.rating]} cartridge exceeds the weapon's ${dice}D handling → Unreliable ${cartDice - dice}`,
         ),
       );
     } else if (cartDice < dice) {
@@ -207,11 +206,12 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       deliveredDice = cartDice;
       issues.push(
         warning(
-          `${ENERGY_POWER_CLASS_LABEL[params.cartridgeRating]} cartridge only delivers ${cartDice}D, below the weapon's ${dice}D capability`,
+          `${ENERGY_POWER_CLASS_LABEL[source.rating]} cartridge only delivers ${cartDice}D, below the weapon's ${dice}D capability`,
         ),
       );
     }
-    if (!params.cartridgeEjects) addTrait(traits, 'Hazardous', -2);
+    // A non-ejecting holder (ejects explicitly false) gains Hazardous −2.
+    if (source.ejects === false) addTrait(traits, 'Hazardous', -2);
   }
 
   // --- Cost/weight breakdown (pipeline) — the receiver folds its features + mods

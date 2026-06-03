@@ -187,8 +187,11 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   ball/advanced-AP) are exact. `rounds`/`costCr` override a **book-listed** count or
   magazine price the % rule can't derive (the count override doesn't touch the
   cost/weight chain).
-  Energy weapons have the analogue `EnergyParams.packs?: PackSpec[]` (extra
-  powerpacks/cartridges beyond the primary). The FC gives **no per-round weight**
+  Energy weapons use one shape for both: the primary source is `EnergyParams.source:
+PackSpec` (a `powerpack {kg, rating}` or `cartridge {count, rating, ejects?}`),
+  baked into the build; `EnergyParams.packs?: PackSpec[]` are the alternatives beyond
+  it. (Legacy flat `powerSource`/`powerpackKg`/`cartridge*` fields were folded into
+  `source`; `parseWeapon` migrates them.) The FC gives **no per-round weight**
   — magazine mass is only the capacity-% weight adjustment, so alternative-mag
   weight scales by that rule and there's no standalone "base magazine weighs X".
   Both are editable in the builder: firearms get a **Magazines** section, energy a
