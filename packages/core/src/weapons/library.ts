@@ -1061,6 +1061,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         mechanism: 'fullAuto',
         features: ['advancedProjectile', 'highCapacity'],
         capacityPct: 120,
+        // Nominal 43 rounds; the standard magazine costs Cr14 empty, so its loaded
+        // reload is Cr14 + ~Cr21 ammo = Cr35 (the % rule prices only the ammo).
+        magazines: [{ label: 'standard magazine', costCr: 35 }],
         barrel: 'rifle',
         stock: 'full',
         furniture: ['modularisation'],
@@ -1069,7 +1072,19 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       'Interstellar Ordnance',
       [
         { name: 'carbine', override: { barrel: 'carbine', stock: 'folding' } },
-        { name: 'lsw', override: { heavyBarrel: true, feed: 'extended' } },
+        {
+          // "Available for support work" — a heavy barrel plus the Cr28 extended
+          // casket magazine (64 rounds, loaded reload Cr70). Modelled as a magazine
+          // option, not an extended feed device, so it keeps the heavy barrel's
+          // −1 Quickdraw without the extended-magazine −2 penalty (matching book).
+          name: 'lsw',
+          override: {
+            heavyBarrel: true,
+            magazines: [
+              { label: 'extended casket magazine', rounds: 64, costCr: 70 },
+            ],
+          },
+        },
         { name: 'assault', override: { barrel: 'assault', stock: 'none' } },
       ],
     ),

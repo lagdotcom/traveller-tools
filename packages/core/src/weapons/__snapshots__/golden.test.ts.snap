@@ -242,7 +242,7 @@ exports[`golden master — built-in weapon evaluations > reproduces AIWS 1`] = `
     {
       "ammo": "ball",
       "label": "Ball",
-      "magazineCr": 21.5,
+      "magazineCr": 35,
       "profile": {
         "auto": 3,
         "capacity": 43,
@@ -376,7 +376,7 @@ exports[`golden master — built-in weapon evaluations > reproduces AIWS 1`] = `
   ],
   "totals": {
     "costCr": 1432.4,
-    "magazineCr": 21.5,
+    "magazineCr": 35,
     "weightKg": 3.9026,
   },
 }

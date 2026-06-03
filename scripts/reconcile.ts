@@ -488,9 +488,15 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 0,
     signature: PL,
     traits: { Auto: 3 },
+    // Engine reports the nominal 43-round capacity; the book lists the 42 normally
+    // loaded "to prevent misfeeds" (per the prose). Inherited by carbine/assault.
+    ignore: ['capacity'],
     variants: {
       carbine: { range: 280, damage: '3D-1', weightKg: 3.6, costCr: 1434 },
-      support: {
+      // The book calls this the "support" configuration; the engine variant is
+      // named lsw (light support weapon) — same weapon (heavy barrel + the 64-round
+      // extended casket magazine).
+      lsw: {
         weightKg: 5,
         costCr: 1695,
         capacity: 64,
