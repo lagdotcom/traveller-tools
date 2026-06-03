@@ -317,12 +317,21 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         // engine can't reproduce remain:
         // • damage: book prints 3D; engine 3D-1 is the AP-4 penalty (net pen +2)
         //   that the book *does* apply to GA-100 (3D+5) — a book inconsistency.
-        // • Scope / Quickdraw 4 / +0.02kg: the detachable stock that houses the
-        //   holographic sight adds Cr45 / 0.12kg (vs the engine `full` stock's
-        //   38.5 / 0.10) and grants Scope + −2 Quickdraw. The FC gives this
-        //   integrated stock+sight no general stats, so it isn't a modelled component.
-        ignore: ['damage', 'trait Scope', 'quickdraw', 'weight'],
-        note: 'Navy: book 3D omits the AP-4 penalty (vs GA-100 3D+5); a detachable stock houses a holographic sight (+Cr45/0.12kg, Scope, Quickdraw −2) the FC does not stat generally.',
+        // • Scope / Quickdraw 4: the detachable stock that houses the holographic
+        //   sight grants Scope + −2 Quickdraw and weighs 0.12kg vs the engine `full`
+        //   stock's 0.10 — the FC gives this integrated stock+sight no general stats.
+        //   The +0.02kg is reproduced by a line quirk scaling the stock weight ×1.2;
+        //   Scope and Quickdraw stay ignored (no modelled component to derive them).
+        ignore: ['damage', 'trait Scope', 'quickdraw'],
+        quirks: [
+          {
+            step: 'Stock',
+            line: true,
+            weight: 1.2,
+            note: 'detachable stock+sight 0.12kg vs the full stock 0.10',
+          },
+        ],
+        note: 'Navy: book 3D omits the AP-4 penalty (vs GA-100 3D+5); a detachable stock houses a holographic sight (Scope, Quickdraw −2, 0.12kg) the FC does not stat generally.',
       },
     },
   },
@@ -820,11 +829,20 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     signature: EN,
     traits: { 'Lo-Pen': 2, 'Zero-G': true },
     // cost: the book lists the weapon at Cr960 *excluding* the belt pack (its
-    // Cr1000 is the magazine); the engine bakes the loaded pack into the build
-    // (as TES-12's book does), so it reads 1960. weight: the book's own component
-    // table totals 1.95kg but the stat line prints 2.6+1; the engine matches the
-    // table (1.95 + 1kg pack = 2.95). Both are book inconsistencies.
-    ignore: ['cost', 'weight'],
+    // Cr1000 is the magazine); the engine bakes the loaded pack into the build (as
+    // TES-12's book does), so it reads 1960 — reproduce by dropping the pack line.
+    // weight: the book's own component table totals 1.95kg but the stat line prints
+    // 2.6+1; the engine matches the table (1.95 + 1kg pack = 2.95). The 3.6 stat
+    // line is internally inconsistent with the table, so it stays ignored.
+    ignore: ['weight'],
+    quirks: [
+      {
+        step: 'Powerpack',
+        line: true,
+        cost: 0,
+        note: 'book counts the pack as the Cr1000 magazine, not in the weapon cost',
+      },
+    ],
   },
   'IP-2': {
     range: 500,
