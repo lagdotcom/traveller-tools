@@ -314,7 +314,12 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const capWeightMult = (pct: number) => 1 + 0.05 * ((pct - 100) / 10);
   // The empty feed device is a fraction of the weapon's purchase price (FC: a
   // standard magazine 1%, extended 2%, drum 5%); fixed magazines and belts add 0.
-  const emptyMagCr = round2(totalCost * parts.feed.emptyMagCostPct);
+  // A single-shot weapon loads rounds directly into the breech — no detachable
+  // magazine to buy — so it has none of this (only the ammunition is reloaded).
+  const emptyMagCr =
+    params.mechanism === 'singleShot'
+      ? 0
+      : round2(totalCost * parts.feed.emptyMagCostPct);
   // Loaded-magazine price = the empty magazine plus `cap` rounds of the ammo type.
   const reloadFor = (cap: number, ammo: AmmoTypeDef) =>
     round2(

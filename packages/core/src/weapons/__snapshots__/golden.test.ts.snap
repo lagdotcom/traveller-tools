@@ -1036,7 +1036,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
     {
       "ammo": "pellet",
       "label": "Pellet",
-      "magazineCr": 3.775,
+      "magazineCr": 2.5,
       "profile": {
         "auto": 0,
         "capacity": 2,
@@ -1141,7 +1141,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
   ],
   "totals": {
     "costCr": 127.5,
-    "magazineCr": 3.775,
+    "magazineCr": 2.5,
     "weightKg": 3.7,
   },
 }
@@ -1816,7 +1816,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Flintlock Ja
     {
       "ammo": "ball",
       "label": "Ball",
-      "magazineCr": 1.65,
+      "magazineCr": 0.25,
       "profile": {
         "auto": 0,
         "capacity": 1,
@@ -1908,7 +1908,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Flintlock Ja
   ],
   "totals": {
     "costCr": 140,
-    "magazineCr": 1.65,
+    "magazineCr": 0.25,
     "weightKg": 4,
   },
 }
@@ -5954,7 +5954,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Ten-Six 1`] 
   },
   "secondary": {
     "label": "Light Smoothbore · Single Shot",
-    "magazineCr": 1.610938,
+    "magazineCr": 1.25,
     "profile": {
       "auto": 0,
       "capacity": 1,
