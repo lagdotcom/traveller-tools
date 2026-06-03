@@ -560,7 +560,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     signature: PN,
     traits: { Auto: 4, Inaccurate: -2, 'Lo-Pen': 3, 'Zero-G': true },
     variants: {
-      assault: {
+      'Assault Weapon': {
         range: 20,
         weightKg: 1.5,
         costCr: 610,
@@ -569,7 +569,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         quickdraw: 4,
         traits: { 'Lo-Pen': 0 },
       },
-      carbine: {
+      Carbine: {
         range: 45,
         weightKg: 1.6,
         costCr: 610,
@@ -1182,6 +1182,16 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
   return diffs.filter((d) => !ignore.has(d.field));
 }
 
+/**
+ * Label a config as the book does: a title-case name is a separate *model*
+ * (`Name › Model`), a lowercase name is a *config* of one weapon, which the book
+ * brackets (`Name (config)`). `config` undefined → just the name (unnamed base).
+ */
+function configLabel(name: string, config?: string): string {
+  if (!config) return name;
+  return /^[a-z]/.test(config) ? `${name} (${config})` : `${name} › ${config}`;
+}
+
 function main() {
   const stubs: string[] = [];
   let reconciled = 0; // exact, or every diff within rounding tolerance
@@ -1229,21 +1239,20 @@ function main() {
       stubs.push(def.name);
       continue;
     }
-    // A named base config (e.g. "Army Model") shows as a peer of its variants.
-    const baseLabel = def.baseVariant
-      ? `${def.name} › ${def.baseVariant}`
-      : def.name;
-    report(baseLabel, def.params, book);
+    // A named config shows as a peer of its siblings. Title-case names are
+    // separate *models* (`Name › Model`); lowercase names are *configs* of one
+    // weapon, which the book brackets (`Name (config)`).
+    report(configLabel(def.name, def.baseVariant), def.params, book);
     // Each variant is evaluated as base ← override; its figures are composited onto
     // the base so the same completeness checks apply (inherited fields fall back).
     for (const v of def.variants ?? []) {
       const vbook = book.variants?.[v.name];
       if (!vbook) {
-        stubs.push(`${def.name} › ${v.name}`);
+        stubs.push(configLabel(def.name, v.name));
         continue;
       }
       report(
-        `${def.name} › ${v.name}`,
+        configLabel(def.name, v.name),
         variantParams(def.params, v.override),
         compositeFigures(book, vbook),
       );

@@ -28,16 +28,19 @@ function expand(defs: WeaponDefinition[]): {
 } {
   const entries: WeaponDefinition[] = [];
   const origin = new Map<WeaponDefinition, Origin>();
+  // A title-case config is a separate model (`Name · Model`); a lowercase one is a
+  // config of one weapon, which the book brackets (`Name (config)`).
+  const label = (name: string, config: string) =>
+    /^[a-z]/.test(config) ? `${name} (${config})` : `${name} · ${config}`;
   for (const def of defs) {
-    // A named base config shows as a peer (`Name · Army Model`); otherwise just `Name`.
     const baseEntry = def.baseVariant
-      ? { ...def, name: `${def.name} · ${def.baseVariant}` }
+      ? { ...def, name: label(def.name, def.baseVariant) }
       : def;
     entries.push(baseEntry);
     origin.set(baseEntry, { base: def });
     (def.variants ?? []).forEach((v, i) => {
       const entry: WeaponDefinition = {
-        name: `${def.name} · ${v.name}`,
+        name: label(def.name, v.name),
         description: v.description ?? def.description,
         ...(def.manufacturer ? { manufacturer: def.manufacturer } : {}),
         params: variantParams(def.params, v.override),
