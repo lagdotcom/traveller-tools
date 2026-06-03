@@ -64,6 +64,18 @@ interface BookFigures {
    */
   warheads?: Record<string, WarheadFigures>;
   /**
+   * The under-barrel secondary weapon's stat block (a full figure set), for
+   * weapons that mount one (e.g. the Ten-Six). Transcribed for reference; not yet
+   * diffed against `WeaponEvaluation.secondary`.
+   */
+  secondary?: BookFigures;
+  /**
+   * Power-pack / magazine options for an energy weapon, keyed by the pack label
+   * (e.g. 'internal', 'belt pack'). Transcribed for reference; not yet diffed
+   * against `WeaponEvaluation.magazines`.
+   */
+  packs?: Record<string, PackFigures>;
+  /**
    * Per-variant figures, keyed by the variant name on the built-in's `variants`.
    * Each is a full figure set (a variant changes the whole profile) and may carry
    * its own `ammo` / `ignore`.
@@ -111,9 +123,20 @@ interface AmmoFigures {
   penetration?: number;
   /** Reload price of a magazine loaded with this ammo. */
   magazineCr?: Credits;
+  /** Per-round price of this ammo (reference; not yet diffed). */
+  costCr?: Credits;
+  /** '<kind> (<level>)' for this ammo (reference; not yet diffed). */
+  signature?: string;
   traits?: Record<string, number | string | boolean>;
   /** Field names (un-prefixed, e.g. 'damage') to skip for this ammo. */
   ignore?: string[];
+}
+
+/** Capacity / reload of one power-pack or magazine option of an energy weapon. */
+interface PackFigures {
+  capacity?: number;
+  /** Reload price for this pack. */
+  magazineCr?: Credits;
 }
 
 /** The per-round figures of one loaded launcher munition (warhead / missile). */
@@ -715,9 +738,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
       traits: {
         Blast: 0,
         Bulky: true,
-        Burn: undefined,
         Inaccurate: 1,
-        Incendiary: undefined,
         'Lo-Pen': 3,
       },
     },

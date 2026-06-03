@@ -38,6 +38,10 @@ export type DistanceUnit = 'km' | 'AU';
 export function toKm(
   distance: Kilometres | AstronomicalUnits,
   unit: DistanceUnit,
-): number {
-  return unit === 'AU' ? auToKm(distance) : distance;
+): Kilometres {
+  // `unit` says which flavour `distance` is, but the union can't be narrowed by
+  // it, so assert the branch we're in.
+  return unit === 'AU'
+    ? auToKm(distance as AstronomicalUnits)
+    : (distance as Kilometres);
 }

@@ -88,8 +88,12 @@ const THRUST_TL: Record<number, TechLevel> = {
   8: 13,
   9: 13,
 };
-/** Minimum TL by Jump rating (Jump Potential table). */
-const JUMP_TL: Record<Parsecs, TechLevel> = {
+/**
+ * Minimum TL by Jump rating (Jump Potential table). Keyed by plain `number`: a
+ * `Record` index must be `string | number | symbol`, so the `Parsecs` flavour
+ * can't sit on the key (it lives on the `jump`/rating fields that look this up).
+ */
+const JUMP_TL: Record<number, TechLevel> = {
   1: 9,
   2: 11,
   3: 12,
