@@ -1061,9 +1061,6 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         mechanism: 'fullAuto',
         features: ['advancedProjectile', 'highCapacity'],
         capacityPct: 120,
-        // Nominal 43 rounds; the standard magazine costs Cr14 empty, so its loaded
-        // reload is Cr14 + ~Cr21 ammo = Cr35 (the % rule prices only the ammo).
-        magazines: [{ label: 'standard magazine', costCr: 35 }],
         barrel: 'rifle',
         stock: 'full',
         furniture: ['modularisation'],

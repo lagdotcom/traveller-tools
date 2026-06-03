@@ -186,6 +186,10 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: -8,
     signature: 'physical (extreme)',
     traits: { Bulky: true, Scope: true },
+    // The worksheet prices the 3-round magazine as ammo only (3 × Cr25); the
+    // engine now adds the FC standard-magazine cost (1% of Cr3130 ≈ Cr31 → Cr106),
+    // which the worksheet omitted. Flagged rather than dropped from the engine.
+    ignore: ['magazine'],
   },
   'Flintlock Jazail': {
     range: 125,

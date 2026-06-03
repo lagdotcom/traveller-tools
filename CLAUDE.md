@@ -187,6 +187,14 @@ directed-energy weapons (lasers/microwave), projectors (flame/cryo), launchers
   ball/advanced-AP) are exact. `rounds`/`costCr` override a **book-listed** count or
   magazine price the % rule can't derive (the count override doesn't touch the
   cost/weight chain).
+  A reload price is the **empty feed device + the loaded ammunition** (the FC: ammo
+  prices are "the price for a fully loaded magazine"). The empty magazine is a
+  fraction of the weapon's purchase price — **1% standard, 2% extended, 5% drum**
+  (`FeedDef.emptyMagCostPct`; fixed magazines and belts add 0) — added by
+  `reloadFor`. This is the systemic fix for firearm reload under-costing (the engine
+  used to price ammo only). A few worked worksheets priced their magazine ammo-only
+  (e.g. the 13mm Crunch Gun's 3-round mag), so the engine is now _more_ complete than
+  the book there (flagged in reconcile, not overridden).
   Energy weapons use one shape for both: the primary source is `EnergyParams.source:
 PackSpec` (a `powerpack {kg, rating}` or `cartridge {count, rating, ejects?}`),
   baked into the build; `EnergyParams.packs?: PackSpec[]` are the alternatives beyond

@@ -792,6 +792,14 @@ export interface FeedDef {
   capacityMult: number;
   quickdraw: number;
   traits: Traits;
+  /**
+   * Price of the empty feed device as a fraction of the weapon's purchase price
+   * (FC: a standard magazine is 1%, an extended one twice that, a drum five
+   * times). A loaded magazine's price — what the book lists and `reloadFor`
+   * returns — is this plus the ammunition. Fixed magazines are part of the weapon,
+   * so 0.
+   */
+  emptyMagCostPct: number;
 }
 
 export const FEEDS: Record<FeedId, FeedDef> = {
@@ -802,6 +810,7 @@ export const FEEDS: Record<FeedId, FeedDef> = {
     capacityMult: 1,
     quickdraw: 0,
     traits: {},
+    emptyMagCostPct: 0,
   },
   standard: {
     label: 'Standard Magazine',
@@ -810,6 +819,7 @@ export const FEEDS: Record<FeedId, FeedDef> = {
     capacityMult: 1,
     quickdraw: 0,
     traits: {},
+    emptyMagCostPct: 0.01,
   },
   extended: {
     label: 'Extended Magazine',
@@ -818,6 +828,7 @@ export const FEEDS: Record<FeedId, FeedDef> = {
     capacityMult: 1.5,
     quickdraw: -2,
     traits: {},
+    emptyMagCostPct: 0.02,
   },
   drum: {
     label: 'Drum Magazine',
@@ -826,6 +837,7 @@ export const FEEDS: Record<FeedId, FeedDef> = {
     capacityMult: 2.5,
     quickdraw: -6,
     traits: { Inaccurate: -1, Hazardous: -1 },
+    emptyMagCostPct: 0.05,
   },
   belt: {
     label: 'Belt',
@@ -834,6 +846,9 @@ export const FEEDS: Record<FeedId, FeedDef> = {
     capacityMult: 1,
     quickdraw: -8,
     traits: { Inaccurate: -1 },
+    // Belts are sold by the length, not as a % of the weapon; the FC gives no
+    // multiplier, so the reload is priced on ammunition alone.
+    emptyMagCostPct: 0,
   },
 };
 

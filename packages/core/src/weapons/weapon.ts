@@ -309,12 +309,18 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const comp = firearmComponents(params, parts, recv);
 
   const totalWeight = round2(recv.baselineWeight + comp.weightKg);
+  const totalCost = round2(recv.baselineCost + comp.costCr);
   const { calibre, neutralCapacity, capPct: stdPct } = parts;
   const capWeightMult = (pct: number) => 1 + 0.05 * ((pct - 100) / 10);
-  // Loaded-magazine price for `cap` rounds of a given ammo type.
+  // The empty feed device is a fraction of the weapon's purchase price (FC: a
+  // standard magazine 1%, extended 2%, drum 5%); fixed magazines and belts add 0.
+  const emptyMagCr = round2(totalCost * parts.feed.emptyMagCostPct);
+  // Loaded-magazine price = the empty magazine plus `cap` rounds of the ammo type.
   const reloadFor = (cap: number, ammo: AmmoTypeDef) =>
     round2(
-      (cap * calibre.ammoCostPer100 * recv.ammoCostMult * ammo.costMult) / 100,
+      emptyMagCr +
+        (cap * calibre.ammoCostPer100 * recv.ammoCostMult * ammo.costMult) /
+          100,
     );
 
   // Magazine options: the first is the standard one (its weight/cost are the
