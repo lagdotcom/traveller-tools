@@ -552,6 +552,13 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     reload: 40,
     quickdraw: 3,
     signature: PN,
+    // Book errors (engine is right): damage applied the carbine barrel's −10% range
+    // (→225) but not its −1 damage (cf. the AIWS carbine, also 3D-1); Auto 3
+    // (full-auto) and the long-range scope's Scope trait are omitted; and the weight
+    // applied bullpup's +25% to weight as well as cost — but the FC bullpup is +25%
+    // cost / +2 Quickdraw only (no weight), so the engine is lighter (the AIWS, same
+    // intermediate-rifle longarm without bullpup, reconciles at the lighter baseline).
+    ignore: ['damage', 'trait Auto', 'trait Scope', 'weight'],
     secondary: {
       range: 5,
       damage: '4D',
@@ -559,6 +566,9 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
       reload: 5,
       signature: PN,
       traits: { 'Lo-Pen': 5, Spread: 4 },
+      // Book omits the secondary's smoothbore Inaccurate −1 and the
+      // standard-smoothbore-in-an-assault-receiver Very Bulky; both are correct.
+      ignore: ['trait Inaccurate', 'trait Very Bulky'],
     },
   },
   Squadmate: {
@@ -1254,7 +1264,6 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
       const pfx = 'secondary · ';
       cmpStr('damage', formatDamage(sec.profile.damage), sb.damage, pfx, true);
       cmpNum('range', sec.profile.range, sb.range, pfx, true);
-      cmpNum('quickdraw', sec.profile.quickdraw, sb.quickdraw, pfx, true);
       cmpNum('capacity', sec.profile.capacity, sb.capacity, pfx, true);
       cmpNum('magazine', sec.reload, sb.reload, pfx, true);
       cmpStr('signature', `${sec.profile.signatureKind} (${sec.profile.signature})`, sb.signature, pfx, true); // prettier-ignore
