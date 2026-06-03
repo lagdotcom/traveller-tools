@@ -87,6 +87,12 @@ export interface WeaponDefinition {
   description?: string;
   /** Designer / manufacturer (e.g. "Anhur Industries"). */
   manufacturer?: string;
+  /**
+   * Name of the **base** configuration when the weapon is one of several named
+   * models/configs (e.g. GS-40's "Army Model", the peer of its "Navy Model"
+   * variant). Cosmetic: the base shows as a named peer alongside `variants`.
+   */
+  baseVariant?: string;
   params: WeaponParams;
   /** Optional book variants (partial overrides on `params`). */
   variants?: WeaponVariant[];
@@ -567,6 +573,7 @@ export function serializeWeapon(def: WeaponDefinition): string {
       name: def.name,
       ...(def.description ? { description: def.description } : {}),
       ...(def.manufacturer ? { manufacturer: def.manufacturer } : {}),
+      ...(def.baseVariant ? { baseVariant: def.baseVariant } : {}),
       params: normalizeWeaponParams(def.params),
       ...(def.variants && def.variants.length > 0
         ? { variants: def.variants }
@@ -599,6 +606,9 @@ export function parseWeapon(text: string): WeaponDefinition {
       : {}),
     ...(typeof weapon.manufacturer === 'string'
       ? { manufacturer: weapon.manufacturer }
+      : {}),
+    ...(typeof weapon.baseVariant === 'string' && weapon.baseVariant.trim()
+      ? { baseVariant: weapon.baseVariant.trim() }
       : {}),
     params: normalizeWeaponParams(params),
     ...(normalizeVariants(weapon.variants)
@@ -798,27 +808,30 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     },
     'Anhur Industries',
   ),
-  weapon(
-    'GS-40',
-    'Gauss sidearm',
-    {
-      tl: 13,
-      receiver: 'handgun',
-      calibre: 'smallGauss',
-      mechanism: 'burst',
-      barrel: 'handgun',
-      // reconcile: gauss handguns hold 40 base (Core Gauss Pistol), not ×3 → 30 —
-      // pinned per-weapon; the name itself is the 40-round magazine. Cr25 = book.
-      magazines: [{ rounds: 40, costCr: 25 }],
-    },
-    'Anhur Industries',
-    [
+  {
+    ...weapon(
+      'GS-40',
+      'Gauss sidearm',
       {
-        name: 'Navy',
-        override: { barrel: 'assault', stock: 'full' },
+        tl: 13,
+        receiver: 'handgun',
+        calibre: 'smallGauss',
+        mechanism: 'burst',
+        barrel: 'handgun',
+        // reconcile: gauss handguns hold 40 base (Core Gauss Pistol), not ×3 → 30 —
+        // pinned per-weapon; the name itself is the 40-round magazine. Cr25 = book.
+        magazines: [{ rounds: 40, costCr: 25 }],
       },
-    ],
-  ),
+      'Anhur Industries',
+      [
+        {
+          name: 'Navy Model',
+          override: { barrel: 'assault', stock: 'full' },
+        },
+      ],
+    ),
+    baseVariant: 'Army Model',
+  },
   weapon(
     'Stowaway',
     'Extreme-stealth full-auto body pistol',
@@ -834,31 +847,34 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     },
     'Colvery Solutions',
   ),
-  weapon(
-    'Liberator Derringer',
-    'Heavy-handgun multi-barrel hold-out',
-    {
-      tl: 7,
-      receiver: 'handgun',
-      calibre: 'heavyHandgun',
-      mechanism: 'repeater',
-      features: ['partialMultiBarrel'],
-      stock: 'none',
-      additionalBarrels: 3,
-      barrel: 'minimal',
-      ammo: ['lowPenetration', 'heap'],
-    },
-    'Hangul Arms and Tactical',
-    [
+  {
+    ...weapon(
+      'Liberator',
+      'Heavy-handgun multi-barrel hold-out',
       {
-        name: 'Defender',
-        override: {
-          barrel: 'short',
-          ammo: ['ball', 'distraction', 'explosive'],
-        },
+        tl: 7,
+        receiver: 'handgun',
+        calibre: 'heavyHandgun',
+        mechanism: 'repeater',
+        features: ['partialMultiBarrel'],
+        stock: 'none',
+        additionalBarrels: 3,
+        barrel: 'minimal',
+        ammo: ['lowPenetration', 'heap'],
       },
-    ],
-  ),
+      'Hangul Arms and Tactical',
+      [
+        {
+          name: 'Defender',
+          override: {
+            barrel: 'short',
+            ammo: ['ball', 'distraction', 'explosive'],
+          },
+        },
+      ],
+    ),
+    baseVariant: 'Derringer',
+  },
   weapon(
     'Bodyguard',
     'Standard-smoothbore repeater longarm',

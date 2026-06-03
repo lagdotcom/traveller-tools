@@ -261,7 +261,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     // rounds it up to 450 (the prose works from the precise figure).
     ignore: ['cost'],
     variants: {
-      Navy: {
+      'Navy Model': {
         range: 50,
         weightKg: 1.42,
         costCr: 500,
@@ -292,7 +292,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     signature: 'physical (minimal)',
     traits: { Auto: 2, 'Lo-Pen': 2, Stealth: 'extreme' },
   },
-  'Liberator Derringer': {
+  Liberator: {
     range: 5,
     damage: '3D3-1',
     weightKg: 0.9,
@@ -1229,7 +1229,11 @@ function main() {
       stubs.push(def.name);
       continue;
     }
-    report(def.name, def.params, book);
+    // A named base config (e.g. "Army Model") shows as a peer of its variants.
+    const baseLabel = def.baseVariant
+      ? `${def.name} › ${def.baseVariant}`
+      : def.name;
+    report(baseLabel, def.params, book);
     // Each variant is evaluated as base ← override; its figures are composited onto
     // the base so the same completeness checks apply (inherited fields fall back).
     for (const v of def.variants ?? []) {

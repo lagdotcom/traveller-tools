@@ -29,8 +29,12 @@ function expand(defs: WeaponDefinition[]): {
   const entries: WeaponDefinition[] = [];
   const origin = new Map<WeaponDefinition, Origin>();
   for (const def of defs) {
-    entries.push(def);
-    origin.set(def, { base: def });
+    // A named base config shows as a peer (`Name · Army Model`); otherwise just `Name`.
+    const baseEntry = def.baseVariant
+      ? { ...def, name: `${def.name} · ${def.baseVariant}` }
+      : def;
+    entries.push(baseEntry);
+    origin.set(baseEntry, { base: def });
     (def.variants ?? []).forEach((v, i) => {
       const entry: WeaponDefinition = {
         name: `${def.name} · ${v.name}`,

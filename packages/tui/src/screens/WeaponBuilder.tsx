@@ -258,13 +258,19 @@ const grenadeValues = (g: GrenadeParams) => ({
  */
 function formValues(
   p: WeaponParams,
-  meta: { name: string; manufacturer: string; description: string },
+  meta: {
+    name: string;
+    manufacturer: string;
+    description: string;
+    baseVariant: string;
+  },
 ) {
   const bs = p.kind === 'firearm' || p.kind === 'energy' ? p : undefined;
   return {
     name: meta.name,
     manufacturer: meta.manufacturer,
     description: meta.description,
+    baseVariant: meta.baseVariant,
     weaponClass: WCLASS.toLabel(p.kind),
     tl: String(p.tl),
     ...barrelStockValues(bs ?? DEFAULT_WEAPON_PARAMS),
@@ -442,6 +448,7 @@ export function WeaponBuilderScreen({
     name: initial?.name ?? 'Untitled Weapon',
     manufacturer: initial?.manufacturer ?? '',
     description: initial?.description ?? '',
+    baseVariant: initial?.baseVariant ?? '',
   };
   // Optionally open straight on a variant (from the library).
   const startVariant =
@@ -454,6 +461,7 @@ export function WeaponBuilderScreen({
         name: startVariant.name,
         manufacturer: baseDefMeta.manufacturer,
         description: startVariant.description ?? '',
+        baseVariant: baseDefMeta.baseVariant,
       }
     : baseDefMeta;
   const form = useForm(formValues(startParams, startMeta));
@@ -1028,6 +1036,9 @@ export function WeaponBuilderScreen({
       { key: 'name', label: 'Name' },
       { key: 'manufacturer', label: 'Manufacturer' },
       { key: 'description', label: 'Description' },
+      // The base configuration's own name when the weapon has named models/configs
+      // (e.g. "Army Model", peer of the "Navy Model" variant). Blank = unnamed base.
+      { key: 'baseVariant', label: 'Base model name' },
     ],
   };
   const sectionDefs = [
@@ -1108,6 +1119,7 @@ export function WeaponBuilderScreen({
   const name = form.values.name.trim() || 'Untitled Weapon';
   const manufacturer = form.values.manufacturer.trim();
   const description = form.values.description.trim();
+  const baseVariant = form.values.baseVariant.trim();
   const evaluation = evaluateWeapon(params);
 
   // Commit the live form into the current target, returning the whole weapon.
@@ -1117,7 +1129,11 @@ export function WeaponBuilderScreen({
     variants: WeaponVariant[];
   } => {
     if (target === 'main')
-      return { params, meta: { name, manufacturer, description }, variants };
+      return {
+        params,
+        meta: { name, manufacturer, description, baseVariant },
+        variants,
+      };
     const override = diffOverride(baseParams, params);
     const vs = variants.map((v, k) =>
       k === target
@@ -1144,6 +1160,7 @@ export function WeaponBuilderScreen({
             name: c.variants[next]!.name,
             manufacturer: c.meta.manufacturer,
             description: c.variants[next]!.description ?? '',
+            baseVariant: c.meta.baseVariant,
           };
     setBaseParams(c.params);
     setBaseMeta(c.meta);
@@ -1192,6 +1209,9 @@ export function WeaponBuilderScreen({
       : {}),
     ...(collected.meta.description.trim()
       ? { description: collected.meta.description.trim() }
+      : {}),
+    ...(collected.meta.baseVariant.trim()
+      ? { baseVariant: collected.meta.baseVariant.trim() }
       : {}),
     params: collected.params,
     ...(collected.variants.length > 0 ? { variants: collected.variants } : {}),

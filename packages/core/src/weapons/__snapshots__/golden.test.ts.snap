@@ -3235,7 +3235,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Jimpy-G 1`] 
 }
 `;
 
-exports[`golden master — built-in weapon evaluations > reproduces Liberator Derringer 1`] = `
+exports[`golden master — built-in weapon evaluations > reproduces Liberator 1`] = `
 {
   "ammoProfiles": [
     {
