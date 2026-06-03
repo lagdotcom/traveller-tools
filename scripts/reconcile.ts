@@ -887,9 +887,13 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: -9,
     signature: EL,
     traits: { Bulky: true, 'Lo-Pen': 2, Scope: true, 'Zero-G': true },
-    // Book error: the table prints 8D but omits Improved Beam Focus's +3 (the
-    // engine's 8D+3 is correct). Spot-ignored so it doesn't clutter the list.
-    ignore: ['damage'],
+    // Stat-line errors the worked component table contradicts (engine matches the
+    // worksheet): damage 8D omits Improved Beam Focus's +3 (→ 8D+3); range 625
+    // omits the Long barrel's +10% the worksheet applies (→ 688); quickdraw −9
+    // omits the bipod's −4 (the worksheet lists no bipod QD, but the 13mm Crunch
+    // Gun's worksheet does charge it, which the engine follows → −13).
+    // Still unexplained (left visible): signature (low) and the Bulky trait.
+    ignore: ['damage', 'range', 'quickdraw'],
     variants: {
       'TEA-12': { range: 450, weightKg: 10.01, costCr: 17500, quickdraw: -4 },
     },

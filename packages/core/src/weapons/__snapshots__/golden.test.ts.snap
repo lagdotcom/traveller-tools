@@ -5702,6 +5702,24 @@ exports[`golden master — built-in weapon evaluations > reproduces TES-12 1`] =
     },
   ],
   "issues": [],
+  "magazines": [
+    {
+      "capacity": 125,
+      "label": "Powerpack: Heavy 1kg",
+      "magazineCr": 2500,
+      "primary": true,
+      "unit": "shots",
+      "weightKg": 13.7,
+    },
+    {
+      "capacity": 375,
+      "label": "external power unit",
+      "magazineCr": 7500,
+      "primary": false,
+      "unit": "shots",
+      "weightKg": 15.7,
+    },
+  ],
   "notes": [
     "Laser Designator: paints a target for laser-guided munitions / homing weapons.",
     "Bipod: once deployed (a significant action), DM+1 to attack beyond 50m.",

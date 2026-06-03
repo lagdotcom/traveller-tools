@@ -1529,6 +1529,16 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       receiver: 'large',
       damageDice: 8,
       source: { kind: 'powerpack', kg: 1, rating: 'heavy' },
+      // Often used with a detachable 3kg external unit (Power 3000 → 375 shots,
+      // Cr7500) as an alternative to the internal 1kg pack.
+      packs: [
+        {
+          kind: 'powerpack',
+          label: 'external power unit',
+          kg: 3,
+          rating: 'heavy',
+        },
+      ],
       mods: ['efficientBeam', 'improvedFocus'],
       barrel: 'long',
       stock: 'full',
