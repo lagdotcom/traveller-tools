@@ -65,14 +65,14 @@ interface BookFigures {
   warheads?: Record<string, WarheadFigures>;
   /**
    * The under-barrel secondary weapon's stat block (a full figure set), for
-   * weapons that mount one (e.g. the Ten-Six). Transcribed for reference; not yet
-   * diffed against `WeaponEvaluation.secondary`.
+   * weapons that mount one (e.g. the Ten-Six). Diffed against the engine's
+   * `WeaponEvaluation.secondary` profile (+ reload) under a `secondary ·` prefix.
    */
   secondary?: BookFigures;
   /**
    * Power-pack / magazine options for an energy weapon, keyed by the pack label
-   * (e.g. 'internal', 'belt pack'). Transcribed for reference; not yet diffed
-   * against `WeaponEvaluation.magazines`.
+   * (e.g. 'internal', 'belt pack'). Diffed (capacity + reload) against the engine's
+   * `WeaponEvaluation.magazines`, matched by label then position.
    */
   packs?: Record<string, PackFigures>;
   /**
@@ -1242,6 +1242,41 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
     );
     for (const f of figs.ignore ?? []) ignore.add(prefix + f);
   }
+
+  // Under-barrel secondary weapon: diff the book's secondary block against the
+  // engine's secondary profile (+ its reload price).
+  if (book.secondary) {
+    const sec = e.secondary;
+    if (!sec) {
+      diffs.push({ field: 'secondary · (present)', engine: '—', book: 'expected' }); // prettier-ignore
+    } else {
+      const sb = book.secondary;
+      const pfx = 'secondary · ';
+      cmpStr('damage', formatDamage(sec.profile.damage), sb.damage, pfx, true);
+      cmpNum('range', sec.profile.range, sb.range, pfx, true);
+      cmpNum('quickdraw', sec.profile.quickdraw, sb.quickdraw, pfx, true);
+      cmpNum('capacity', sec.profile.capacity, sb.capacity, pfx, true);
+      cmpNum('magazine', sec.reload, sb.reload, pfx, true);
+      cmpStr('signature', `${sec.profile.signatureKind} (${sec.profile.signature})`, sb.signature, pfx, true); // prettier-ignore
+      cmpTraits(sec.profile.traits, sb.traits, pfx, true);
+      for (const f of sb.ignore ?? []) ignore.add(pfx + f);
+    }
+  }
+
+  // Power-pack / magazine options (energy & multi-mag firearms): match each book
+  // pack to the engine's magazine row by label, falling back to position (the
+  // first book pack ≈ the standard/internal one whose label differs).
+  const eMags = e.magazines ?? [];
+  Object.entries(book.packs ?? {}).forEach(([label, figs], i) => {
+    const row = eMags.find((m) => m.label === label) ?? eMags[i];
+    const pfx = `${label} · `;
+    if (!row) {
+      diffs.push({ field: `${pfx}(present)`, engine: '—', book: 'expected' });
+      return;
+    }
+    cmpNum('capacity', row.capacity, figs.capacity, pfx, true);
+    cmpNum('magazine', row.reload, figs.reload, pfx, true);
+  });
 
   // Drop spot exceptions (confirmed book errors the engine is right about).
   return diffs.filter((d) => !ignore.has(d.field));
