@@ -102,22 +102,30 @@ interface BookFigures {
 }
 
 /**
- * One book-computation quirk: "at step X the book applied a different cost/weight
- * multiplier than the engine". The engine's actual multiplier for the step is
- * recovered from the breakdown (running subtotal after ÷ before) and the total is
- * rescaled by `override ÷ engine`. So `cost: 1` reproduces the book *omitting* a
- * step (×1), and `weight: 1.25` reproduces it *over-applying* one. Assumes the
- * step is a receiver-baseline multiplier — the whole printed total scales with it
- * (barrel/stock/% accessories are a % of the baseline); flat-Cr add-ons aren't
- * re-derived, so this is only exact when the total scales cleanly with the step.
+ * One book-computation quirk: "at step X the book computed cost/weight differently
+ * than the engine". Two shapes, both reproducing the book's printed figure so it
+ * matches instead of flagging a diff:
+ *
+ *  - **Multiplicative step** (default): the book applied a different multiplier at
+ *    a receiver-chain step. The engine's actual multiplier is recovered from the
+ *    breakdown (running subtotal after ÷ before) and the baseline-derived total is
+ *    rescaled by `override ÷ engine`. So `cost: 1` reproduces the book *omitting* a
+ *    step (×1), `weight: 1.25` reproduces it *over-applying* one. (The whole
+ *    baseline-derived total scales with it; flat-Cr add-ons are held aside.)
+ *  - **Per-line** (`line: true`): the book scaled one additive component's own
+ *    contribution (e.g. a secondary weapon at a different barrel weight). `cost`/
+ *    `weight` multiply *that line's* value directly. Use this where a step rescale
+ *    can't apply because the component is added, not multiplied in.
  */
 interface BookQuirk {
   /** Substring matched against a cost/weight breakdown line-item label. */
   step: string;
-  /** The cost multiplier the book applied at this step (1 = it omitted the step). */
+  /** Cost multiplier: at the step (default) or of the line's value (`line`). */
   cost?: number;
-  /** The weight multiplier the book applied at this step (1 = it omitted the step). */
+  /** Weight multiplier: at the step (default) or of the line's value (`line`). */
   weight?: number;
+  /** Scale the matched line's own contribution rather than a receiver step. */
+  line?: boolean;
   /** Why — suspected book error, house ruling, etc. (shown in the report). */
   note?: string;
 }
@@ -562,15 +570,21 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     // (→225) but not its −1 damage (cf. the AIWS carbine, also 3D-1); Auto 3
     // (full-auto) and the long-range scope's Scope trait are omitted.
     ignore: ['damage', 'trait Auto', 'trait Scope'],
-    // The book applied bullpup's +25% to weight as well as cost — but the FC bullpup
-    // is +25% cost / +2 Quickdraw only (no weight). Reproduce that over-application
-    // (the AIWS, same intermediate-rifle longarm without bullpup, reconciles at the
-    // lighter baseline). A ~0.28 kg residual remains: the book also used the FULL
-    // secondary-barrel weight, where the FC (and the Ten-Six worked example) halve an
-    // extra barrel — a second book error that can't be reproduced until quirks can
-    // override a single additive component (not just a multiplicative receiver step).
+    // Two weight quirks reproduce the book's printed 5.55 kg exactly:
+    //  - Bullpup: the book applied bullpup's +25% to weight as well as cost, but the
+    //    FC bullpup is +25% cost / +2 Quickdraw only (the AIWS, same intermediate-
+    //    rifle longarm without bullpup, reconciles at the lighter baseline).
+    //  - Secondary: the book used the FULL secondary-barrel weight (×1.5 of the
+    //    half-weight line), where the FC and the Ten-Six worked example halve an
+    //    extra barrel.
     quirks: [
       { step: 'Bullpup', weight: 1.25, note: 'book: bullpup +25% weight' },
+      {
+        step: 'Secondary',
+        line: true,
+        weight: 1.5,
+        note: 'book: full secondary-barrel weight (FC halves an extra barrel)',
+      },
     ],
     secondary: {
       range: 5,
@@ -1081,6 +1095,23 @@ function applyQuirks(
   let cost = e.totals.cost - flatCost;
   let weight = e.totals.weight - flatWeight;
   const matched = new Set<BookQuirk>();
+  // Pass 1 — per-line additive overrides: scale a single component's own
+  // contribution (cost/weight ×factor), adjusting the baseline-derived sum by the
+  // line's value × (factor − 1). For additive Phase-B components (e.g. a secondary
+  // weapon) a multiplicative-step rescale doesn't apply. Done first so the step
+  // pass below scales the corrected baseline.
+  for (const line of e.breakdown) {
+    for (const q of quirks) {
+      if (!q.line || !line.label.includes(q.step)) continue;
+      matched.add(q);
+      if (q.cost !== undefined) cost += (line.cost ?? 0) * (q.cost - 1);
+      if (q.weight !== undefined) weight += (line.weight ?? 0) * (q.weight - 1);
+    }
+  }
+  // Pass 2 — multiplicative step overrides: rescale the baseline-derived total by
+  // (book multiplier ÷ the engine's actual multiplier) for the step. Covers
+  // omission (book ×1 → divide it out) and over-application (book ×1.25 where the
+  // engine had none → multiply it in).
   let runCost = 0;
   let runWeight = 0;
   for (const line of e.breakdown) {
@@ -1089,11 +1120,8 @@ function applyQuirks(
     runCost += line.cost ?? 0;
     runWeight += line.weight ?? 0;
     for (const q of quirks) {
-      if (!line.label.includes(q.step)) continue;
+      if (q.line || !line.label.includes(q.step)) continue;
       matched.add(q);
-      // Rescale the baseline-derived total by (book multiplier ÷ the engine's
-      // actual multiplier) for this step — covers omission (book ×1 → divide it
-      // out) and over-application (book ×1.25 where the engine had none → multiply).
       if (q.cost !== undefined && beforeCost > 0)
         cost *= q.cost / (runCost / beforeCost);
       if (q.weight !== undefined && beforeWeight > 0)
@@ -1366,7 +1394,7 @@ function main() {
         .filter(Boolean)
         .join(', ');
       lines.push(
-        `      quirk: '${q.step}' → ${over}${q.note ? ` — ${q.note}` : ''}`,
+        `      quirk: ${q.line ? 'line ' : ''}'${q.step}' → ${over}${q.note ? ` — ${q.note}` : ''}`,
       );
     }
     if (SHOW_ROUNDING) for (const d of rounding) lines.push(row(d));
