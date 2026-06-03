@@ -892,8 +892,11 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     // omits the Long barrel's +10% the worksheet applies (→ 688); quickdraw −9
     // omits the bipod's −4 (the worksheet lists no bipod QD, but the 13mm Crunch
     // Gun's worksheet does charge it, which the engine follows → −13).
-    // Still unexplained (left visible): signature (low) and the Bulky trait.
-    ignore: ['damage', 'range', 'quickdraw'],
+    // signature (low) and Bulky are stated with no derivable rule: no signature
+    // rule distinguishes lasers (the other three are all "normal"), and every Bulky
+    // rule is calibre/mechanism/receiver/RF-specific — the FC gives no weight→Bulky
+    // threshold (confirmed by an exhaustive search of the text).
+    ignore: ['damage', 'range', 'quickdraw', 'signature', 'trait Bulky'],
     variants: {
       'TEA-12': { range: 450, weightKg: 10.01, costCr: 17500, quickdraw: -4 },
     },
