@@ -403,6 +403,7 @@ function resolveParts(params: FirearmParams) {
   // holds one round per barrel (a double-barrel shotgun loads 2); smoothbores use
   // fixed per-receiver sizes; otherwise it is the receiver base × calibre ×
   // mechanism × gauss × feature multipliers.
+  const feed = FEEDS[params.feed] ?? FEEDS.standard;
   let neutralCapacity: number;
   if (params.mechanism === 'singleShot') neutralCapacity = 1 + extraBarrels;
   else if (calibre.smoothbore)
@@ -412,6 +413,9 @@ function resolveParts(params: FirearmParams) {
       receiver.baseCapacity * calibre.capacityMult * mechanism.capacityMult;
     if (calibre.gauss) neutralCapacity *= GAUSS_CAPACITY_MULT;
     for (const f of features) neutralCapacity *= f.capacityMult;
+    // The feed device scales the round count (extended ×1.5, drum ×2.5); its
+    // weight/cost come from feed.weightMult/costMult, not the capacity-% penalty.
+    neutralCapacity *= feed.capacityMult;
   }
 
   // The magazine options; the first is the standard one baked into the build.
@@ -435,7 +439,7 @@ function resolveParts(params: FirearmParams) {
     mechanism,
     barrel: BARRELS[params.barrel] ?? BARRELS.rifle,
     stock: STOCKS[params.stock] ?? STOCKS.none,
-    feed: FEEDS[params.feed] ?? FEEDS.standard,
+    feed,
     features,
     autoSteps,
     auto,
