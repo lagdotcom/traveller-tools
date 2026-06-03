@@ -783,6 +783,10 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       autoIncrease: 2,
       capacityPct: 120,
       barrel: 'short',
+      // reconcile: gauss handguns hold 40 base (matching the Core Gauss Pistol),
+      // not the rules' ×3 → 30; no FC text explains it, so it's pinned per-weapon.
+      // Final 24 = 40 × Very Compact 0.5 × 120%; magazine Cr27 is the book figure.
+      magazines: [{ rounds: 24, costCr: 27 }],
     },
     'Anhur Industries',
   ),
@@ -795,6 +799,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       calibre: 'smallGauss',
       mechanism: 'burst',
       barrel: 'handgun',
+      // reconcile: gauss handguns hold 40 base (Core Gauss Pistol), not ×3 → 30 —
+      // pinned per-weapon; the name itself is the 40-round magazine. Cr25 = book.
+      magazines: [{ rounds: 40, costCr: 25 }],
     },
     'Anhur Industries',
     [

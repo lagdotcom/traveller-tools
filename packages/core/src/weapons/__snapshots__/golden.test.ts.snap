@@ -2079,10 +2079,10 @@ exports[`golden master — built-in weapon evaluations > reproduces GC-24 1`] = 
     {
       "ammo": "ball",
       "label": "Ball",
-      "magazineCr": 9,
+      "magazineCr": 27,
       "profile": {
         "auto": 4,
-        "capacity": 18,
+        "capacity": 24,
         "damage": {
           "dice": 3,
           "die": 6,
@@ -2156,7 +2156,7 @@ exports[`golden master — built-in weapon evaluations > reproduces GC-24 1`] = 
     {
       "costCr": 1212.75,
       "label": "Receiver Totals",
-      "notes": "Capacity 18",
+      "notes": "Capacity 24",
       "weightKg": 0.7744,
     },
     {
@@ -2173,7 +2173,7 @@ exports[`golden master — built-in weapon evaluations > reproduces GC-24 1`] = 
   ],
   "profile": {
     "auto": 4,
-    "capacity": 18,
+    "capacity": 24,
     "damage": {
       "dice": 3,
       "die": 6,
@@ -2199,7 +2199,7 @@ exports[`golden master — built-in weapon evaluations > reproduces GC-24 1`] = 
   ],
   "totals": {
     "costCr": 1334.025,
-    "magazineCr": 9,
+    "magazineCr": 27,
     "weightKg": 0.85184,
   },
 }
@@ -2339,10 +2339,10 @@ exports[`golden master — built-in weapon evaluations > reproduces GS-40 1`] = 
     {
       "ammo": "ball",
       "label": "Ball",
-      "magazineCr": 15,
+      "magazineCr": 25,
       "profile": {
         "auto": 2,
-        "capacity": 30,
+        "capacity": 40,
         "damage": {
           "dice": 3,
           "die": 6,
@@ -2388,7 +2388,7 @@ exports[`golden master — built-in weapon evaluations > reproduces GS-40 1`] = 
     {
       "costCr": 385,
       "label": "Receiver Totals",
-      "notes": "Capacity 30",
+      "notes": "Capacity 40",
       "weightKg": 1,
     },
     {
@@ -2403,7 +2403,7 @@ exports[`golden master — built-in weapon evaluations > reproduces GS-40 1`] = 
   "notes": [],
   "profile": {
     "auto": 2,
-    "capacity": 30,
+    "capacity": 40,
     "damage": {
       "dice": 3,
       "die": 6,
@@ -2429,7 +2429,7 @@ exports[`golden master — built-in weapon evaluations > reproduces GS-40 1`] = 
   ],
   "totals": {
     "costCr": 442.75,
-    "magazineCr": 15,
+    "magazineCr": 25,
     "weightKg": 1.2,
   },
 }
