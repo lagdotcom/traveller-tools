@@ -262,8 +262,9 @@ function normalizeMagazines(v: unknown): MagazineSpec[] | undefined {
       spec.pct = item.pct;
     if (typeof item.rounds === 'number' && Number.isFinite(item.rounds))
       spec.rounds = item.rounds;
-    if (typeof item.costCr === 'number' && Number.isFinite(item.costCr))
-      spec.costCr = item.costCr;
+    // `cost` was once `costCr` — accept the legacy key so old saves still load.
+    const cost = typeof item.cost === 'number' ? item.cost : item.costCr;
+    if (typeof cost === 'number' && Number.isFinite(cost)) spec.cost = cost;
     out.push(spec);
   }
   return out.length ? out : undefined;
@@ -810,7 +811,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       // reconcile: gauss handguns hold 40 base (matching the Core Gauss Pistol),
       // not the rules' ×3 → 30; no FC text explains it, so it's pinned per-weapon.
       // Final 24 = 40 × Very Compact 0.5 × 120%; magazine Cr27 is the book figure.
-      magazines: [{ rounds: 24, costCr: 27 }],
+      magazines: [{ rounds: 24, cost: 27 }],
     },
     'Anhur Industries',
   ),
@@ -826,7 +827,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         barrel: 'handgun',
         // reconcile: gauss handguns hold 40 base (Core Gauss Pistol), not ×3 → 30 —
         // pinned per-weapon; the name itself is the 40-round magazine. Cr25 = book.
-        magazines: [{ rounds: 40, costCr: 25 }],
+        magazines: [{ rounds: 40, cost: 25 }],
       },
       'Anhur Industries',
       [
@@ -1028,8 +1029,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       accessories: ['scope', 'laserPointer'],
       magazines: [
         { label: 'Standard' },
-        { label: 'Casket', rounds: 40, costCr: 40, pct: 210 },
-        { label: 'Drum', rounds: 70, costCr: 100, pct: 360 }, // TODO drops Bulky
+        { label: 'Casket', rounds: 40, cost: 40, pct: 210 },
+        { label: 'Drum', rounds: 70, cost: 100, pct: 360 }, // TODO drops Bulky
       ],
     },
     'Unified Space Industries',
@@ -1078,7 +1079,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
           override: {
             heavyBarrel: true,
             magazines: [
-              { label: 'extended casket magazine', rounds: 64, costCr: 70 },
+              { label: 'extended casket magazine', rounds: 64, cost: 70 },
             ],
           },
         },
@@ -1237,9 +1238,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       accessories: ['laserPointer'],
       ammo: ['ball', 'explosive', 'heap'],
       magazines: [
-        { ammo: 'ball', rounds: 45, costCr: 270 },
-        { ammo: 'explosive', rounds: 45, costCr: 1400 },
-        { ammo: 'heap', rounds: 45, costCr: 2300 },
+        { ammo: 'ball', rounds: 45, cost: 270 },
+        { ammo: 'explosive', rounds: 45, cost: 1400 },
+        { ammo: 'heap', rounds: 45, cost: 2300 },
       ],
     },
     'BeraTech',
@@ -1264,8 +1265,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       accessories: ['holographicSight'],
       ammo: ['ball', 'apAdvanced'],
       magazines: [
-        { ammo: 'ball', costCr: 200 },
-        { ammo: 'apAdvanced', costCr: 275 },
+        { ammo: 'ball', cost: 200 },
+        { ammo: 'apAdvanced', cost: 275 },
       ],
     },
     'Diversified Military Systems',
@@ -1287,8 +1288,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       ammo: ['ball', 'apAdvanced'],
       // Mag 50 is a manual override (mentioned in the text); ball Cr110, AAP Cr180.
       magazines: [
-        { ammo: 'ball', rounds: 50, costCr: 110 },
-        { ammo: 'apAdvanced', rounds: 50, costCr: 180 },
+        { ammo: 'ball', rounds: 50, cost: 110 },
+        { ammo: 'apAdvanced', rounds: 50, cost: 180 },
       ],
     },
     'Jervaux Aerospace',
@@ -1303,7 +1304,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'full',
     furniture: ['bipod'],
     // Belt feed: Mag 50 is a manual override (the text's belt length), reload Cr50.
-    magazines: [{ rounds: 50, costCr: 50 }],
+    magazines: [{ rounds: 50, cost: 50 }],
     // reconcile: Range 375m, Quickdraw +4 (???), Slow Loader 4 (belt feed not modelled)
   }),
   projector(
@@ -1493,7 +1494,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'none',
       furniture: ['supportMount'],
       accessories: ['scope'],
-      magazines: [{ rounds: 50, costCr: 750 }],
+      magazines: [{ rounds: 50, cost: 750 }],
     },
     undefined,
     [
@@ -1522,7 +1523,7 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       stock: 'full',
       accessories: ['scope'],
       furniture: ['bipod'],
-      magazines: [{ rounds: 7, costCr: 150 }],
+      magazines: [{ rounds: 7, cost: 150 }],
       ammo: ['ball', 'apAdvanced'],
     },
     undefined,

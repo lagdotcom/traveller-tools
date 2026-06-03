@@ -72,7 +72,7 @@ export const base =
   (b) => {
     b.cost = cost;
     b.weight = weight;
-    b.lines.push({ label, costCr: round2(cost), weightKg: round2(weight) });
+    b.lines.push({ label, cost: round2(cost), weight: round2(weight) });
   };
 
 /**
@@ -86,8 +86,8 @@ export const step =
     if (costMult === 1 && weightMult === 1) return;
     b.lines.push({
       label,
-      costCr: round2(b.cost * costMult - b.cost),
-      weightKg: round2(b.weight * weightMult - b.weight),
+      cost: round2(b.cost * costMult - b.cost),
+      weight: round2(b.weight * weightMult - b.weight),
       costMod: modPct(costMult),
       weightMod: modPct(weightMult),
     });
@@ -115,7 +115,7 @@ export const baseline =
     b.weight = round2(b.weight);
     b.baseCost = b.cost;
     b.baseWeight = b.weight;
-    b.lines.push({ label, costCr: b.cost, weightKg: b.weight, notes });
+    b.lines.push({ label, cost: b.cost, weight: b.weight, notes });
   };
 
 // --- Phase B: components as a fraction of the baseline -----------------------
@@ -126,8 +126,8 @@ export const component =
   (b) => {
     const item = make(b);
     if (!item) return;
-    b.cost += item.costCr;
-    b.weight += item.weightKg;
+    b.cost += item.cost;
+    b.weight += item.weight;
     b.lines.push(item);
   };
 
@@ -140,8 +140,8 @@ export const pctComponent = (
 ): Op =>
   component((b) => ({
     label,
-    costCr: round2(b.baseCost * costFrac),
-    weightKg: round2(b.baseWeight * weightFrac),
+    cost: round2(b.baseCost * costFrac),
+    weight: round2(b.baseWeight * weightFrac),
     costMod: pctOf(costFrac),
     weightMod: pctOf(weightFrac),
     ...(notes !== undefined ? { notes } : {}),

@@ -36,13 +36,13 @@ const kg = (n: number): string => `${Math.round(n * 1000) / 1000}kg`;
 function ProfileBlock({
   profile,
   title,
-  magazineCr,
+  reload,
 }: {
   profile: WeaponProfile;
   /** Optional per-ammo label (e.g. "Ball") shown ahead of the stats. */
   title?: string;
   /** Optional per-ammo reload price, shown alongside the magazine size. */
-  magazineCr?: number;
+  reload?: number;
 }): React.JSX.Element {
   const sig = `${profile.signatureKind === 'emissions' ? 'Emissions' : 'Physical'} (${profile.signature})`;
   return (
@@ -71,7 +71,7 @@ function ProfileBlock({
         <Text dimColor>· </Text>
         <Text>
           Magazine {profile.capacity}
-          {magazineCr !== undefined ? ` (${cr(magazineCr)})` : ''}{' '}
+          {reload !== undefined ? ` (${cr(reload)})` : ''}{' '}
         </Text>
         {profile.heat > 0 ? (
           <Text dimColor>
@@ -131,12 +131,12 @@ export function WeaponSheet({
               <ProfileBlock
                 profile={a.profile}
                 title={a.label}
-                magazineCr={a.magazineCr}
+                reload={a.reload}
               />
             </Box>
           ))
         ) : (
-          <ProfileBlock profile={profile} magazineCr={totals.magazineCr} />
+          <ProfileBlock profile={profile} reload={totals.reload} />
         );
       })()}
 
@@ -157,10 +157,10 @@ export function WeaponSheet({
               <Text wrap="truncate-end">{line.label}</Text>
             </Box>
             <Box width={COST_W} justifyContent="flex-end">
-              <Text>{line.costMod ?? cr(line.costCr)}</Text>
+              <Text>{line.costMod ?? cr(line.cost)}</Text>
             </Box>
             <Box width={WEIGHT_W} justifyContent="flex-end">
-              <Text>{line.weightMod ?? kg(line.weightKg)}</Text>
+              <Text>{line.weightMod ?? kg(line.weight)}</Text>
             </Box>
             <Box width={NOTES_W} paddingLeft={1}>
               <Text dimColor wrap="truncate-end">
@@ -174,13 +174,13 @@ export function WeaponSheet({
             <Text bold>TOTAL</Text>
           </Box>
           <Box width={COST_W} justifyContent="flex-end">
-            <Text bold>{cr(totals.costCr)}</Text>
+            <Text bold>{cr(totals.cost)}</Text>
           </Box>
           <Box width={WEIGHT_W} justifyContent="flex-end">
-            <Text bold>{kg(totals.weightKg)}</Text>
+            <Text bold>{kg(totals.weight)}</Text>
           </Box>
           <Box width={NOTES_W} paddingLeft={1}>
-            <Text dimColor>magazine {cr(totals.magazineCr)}</Text>
+            <Text dimColor>magazine {cr(totals.reload)}</Text>
           </Box>
         </Box>
       </Box>
@@ -197,10 +197,10 @@ export function WeaponSheet({
                 </Text>
               </Box>
               <Box width={COST_W} justifyContent="flex-end">
-                <Text>{cr(m.magazineCr)}</Text>
+                <Text>{cr(m.reload)}</Text>
               </Box>
               <Box width={WEIGHT_W} justifyContent="flex-end">
-                <Text>{kg(m.weightKg)}</Text>
+                <Text>{kg(m.weight)}</Text>
               </Box>
               <Box width={NOTES_W} paddingLeft={1}>
                 <Text dimColor wrap="truncate-end">

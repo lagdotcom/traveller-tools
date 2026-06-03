@@ -27,10 +27,10 @@ describe('projector — frame, fuel & propellant maths', () => {
       }),
     );
     // payload 6kg; frame 0.2×6 = 1.2kg; total 7.2kg; cost 100/kg × 7.2 = 720.
-    expect(r.totals.weightKg).toBeCloseTo(7.2, 3);
-    expect(r.totals.costCr).toBeCloseTo(720, 3);
+    expect(r.totals.weight).toBeCloseTo(7.2, 3);
+    expect(r.totals.cost).toBeCloseTo(720, 3);
     // Reload: fuel 75×4 + propellant 100×2 = 500.
-    expect(r.totals.magazineCr).toBeCloseTo(500, 3);
+    expect(r.totals.reload).toBeCloseTo(500, 3);
     // Attacks: min(fuel 4, propellant 2×4=8) = 4.
     expect(r.profile.capacity).toBe(4);
     expect(r.profile.damage.dice).toBe(4);
@@ -45,8 +45,8 @@ describe('projector — frame, fuel & propellant maths', () => {
     const r = evaluateWeapon(def.params);
     // Frame Cr528/5.28kg + generated machinery Cr200; Armoured 2 (×1.2/×1.1)
     // and Bulwarked 3 (×1.6/×1.3): 728×1.92 = 1397.76, 5.28×1.43 = 7.5504.
-    expect(r.totals.costCr).toBeCloseTo(1397.76, 2);
-    expect(r.totals.weightKg).toBeCloseTo(7.5504, 4);
+    expect(r.totals.cost).toBeCloseTo(1397.76, 2);
+    expect(r.totals.weight).toBeCloseTo(7.5504, 4);
     expect(r.profile.traits['Armoured']).toBe(2);
     expect(r.profile.traits['Bulwarked']).toBe(3);
   });
@@ -63,8 +63,8 @@ describe('projector — frame, fuel & propellant maths', () => {
       }),
     );
     // Generated machinery = 500 × 2kg = 1000, on top of the frame cost.
-    const frame = 50 * r.totals.weightKg; // large = Cr50/kg of total
-    expect(r.totals.costCr).toBeCloseTo(frame + 1000, 3);
+    const frame = 50 * r.totals.weight; // large = Cr50/kg of total
+    expect(r.totals.cost).toBeCloseTo(frame + 1000, 3);
     expect(r.profile.range).toBe(30);
     // Attacks: min(fuel 10, propellant 2×10=20) = 10.
     expect(r.profile.capacity).toBe(10);

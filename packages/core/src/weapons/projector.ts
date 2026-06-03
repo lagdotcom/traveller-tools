@@ -94,20 +94,20 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
   const build = runBuild([
     component(() => ({
       label: `Structure: ${structure.label} (Blast ${structure.blast})`,
-      costCr: frameCost,
-      weightKg: frameWeight,
+      cost: frameCost,
+      weight: frameWeight,
       notes: `${attacks} attacks`,
     })),
     component(() => ({
       label: `Fuel: ${fuel.label} ${fuelKg}kg`,
-      costCr: 0,
-      weightKg: fuelKg,
+      cost: 0,
+      weight: fuelKg,
       notes: `Cr${fuelCost} to fill`,
     })),
     component(() => ({
       label: `Propellant: ${prop.label} ${propKg}kg`,
-      costCr: machinery,
-      weightKg: propKg,
+      cost: machinery,
+      weight: propKg,
       notes: machinery
         ? `Cr${machinery} machinery · Cr${propConsumable} to fill`
         : `Cr${propConsumable} to fill`,
@@ -124,12 +124,12 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
         secondary = {
           label,
           profile: sub.profile,
-          magazineCr: sub.totals.magazineCr,
+          reload: sub.totals.reload,
         };
         return {
           label: `Secondary weapon: ${label}`,
-          costCr: sub.totals.costCr,
-          weightKg: sub.totals.weightKg,
+          cost: sub.totals.cost,
+          weight: sub.totals.weight,
           notes: 'complete mounted weapon (cost unverified)',
         };
       }),
@@ -138,7 +138,7 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
   const breakdown = build.lines;
   const totalCost = round2(build.cost);
   const finalWeight = round2(build.weight);
-  const magazineCr = round2(fuelCost + propConsumable);
+  const reload = round2(fuelCost + propConsumable);
 
   // --- Profile ---
   const damage: Damage = fuel.damage ?? { dice: 0, die: 6, mod: 0 };
@@ -176,7 +176,7 @@ export function evaluateProjector(params: ProjectorParams): WeaponEvaluation {
     profile,
     breakdown,
     issues,
-    totals: { costCr: totalCost, weightKg: finalWeight, magazineCr },
+    totals: { cost: totalCost, weight: finalWeight, reload },
     sources: [...sources],
     notes: collectNotes({ features: params.features }),
     ...(secondary ? { secondary } : {}),

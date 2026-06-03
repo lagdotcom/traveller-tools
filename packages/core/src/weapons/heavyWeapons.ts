@@ -22,7 +22,7 @@ export interface HeavyRoundDef {
   range: number;
   damage: Damage;
   /** Loaded-magazine reload price (Cr). */
-  magazineCr: number;
+  reload: number;
   traits: Traits;
 }
 
@@ -56,21 +56,21 @@ export const HEAVY_GUNS: Record<string, HeavyGunDef> = {
         label: 'Explosive',
         range: 1000,
         damage: d(10),
-        magazineCr: 3000,
+        reload: 3000,
         traits: { Blast: 12 },
       },
       {
         label: 'Canister',
         range: 1000,
         damage: d(8),
-        magazineCr: 2400,
+        reload: 2400,
         traits: { Blast: 5, 'Lo-Pen': 2 },
       },
       {
         label: 'Rocket-Assisted Penetrator',
         range: 1200,
         damage: d(4),
-        magazineCr: 6000,
+        reload: 6000,
         traits: { AP: 16, Blast: 2 },
       },
     ],
@@ -102,7 +102,7 @@ export interface HeavyMissileDef {
   cost: number;
   magazine: number;
   /** Loaded-magazine reload price (Cr). */
-  magazineCr: number;
+  reload: number;
   damage: Damage;
   traits: Traits;
 }
@@ -120,7 +120,7 @@ export const HEAVY_MISSILES: Record<string, HeavyMissileDef> = {
     spaces: 1,
     cost: 10000,
     magazine: 2,
-    magazineCr: 10000,
+    reload: 10000,
     damage: d(6),
     traits: { Blast: 12, 'One-Use': true, Smart: true },
   },
@@ -132,7 +132,7 @@ export const HEAVY_MISSILES: Record<string, HeavyMissileDef> = {
     spaces: 1,
     cost: 12000,
     magazine: 2,
-    magazineCr: 12000,
+    reload: 12000,
     damage: d(8),
     traits: { AP: 12, Blast: 4, 'One-Use': true, Smart: true },
   },
@@ -144,7 +144,7 @@ export const HEAVY_MISSILES: Record<string, HeavyMissileDef> = {
     spaces: 1,
     cost: 22000,
     magazine: 2,
-    magazineCr: 22000,
+    reload: 22000,
     // Ignores reactive armour (shaped-charge positioning).
     damage: d(8),
     traits: { AP: 12, Blast: 4, 'One-Use': true, Smart: true },
@@ -157,7 +157,7 @@ export const HEAVY_MISSILES: Record<string, HeavyMissileDef> = {
     spaces: 1,
     cost: 16000,
     magazine: 2,
-    magazineCr: 16000,
+    reload: 16000,
     // Anti-radiation: DM+4 vs emitting sensors, DM+6 home-on-jam.
     damage: d(6),
     traits: { Blast: 12, 'One-Use': true, Smart: true },
@@ -170,11 +170,11 @@ export interface PointDefenceFit {
   /** Range in metres. */
   range: number;
   damage: Damage;
-  weightKg: number;
+  weight: number;
   cost: number;
   magazine: number;
   /** Loaded-magazine reload price (Cr). */
-  magazineCr: number;
+  reload: number;
   signature: string;
   traits: Traits;
 }
@@ -207,10 +207,10 @@ export const POINT_DEFENCE_SYSTEMS: Record<string, PointDefenceSystemDef> = {
         label: 'Machinegun',
         range: 375,
         damage: d(3, 3),
-        weightKg: 32,
+        weight: 32,
         cost: 123000,
         magazine: 50,
-        magazineCr: 50,
+        reload: 50,
         signature: 'Physical (normal)',
         traits: { Auto: 3, 'Slow Loader': 4 },
       },
@@ -218,10 +218,10 @@ export const POINT_DEFENCE_SYSTEMS: Record<string, PointDefenceSystemDef> = {
         label: 'Twin RF Heavy Machinegun',
         range: 550,
         damage: d(7),
-        weightKg: 110,
+        weight: 110,
         cost: 175000,
         magazine: 50,
-        magazineCr: 750,
+        reload: 750,
         signature: 'Physical (high)',
         traits: { Auto: 3, Bulky: true, 'Slow Loader': 4 },
       },
@@ -229,10 +229,10 @@ export const POINT_DEFENCE_SYSTEMS: Record<string, PointDefenceSystemDef> = {
         label: 'Twin Laser Support Weapon',
         range: 625,
         damage: d(8),
-        weightKg: 45,
+        weight: 45,
         cost: 160000,
         magazine: 125,
-        magazineCr: 5000,
+        reload: 5000,
         signature: 'Emissions (low)',
         traits: { Bulky: true, 'Zero-G': true },
       },

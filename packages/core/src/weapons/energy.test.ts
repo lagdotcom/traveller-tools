@@ -27,8 +27,8 @@ describe('Nefertem — small TL9 laser pistol (the built-in)', () => {
     // Body = Small receiver Cr800/1.5kg + Assault barrel.
     const recv = r.breakdown.find((l) => /Receiver/.test(l.label))!;
     const barrel = r.breakdown.find((l) => /Barrel/.test(l.label))!;
-    expect(recv.costCr + barrel.costCr).toBeCloseTo(960, 3);
-    expect(recv.weightKg + barrel.weightKg).toBeCloseTo(1.95, 3);
+    expect(recv.cost + barrel.cost).toBeCloseTo(960, 3);
+    expect(recv.weight + barrel.weight).toBeCloseTo(1.95, 3);
     // Small (pistol-class) receiver +4, Assault barrel +2 → Quickdraw +6.
     expect(r.profile.quickdraw).toBe(6);
     // Energy base Penetration −1 → Lo-Pen 2 (Final Penetration table).
@@ -51,12 +51,12 @@ describe('energy weapon — receiver baseline & totals', () => {
       }),
     );
     // Receiver 2500 × Improved Focus 1.25 = 3125; weight 3kg unchanged.
-    expect(r.breakdown[0].costCr).toBeCloseTo(3125, 3);
-    expect(r.breakdown[0].weightKg).toBeCloseTo(3, 3);
+    expect(r.breakdown[0].cost).toBeCloseTo(3125, 3);
+    expect(r.breakdown[0].weight).toBeCloseTo(3, 3);
     // 3125 + barrel(0.3×3125=937.5) + stock(0.1×3125=312.5) + pack(1500×2=3000)
-    expect(r.totals.costCr).toBeCloseTo(7375, 3);
+    expect(r.totals.cost).toBeCloseTo(7375, 3);
     // 3 + barrel(0.5×3=1.5) + stock(0.1×3=0.3) + pack(2kg)
-    expect(r.totals.weightKg).toBeCloseTo(6.8, 3);
+    expect(r.totals.weight).toBeCloseTo(6.8, 3);
     // Improved Beam Focus adds +3 to a ≥2D laser.
     expect(formatDamage(r.profile.damage)).toBe('5D+3');
     expect(r.profile.range).toBe(200);
@@ -143,7 +143,7 @@ describe('energy weapon — power source mismatches', () => {
       }),
     );
     const holder = r.breakdown.find((l) => /Cartridge holder/.test(l.label))!;
-    expect(holder.weightKg).toBeCloseTo(0.03, 3);
+    expect(holder.weight).toBeCloseTo(0.03, 3);
   });
 
   it('an internal powerpack gives Power = weight × per-kg (0.1kg → 70 at TL11)', () => {
@@ -250,7 +250,7 @@ describe('alternative power packs', () => {
     expect(backpack.label).toBe('Backpack');
     // A 3kg pack holds more shots and weighs more than the 1kg primary.
     expect(backpack.capacity).toBeGreaterThan(r.magazines![0]!.capacity);
-    expect(backpack.weightKg).toBeGreaterThan(r.magazines![0]!.weightKg);
+    expect(backpack.weight).toBeGreaterThan(r.magazines![0]!.weight);
   });
 
   it('round-trips power-pack options through serialization', () => {

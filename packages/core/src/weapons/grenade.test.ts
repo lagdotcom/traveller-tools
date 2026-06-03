@@ -17,8 +17,8 @@ const grenade = (overrides: Partial<GrenadeParams>): GrenadeParams => ({
 describe('grenade — catalogue lookup', () => {
   it('a Hand fragmentation grenade', () => {
     const r = evaluateWeapon(grenade({ type: 'fragmentation', size: 'hand' }));
-    expect(r.totals.costCr).toBe(30);
-    expect(r.totals.weightKg).toBe(0.5);
+    expect(r.totals.cost).toBe(30);
+    expect(r.totals.weight).toBe(0.5);
     expect(r.profile.damage.dice).toBe(5);
     expect(r.profile.traits['Blast']).toBe(9);
     expect(r.profile.traits['Lo-Pen']).toBe(2);
@@ -27,8 +27,8 @@ describe('grenade — catalogue lookup', () => {
 
   it('the Mini size is cheaper/lighter where it exists', () => {
     const r = evaluateWeapon(grenade({ type: 'fragmentation', size: 'mini' }));
-    expect(r.totals.costCr).toBe(20);
-    expect(r.totals.weightKg).toBe(0.3);
+    expect(r.totals.cost).toBe(20);
+    expect(r.totals.weight).toBe(0.3);
     expect(r.profile.damage.dice).toBe(3);
     expect(r.profile.traits['Blast']).toBe(4);
   });

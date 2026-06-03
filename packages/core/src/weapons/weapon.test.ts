@@ -50,9 +50,9 @@ describe('formatDamage', () => {
 describe('worked examples — base receiver & grand totals', () => {
   it('Adjudicator (handgun · small smoothbore · repeater)', () => {
     const r = evalNamed('Adjudicator');
-    expect(r.breakdown[0].costCr).toBeCloseTo(175, 3); // base handgun
-    expect(r.breakdown[0].weightKg).toBeCloseTo(0.8, 3);
-    expect(r.totals.costCr).toBeCloseTo(75.46875, 3);
+    expect(r.breakdown[0].cost).toBeCloseTo(175, 3); // base handgun
+    expect(r.breakdown[0].weight).toBeCloseTo(0.8, 3);
+    expect(r.totals.cost).toBeCloseTo(75.46875, 3);
     expect(r.profile.quickdraw).toBe(8);
     expect(r.profile.range).toBe(12);
     expect(formatDamage(r.profile.damage)).toBe('3D-2');
@@ -62,11 +62,11 @@ describe('worked examples — base receiver & grand totals', () => {
 
   it('Bodyguard (longarm · standard smoothbore · repeater)', () => {
     const r = evalNamed('Bodyguard');
-    expect(r.breakdown[0].costCr).toBeCloseTo(400, 3); // base longarm
-    expect(r.breakdown[0].weightKg).toBeCloseTo(2.5, 3);
+    expect(r.breakdown[0].cost).toBeCloseTo(400, 3); // base longarm
+    expect(r.breakdown[0].weight).toBeCloseTo(2.5, 3);
     // Weight matches the worksheet exactly; the cost total differs only because
     // the worksheet prices the laser pointer at Cr50 where the rules say Cr200.
-    expect(r.totals.weightKg).toBeCloseTo(4.1, 3);
+    expect(r.totals.weight).toBeCloseTo(4.1, 3);
     expect(r.profile.quickdraw).toBe(0);
     expect(r.profile.range).toBe(100);
     expect(formatDamage(r.profile.damage)).toBe('4D');
@@ -75,10 +75,10 @@ describe('worked examples — base receiver & grand totals', () => {
 
   it('13mm Crunch Gun (LSW · anti-materiel · repeater · very long)', () => {
     const r = evalNamed('13mm Crunch Gun');
-    expect(r.breakdown[0].costCr).toBeCloseTo(1500, 3); // base LSW
-    expect(r.breakdown[0].weightKg).toBeCloseTo(5, 3);
-    expect(r.totals.costCr).toBeCloseTo(3143.75, 3);
-    expect(r.totals.weightKg).toBeCloseTo(13.1375, 3);
+    expect(r.breakdown[0].cost).toBeCloseTo(1500, 3); // base LSW
+    expect(r.breakdown[0].weight).toBeCloseTo(5, 3);
+    expect(r.totals.cost).toBeCloseTo(3143.75, 3);
+    expect(r.totals.weight).toBeCloseTo(13.1375, 3);
     expect(r.profile.quickdraw).toBe(-8);
     expect(r.profile.range).toBe(1250);
     expect(formatDamage(r.profile.damage)).toBe('5D');
@@ -86,10 +86,10 @@ describe('worked examples — base receiver & grand totals', () => {
 
   it('GA-100 (gauss assault · gauss shotgun · bullpup)', () => {
     const r = evalNamed('GA-100');
-    expect(r.breakdown[0].costCr).toBeCloseTo(300, 3); // base assault (pre-gauss)
-    expect(r.breakdown[0].weightKg).toBeCloseTo(2, 4);
-    expect(r.totals.costCr).toBeCloseTo(2190.24, 2);
-    expect(r.totals.weightKg).toBeCloseTo(4.4275, 4);
+    expect(r.breakdown[0].cost).toBeCloseTo(300, 3); // base assault (pre-gauss)
+    expect(r.breakdown[0].weight).toBeCloseTo(2, 4);
+    expect(r.totals.cost).toBeCloseTo(2190.24, 2);
+    expect(r.totals.weight).toBeCloseTo(4.4275, 4);
     expect(r.profile.quickdraw).toBe(8);
     expect(r.profile.range).toBe(50);
     // Gauss base Penetration +2 → AP 1 + 1/full die = AP 4 (3 dice), and the
@@ -103,10 +103,10 @@ describe('worked examples — base receiver & grand totals', () => {
 
   it('Stowaway (handgun · light handgun · extreme stealth)', () => {
     const r = evalNamed('Stowaway');
-    expect(r.breakdown[0].costCr).toBeCloseTo(175, 3); // base handgun
-    expect(r.breakdown[0].weightKg).toBeCloseTo(0.8, 4);
-    expect(r.totals.costCr).toBeCloseTo(1358.28, 3);
-    expect(r.totals.weightKg).toBeCloseTo(0.6336, 4);
+    expect(r.breakdown[0].cost).toBeCloseTo(175, 3); // base handgun
+    expect(r.breakdown[0].weight).toBeCloseTo(0.8, 4);
+    expect(r.totals.cost).toBeCloseTo(1358.28, 3);
+    expect(r.totals.weight).toBeCloseTo(0.6336, 4);
     expect(r.profile.quickdraw).toBe(10);
     expect(r.profile.range).toBe(4);
     expect(formatDamage(r.profile.damage)).toBe('2D');
@@ -117,8 +117,8 @@ describe('worked examples — base receiver & grand totals', () => {
 
   it('Civilian Shotgun (single-shot double-barrel light smoothbore)', () => {
     const r = evalNamed('Civilian Shotgun');
-    expect(r.breakdown[0].costCr).toBeCloseTo(400, 3); // base longarm
-    expect(r.totals.costCr).toBeCloseTo(127.5, 3);
+    expect(r.breakdown[0].cost).toBeCloseTo(400, 3); // base longarm
+    expect(r.totals.cost).toBeCloseTo(127.5, 3);
     expect(r.profile.quickdraw).toBe(-1);
     // Double-barrel single-shot: one round per barrel = 2 (book's "1 + 1").
     expect(r.profile.capacity).toBe(2);
@@ -162,9 +162,7 @@ describe('multiple supported ammo types', () => {
     const byAmmo = Object.fromEntries(r.ammoProfiles!.map((a) => [a.ammo, a]));
     expect(formatDamage(byAmmo.ball!.profile.damage)).toBe('5D');
     expect(formatDamage(byAmmo.explosive!.profile.damage)).toBe('7D');
-    expect(byAmmo.explosive!.magazineCr).toBeGreaterThan(
-      byAmmo.ball!.magazineCr,
-    );
+    expect(byAmmo.explosive!.reload).toBeGreaterThan(byAmmo.ball!.reload);
     expect(byAmmo.apAdvanced!.profile.traits['AP']).toBe(6);
   });
 
@@ -206,7 +204,7 @@ describe('magazine options', () => {
     // ammo: ball Cr110, advanced AP Cr180.
     const r = evalNamed('Reliant');
     expect(r.profile.capacity).toBe(50);
-    expect(r.totals.magazineCr).toBe(110);
+    expect(r.totals.reload).toBe(110);
     // A single absolute count without alternatives produces no extra rows.
     const single = evaluateWeapon({
       ...DEFAULT_WEAPON_PARAMS,
@@ -220,11 +218,11 @@ describe('magazine options', () => {
     // The embedded ammo also fixes that type's reload on the profile row.
     const r = evalNamed('Reliant');
     const byAmmo = Object.fromEntries(
-      r.ammoProfiles!.map((a) => [a.ammo, a.magazineCr]),
+      r.ammoProfiles!.map((a) => [a.ammo, a.reload]),
     );
     expect(byAmmo.ball).toBe(110);
     expect(byAmmo.apAdvanced).toBe(180);
-    expect(r.magazines?.map((m) => [m.label, m.magazineCr])).toEqual([
+    expect(r.magazines?.map((m) => [m.label, m.reload])).toEqual([
       ['Ball', 110],
       ['Armour-Piercing (Advanced)', 180],
     ]);
@@ -245,22 +243,22 @@ describe('magazine options', () => {
     const [box, drum] = r.magazines!;
     // The standard (first) row equals the headline build.
     expect(box!.primary).toBe(true);
-    expect(box!.weightKg).toBeCloseTo(single.totals.weightKg, 3);
+    expect(box!.weight).toBeCloseTo(single.totals.weight, 3);
     // A 150% drum holds more and weighs more (capacity-% weight rule).
     expect(drum!.capacity).toBeGreaterThan(box!.capacity);
-    expect(drum!.weightKg).toBeGreaterThan(box!.weightKg);
+    expect(drum!.weight).toBeGreaterThan(box!.weight);
   });
 
   it('round-trips magazine options through serialization', () => {
     const params: WeaponParams = {
       ...DEFAULT_WEAPON_PARAMS,
-      magazines: [{ pct: 100 }, { rounds: 50, costCr: 25, label: 'Drum' }],
+      magazines: [{ pct: 100 }, { rounds: 50, cost: 25, label: 'Drum' }],
     };
     const back = parseWeapon(serializeWeapon({ name: 'M', params })).params;
     if (back.kind !== 'firearm') throw new Error('expected firearm');
     expect(back.magazines).toEqual([
       { pct: 100 },
-      { rounds: 50, costCr: 25, label: 'Drum' },
+      { rounds: 50, cost: 25, label: 'Drum' },
     ]);
   });
 });
@@ -343,7 +341,7 @@ describe('Rapid-Fire / VRF', () => {
     const recv = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
     const rfLine = r.breakdown.find((l) => l.label === 'Rapid-Fire')!;
     expect(rfLine).toBeDefined();
-    expect(recv.costCr).toBeGreaterThan(0);
+    expect(recv.cost).toBeGreaterThan(0);
   });
 
   it('VRF adds a die per 2 base dice, Very Bulky, and Heat Auto+3×dice', () => {
@@ -412,7 +410,7 @@ describe('breakdown presentation', () => {
     expect(gauss.costMod).toBe('+100%'); // ×2 cost
     expect(gauss.weightMod).toBe('+25%'); // ×1.25 weight
     const totals = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
-    expect(totals.costCr).toBeCloseTo(1684.8, 3); // raw subtotal, not a %
+    expect(totals.cost).toBeCloseTo(1684.8, 3); // raw subtotal, not a %
     expect(totals.costMod).toBeUndefined();
     const barrel = r.breakdown.find((l) => l.label.startsWith('Barrel'))!;
     expect(barrel.costMod).toBe('+20%'); // % of the receiver baseline
@@ -434,9 +432,9 @@ describe('multi-barrel weapons', () => {
       additionalBarrels: 3,
       stock: 'none',
     });
-    expect(r.totals.costCr).toBeCloseTo(105, 3);
+    expect(r.totals.cost).toBeCloseTo(105, 3);
     // Weight: 0.8 handgun × 1.15 (heavy handgun +15%); minimal barrels weigh 0.
-    expect(r.totals.weightKg).toBeCloseTo(0.92, 3);
+    expect(r.totals.weight).toBeCloseTo(0.92, 3);
     // Quickdraw: +4 handgun, +8 minimal barrel, −3 for the extra barrels.
     expect(r.profile.quickdraw).toBe(9);
   });
@@ -448,7 +446,7 @@ describe('multi-barrel weapons', () => {
       additionalBarrels: 1,
     });
     // One extra rifle barrel: +10% receiver + a full barrel + Quickdraw −1.
-    expect(twin.totals.costCr).toBeGreaterThan(base.totals.costCr);
+    expect(twin.totals.cost).toBeGreaterThan(base.totals.cost);
     expect(twin.profile.quickdraw).toBe(base.profile.quickdraw - 1);
   });
 });
@@ -466,7 +464,7 @@ describe('leveled receiver features', () => {
     // Cost is the receiver baseline ×1.2 (the +20% modified-receiver line).
     const recvLine = comp.breakdown.find((l) => l.label === 'Receiver Totals')!;
     const baseRecv = base.breakdown.find((l) => l.label === 'Receiver Totals')!;
-    expect(recvLine.costCr).toBeCloseTo(baseRecv.costCr * 1.2, 3);
+    expect(recvLine.cost).toBeCloseTo(baseRecv.cost * 1.2, 3);
   });
 
   it('Armoured surfaces a Protection trait and adds +10% cost/+5% weight per point', () => {
@@ -479,8 +477,8 @@ describe('leveled receiver features', () => {
     const base = evaluateWeapon({ ...DEFAULT_WEAPON_PARAMS }).breakdown.find(
       (l) => l.label === 'Receiver Totals',
     )!;
-    expect(recvLine.costCr).toBeCloseTo(base.costCr * 1.2, 3);
-    expect(recvLine.weightKg).toBeCloseTo(base.weightKg * 1.1, 3);
+    expect(recvLine.cost).toBeCloseTo(base.cost * 1.2, 3);
+    expect(recvLine.weight).toBeCloseTo(base.weight * 1.1, 3);
   });
 });
 
@@ -508,12 +506,12 @@ describe('secondary weapon', () => {
     const baseline = primary.breakdown.find(
       (l) => l.label === 'Receiver Totals',
     )!;
-    expect(withSec.totals.costCr).toBeCloseTo(
-      primary.totals.costCr + baseline.costCr * (0.1 + 0.1),
+    expect(withSec.totals.cost).toBeCloseTo(
+      primary.totals.cost + baseline.cost * (0.1 + 0.1),
       3,
     );
-    expect(withSec.totals.weightKg).toBeCloseTo(
-      primary.totals.weightKg + baseline.weightKg * (0.1 + 0.1 * 0.5),
+    expect(withSec.totals.weight).toBeCloseTo(
+      primary.totals.weight + baseline.weight * (0.1 + 0.1 * 0.5),
       3,
     );
     // Each extra barrel costs a point of Quickdraw.
@@ -522,7 +520,7 @@ describe('secondary weapon', () => {
     expect(withSec.secondary?.profile.damage).toEqual(
       standalone.profile.damage,
     );
-    expect(withSec.secondary?.magazineCr).toBe(standalone.totals.magazineCr);
+    expect(withSec.secondary?.reload).toBe(standalone.totals.reload);
   });
 
   it('round-trips a secondary through serialize/parse', () => {

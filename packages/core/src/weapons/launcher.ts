@@ -147,9 +147,9 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     key: string;
     label: string;
     /** Loaded weight (per-round weight × capacity). */
-    weightKg: number;
+    weight: number;
     /** Reload price of a full load. */
-    magazineCr: number;
+    reload: number;
     /** Per-round weight (a single munition), as the book lists it. */
     roundWeightKg: number;
     /** Per-round cost (a single munition), as the book lists it. */
@@ -168,8 +168,8 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
             return {
               key: id,
               label: m.label,
-              weightKg: round2(capacity * m.weight),
-              magazineCr: round2(capacity * m.cost),
+              weight: round2(capacity * m.weight),
+              reload: round2(capacity * m.cost),
               roundWeightKg: round2(m.weight),
               roundCostCr: round2(m.cost),
               profile: mkProfile(m.range, mode.damage, {
@@ -194,8 +194,8 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
           return {
             key: w.type,
             label: `${def.label}${sizeTag} (${dlv.label})`,
-            weightKg: round2(capacity * roundWeightKg),
-            magazineCr: round2(capacity * roundCostCr),
+            weight: round2(capacity * roundWeightKg),
+            reload: round2(capacity * roundCostCr),
             roundWeightKg,
             roundCostCr,
             largerWarhead: dlv.largerWarhead === true,
@@ -230,9 +230,9 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     ),
     component(() => ({
       label: primaryLine,
-      costCr: 0,
-      weightKg: primary.weightKg,
-      notes: `Cr${primary.magazineCr} to load`,
+      cost: 0,
+      weight: primary.weight,
+      notes: `Cr${primary.reload} to load`,
     })),
   ]);
   const lines = build.lines;
@@ -264,9 +264,9 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
     breakdown: lines,
     issues,
     totals: {
-      costCr: launcherCost,
-      weightKg: totalWeight,
-      magazineCr: primary.magazineCr,
+      cost: launcherCost,
+      weight: totalWeight,
+      reload: primary.reload,
     },
     sources: [...sources],
     notes: collectNotes({ features: params.features }),
@@ -276,9 +276,9 @@ export function evaluateLauncher(params: LauncherParams): WeaponEvaluation {
             key: m.key,
             label: m.label,
             profile: m.profile,
-            magazineCr: m.magazineCr,
-            weightKg: m.roundWeightKg,
-            costCr: m.roundCostCr,
+            reload: m.reload,
+            weight: m.roundWeightKg,
+            cost: m.roundCostCr,
           })),
         }
       : {}),

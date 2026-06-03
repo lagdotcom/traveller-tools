@@ -432,7 +432,7 @@ export type SecondaryWeaponParams = Omit<FirearmParams, 'kind' | 'secondary'>;
  * loaded weight/cost (via the capacity % rule); alternative magazines are sold
  * separately. Capacity is normally a percentage of base, but the book sometimes
  * prints an absolute round count or magazine price that doesn't derive cleanly —
- * `rounds`/`costCr` are manual overrides for those listed values.
+ * `rounds`/`cost` are manual overrides for those listed values.
  */
 export interface MagazineSpec {
   /** Display name (e.g. "Standard", "Drum", "Extended"). Defaults to the ammo. */
@@ -449,7 +449,7 @@ export interface MagazineSpec {
   /** Absolute round count — a manual override for a book-listed magazine size. */
   rounds?: number;
   /** Manual reload-price override (Cr) for a book-listed magazine cost. */
-  costCr?: Credits;
+  cost?: Credits;
 }
 
 /**
@@ -637,13 +637,13 @@ export interface WeaponProfile {
 export interface WeaponLineItem {
   label: string;
   /** Cost contribution in Credits (the running total's delta for this line). */
-  costCr: Credits;
+  cost: Credits;
   /** Weight contribution in kilograms. */
-  weightKg: Kilograms;
+  weight: Kilograms;
   /**
    * Display override for the cost column — e.g. a percentage modifier ("+25%")
    * for a component that scales the receiver rather than adding a flat Credit
-   * amount. The sheet shows this instead of the raw `costCr` when present.
+   * amount. The sheet shows this instead of the raw `cost` when present.
    */
   costMod?: string;
   /** Display override for the weight column (see `costMod`). */

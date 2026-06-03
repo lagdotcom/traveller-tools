@@ -38,8 +38,8 @@ export function evaluateGrenade(params: GrenadeParams): WeaponEvaluation {
   const breakdown: WeaponLineItem[] = [
     {
       label: `${def.label} (${sizeLabel} grenade)`,
-      costCr: round2(stats.cost),
-      weightKg: round2(stats.weight),
+      cost: round2(stats.cost),
+      weight: round2(stats.weight),
     },
   ];
 
@@ -72,9 +72,9 @@ export function evaluateGrenade(params: GrenadeParams): WeaponEvaluation {
     breakdown,
     issues,
     totals: {
-      costCr: round2(stats.cost),
-      weightKg: round2(stats.weight),
-      magazineCr: 0,
+      cost: round2(stats.cost),
+      weight: round2(stats.weight),
+      reload: 0,
     },
     sources: [...sources],
   };

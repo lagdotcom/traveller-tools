@@ -606,8 +606,8 @@ export function WeaponBuilderScreen({
   const setMagCost = (i: number, v: string) =>
     editMag(i, (m) => {
       const n = num(v, 0);
-      if (n > 0) m.costCr = n;
-      else delete m.costCr;
+      if (n > 0) m.cost = n;
+      else delete m.cost;
     });
   const addMagazine = () => {
     const id = addMagAmmo ? AMMO.toId(addMagAmmo) : (ammo[0] ?? 'ball');
@@ -1483,7 +1483,7 @@ export function WeaponBuilderScreen({
               <Field
                 key={`mag-${i}-cost`}
                 label="· reload Cr (0=auto)"
-                value={String(m.costCr ?? 0)}
+                value={String(m.cost ?? 0)}
                 isActive={isActive}
                 onChange={(v) => setMagCost(i, v)}
                 onSubmit={advance}

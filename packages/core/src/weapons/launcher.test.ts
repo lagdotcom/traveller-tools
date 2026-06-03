@@ -23,11 +23,11 @@ describe('launcher — receiver + warhead', () => {
         warheads: [{ type: 'fragmentation' }],
       }),
     );
-    expect(r.totals.costCr).toBeCloseTo(200, 3);
+    expect(r.totals.cost).toBeCloseTo(200, 3);
     // 1.5kg receiver + 1 round × 0.5kg × 1 (cartridge) = 2.0kg loaded.
-    expect(r.totals.weightKg).toBeCloseTo(2, 3);
+    expect(r.totals.weight).toBeCloseTo(2, 3);
     // Cartridge round = payload Cr30 × 2.5.
-    expect(r.totals.magazineCr).toBeCloseTo(75, 3);
+    expect(r.totals.reload).toBeCloseTo(75, 3);
     expect(r.profile.damage.dice).toBe(5);
     expect(r.profile.range).toBe(200); // cartridge delivery range
     expect(r.profile.capacity).toBe(1);
@@ -47,13 +47,13 @@ describe('launcher — receiver + warhead', () => {
     expect(r.profile.range).toBe(500); // RPG delivery range
     expect(r.profile.traits['Inaccurate']).toBe(-2);
     // payload Cr50 ×5, weight 0.5 ×5 = 2.5kg per round.
-    expect(r.totals.magazineCr).toBeCloseTo(250, 3);
+    expect(r.totals.reload).toBeCloseTo(250, 3);
     expect(r.issues.some((i) => /larger warhead/.test(i.message))).toBe(true);
   });
 
   it('a guidance system adds 50% cost and the Smart trait', () => {
     const r = evaluateWeapon(launcher({ guidance: true }));
-    expect(r.totals.costCr).toBeCloseTo(300, 3); // 200 × 1.5
+    expect(r.totals.cost).toBeCloseTo(300, 3); // 200 × 1.5
     expect(r.profile.traits['Smart']).toBe(true);
   });
 
@@ -67,9 +67,9 @@ describe('launcher — receiver + warhead', () => {
     );
     expect(r.profile.capacity).toBe(5);
     // 15kg receiver + 5 × 0.5kg × 1 (cartridge) rounds = 17.5kg.
-    expect(r.totals.weightKg).toBeCloseTo(17.5, 3);
+    expect(r.totals.weight).toBeCloseTo(17.5, 3);
     // 5 × payload Cr30 × 2.5 (cartridge).
-    expect(r.totals.magazineCr).toBeCloseTo(375, 3);
+    expect(r.totals.reload).toBeCloseTo(375, 3);
   });
 
   it('an effect-only warhead (smoke) has no damage dice', () => {
@@ -92,13 +92,11 @@ describe('launcher — receiver + warhead', () => {
       }),
     );
     const totals = r.breakdown.find((l) => l.label === 'Receiver Totals')!;
-    expect(totals.costCr).toBeCloseTo(750, 3);
-    expect(totals.weightKg).toBeCloseTo(2, 3);
+    expect(totals.cost).toBeCloseTo(750, 3);
+    expect(totals.weight).toBeCloseTo(2, 3);
     // Empty (unloaded) weapon weight: 2.0 + 0.6 (barrel) + 0.2 (stock) = 2.8kg.
-    const loaded = r.totals.weightKg;
-    const munition = r.breakdown.find((l) =>
-      /Munition/.test(l.label),
-    )!.weightKg;
+    const loaded = r.totals.weight;
+    const munition = r.breakdown.find((l) => /Munition/.test(l.label))!.weight;
     expect(loaded - munition).toBeCloseTo(2.8, 3);
     // Barrel/stock are cost/weight only — the profile is the warhead's.
     expect(r.profile.damage.dice).toBe(5);
@@ -120,8 +118,8 @@ describe('launcher — multiple munitions', () => {
     expect(r.munitionProfiles![0]!.label).toMatch(/Fragmentation/);
     expect(r.munitionProfiles![1]!.label).toMatch(/Smoke/);
     // Each carries its own reload: frag Cr30×2.5=75, smoke Cr15×2.5=37.5.
-    expect(r.munitionProfiles![0]!.magazineCr).toBeCloseTo(75, 3);
-    expect(r.munitionProfiles![1]!.magazineCr).toBeCloseTo(37.5, 3);
+    expect(r.munitionProfiles![0]!.reload).toBeCloseTo(75, 3);
+    expect(r.munitionProfiles![1]!.reload).toBeCloseTo(37.5, 3);
     // A single munition adds no munitionProfiles (mirrors firearm ammoProfiles).
     const one = evaluateWeapon(
       launcher({ warheads: [{ type: 'fragmentation' }] }),
@@ -190,9 +188,9 @@ describe('launcher — rifle-grenade delivery', () => {
       }),
     );
     // Round = anti-armour hand payload (Cr50 / 0.5kg) × rifle-grenade (×2 / ×1.25).
-    expect(r.totals.magazineCr).toBeCloseTo(100, 3);
+    expect(r.totals.reload).toBeCloseTo(100, 3);
     // 1.5kg receiver + 0.625kg loaded round.
-    expect(r.totals.weightKg).toBeCloseTo(2.125, 3);
+    expect(r.totals.weight).toBeCloseTo(2.125, 3);
     expect(r.profile.range).toBe(100);
     expect(r.profile.damage.dice).toBe(4);
     expect(r.profile.traits.AP).toBe(8);
@@ -216,8 +214,8 @@ describe('launcher — missiles (self-contained rounds)', () => {
     expect(r.profile.traits.Smart).toBe(true);
     // Round cost/weight are the missile's own (no delivery multiplier): one
     // missile × Cr12000 / 6kg, the load weight added to the 15kg receiver.
-    expect(r.totals.magazineCr).toBeCloseTo(12000, 3);
-    expect(r.totals.weightKg).toBeCloseTo(21, 3);
+    expect(r.totals.reload).toBeCloseTo(12000, 3);
+    expect(r.totals.weight).toBeCloseTo(21, 3);
     // The dual-mode missile shows the primary mode + flags the others.
     expect(r.issues.some((i) => /firing modes/.test(i.message))).toBe(true);
   });

@@ -146,7 +146,7 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
   // --- Power source: capacity (shots), reload price, traits — computed up front;
   // its breakdown line (`powerLine`) is emitted last by the pipeline below. ---
   let capacity = 0;
-  let magazineCr = 0;
+  let reload = 0;
   let deliveredDice = dice;
   // The primary power source's weight/label/refill, so alternative packs can be
   // shown as their own rows (weapon weight − this pack + the alternative).
@@ -167,11 +167,11 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     primaryReloadCr = round2(POWERPACK_COST_PER_KG[source.rating] * kg);
     // A detachable pack costs its price to replace (the weapon's reload); an
     // internal pack is recharged in place, so it has no separate reload price.
-    if (!source.internal) magazineCr = primaryReloadCr;
+    if (!source.internal) reload = primaryReloadCr;
     powerLine = {
       label: primaryPackLabel,
-      costCr: primaryReloadCr,
-      weightKg: round2(kg),
+      cost: primaryReloadCr,
+      weight: round2(kg),
       notes: `${capacity} shots @ ${dice} power`,
     };
     // An under-rated pack suffers excessive draw → Unreliable.
@@ -191,14 +191,14 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     const cart = ENERGY_CARTRIDGE[source.rating];
     // Loaded cartridges weigh their own mass (BL-3: 3 × weak 0.01 = 0.03kg); the
     // build cost is one cartridge (the rest are the reload price).
-    magazineCr = round2(capacity * cart.cost);
+    reload = round2(capacity * cart.cost);
     primaryPackWeight = capacity * cart.weight;
     primaryPackLabel = `Cartridge: ${ENERGY_POWER_CLASS_LABEL[source.rating]} ×${capacity}`;
-    primaryReloadCr = magazineCr;
+    primaryReloadCr = reload;
     powerLine = {
       label: `Cartridge holder: ${ENERGY_POWER_CLASS_LABEL[source.rating]} ×${capacity}`,
-      costCr: round2(cart.cost),
-      weightKg: round2(capacity * cart.weight),
+      cost: round2(cart.cost),
+      weight: round2(capacity * cart.weight),
       notes: `${capacity} shots`,
     };
     const cartDice = ENERGY_POWER_CLASS_DICE[source.rating];
@@ -242,16 +242,16 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
           barrel.costPct * heavyMult > 0,
         component((b) => ({
           label: `Barrel: ${barrel.label}${params.heavyBarrel ? ' (Heavy)' : ''}`,
-          costCr: round2(b.baseCost * barrel.costPct * heavyMult),
-          weightKg: round2(b.baseWeight * barrel.weightPct * heavyMult),
+          cost: round2(b.baseCost * barrel.costPct * heavyMult),
+          weight: round2(b.baseWeight * barrel.weightPct * heavyMult),
         })),
       ),
       when(
         params.stock !== 'none',
         component((b) => ({
           label: `Stock: ${stock.label}`,
-          costCr: round2(b.baseCost * stock.costPct),
-          weightKg: round2(b.baseWeight * stock.weightPct),
+          cost: round2(b.baseCost * stock.costPct),
+          weight: round2(b.baseWeight * stock.weightPct),
         })),
       ),
       each(params.furniture, (id) => {
@@ -259,8 +259,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
         return f
           ? component((b) => ({
               label: f.label,
-              costCr: round2(b.baseCost * f.costPct),
-              weightKg: round2(b.baseWeight * f.weightPct),
+              cost: round2(b.baseCost * f.costPct),
+              weight: round2(b.baseWeight * f.weightPct),
             }))
           : noop;
       }),
@@ -269,8 +269,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
         if (!a) return noop;
         return component((b) => ({
           label: a.label,
-          costCr: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
-          weightKg: round2(
+          cost: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
+          weight: round2(
             a.weightPct !== undefined ? b.baseWeight * a.weightPct : a.weight,
           ),
         }));
@@ -360,8 +360,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
         label: spec.label ?? `Powerpack ${kg}kg`,
         capacity: shots,
         unit: 'shots',
-        weightKg: round2(weaponSansPack + kg),
-        magazineCr: round2(POWERPACK_COST_PER_KG[spec.rating] * kg),
+        weight: round2(weaponSansPack + kg),
+        reload: round2(POWERPACK_COST_PER_KG[spec.rating] * kg),
         primary: false,
       };
     }
@@ -371,8 +371,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       label: spec.label ?? `Cartridge ×${count}`,
       capacity: count,
       unit: 'shots',
-      weightKg: round2(weaponSansPack + count * cart.weight),
-      magazineCr: round2(count * cart.cost),
+      weight: round2(weaponSansPack + count * cart.weight),
+      reload: round2(count * cart.cost),
       primary: false,
     };
   });
@@ -381,8 +381,8 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
       label: primaryPackLabel || 'Power source',
       capacity,
       unit: 'shots',
-      weightKg: round2(totalWeight),
-      magazineCr: primaryReloadCr,
+      weight: round2(totalWeight),
+      reload: primaryReloadCr,
       primary: true,
     },
     ...altPacks,
@@ -393,9 +393,9 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     breakdown,
     issues,
     totals: {
-      costCr: round2(totalCost),
-      weightKg: round2(totalWeight),
-      magazineCr,
+      cost: round2(totalCost),
+      weight: round2(totalWeight),
+      reload,
     },
     sources: [...sources],
     notes: collectNotes({

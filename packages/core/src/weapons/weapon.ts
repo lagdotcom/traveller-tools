@@ -77,7 +77,7 @@ import {
 export interface WeaponEvaluation extends Evaluation {
   profile: WeaponProfile;
   breakdown: WeaponLineItem[];
-  totals: { costCr: Credits; weightKg: Kilograms; magazineCr: Credits };
+  totals: { cost: Credits; weight: Kilograms; reload: Credits };
   /** Play-time rules carried by chosen components (not captured as stats/traits). */
   notes?: string[];
   /**
@@ -88,7 +88,7 @@ export interface WeaponEvaluation extends Evaluation {
     ammo: AmmoTypeId;
     label: string;
     profile: WeaponProfile;
-    magazineCr: Credits;
+    reload: Credits;
   }[];
   /**
    * One profile per loaded munition (launchers only) — the analogue of
@@ -101,14 +101,14 @@ export interface WeaponEvaluation extends Evaluation {
     label: string;
     profile: WeaponProfile;
     /** Reload price of a full load. */
-    magazineCr: Credits;
+    reload: Credits;
     /** Per-round weight (a single munition), as the book lists it. */
-    weightKg: Kilograms;
+    weight: Kilograms;
     /** Per-round cost (a single munition), as the book lists it. */
-    costCr: Credits;
+    cost: Credits;
   }[];
   /** A mounted secondary weapon's own profile, shown as a second data line. */
-  secondary?: { label: string; profile: WeaponProfile; magazineCr: Credits };
+  secondary?: { label: string; profile: WeaponProfile; reload: Credits };
   /**
    * The interchangeable magazine / power-source options (firearms & energy). The
    * first is the standard one baked into the build; the rest are alternatives.
@@ -125,9 +125,9 @@ export interface WeaponMagazine {
   /** The noun for `capacity` — firearms hold rounds, energy weapons shots. */
   unit: 'rounds' | 'shots';
   /** The weapon's loaded weight with this magazine/pack fitted. */
-  weightKg: Kilograms;
+  weight: Kilograms;
   /** Reload / refill price for this option (primary ammo for firearms). */
-  magazineCr: Credits;
+  reload: Credits;
   /** The standard magazine baked into the headline build. */
   primary: boolean;
 }
@@ -309,8 +309,8 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const recv = firearmReceiver(params, parts);
   const comp = firearmComponents(params, parts, recv);
 
-  const totalWeight = round2(recv.baselineWeight + comp.weightKg);
-  const totalCost = round2(recv.baselineCost + comp.costCr);
+  const totalWeight = round2(recv.baselineWeight + comp.weight);
+  const totalCost = round2(recv.baselineCost + comp.cost);
   const { calibre, neutralCapacity, capPct: stdPct } = parts;
   const capWeightMult = (pct: number) => 1 + 0.05 * ((pct - 100) / 10);
   // The empty feed device is a fraction of the weapon's purchase price (FC: a
@@ -348,12 +348,12 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
         (spec.ammo ? ammo.label : isStd ? 'Standard' : `Magazine ${i + 1}`),
       capacity,
       unit: 'rounds',
-      weightKg: isStd
+      weight: isStd
         ? totalWeight
         : round2(
             (totalWeight * capWeightMult(specPct)) / capWeightMult(stdPct),
           ),
-      magazineCr: spec.costCr ?? reloadFor(capacity, ammo),
+      reload: spec.cost ?? reloadFor(capacity, ammo),
       primary: isStd,
     };
   });
@@ -363,31 +363,31 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   parts.magazines.forEach((spec, i) => {
     const ammoId = spec.ammo ?? (i === 0 ? ammoIds[0]! : undefined);
     if (ammoId !== undefined && !reloadByAmmo.has(ammoId))
-      reloadByAmmo.set(ammoId, magazines[i]!.magazineCr);
+      reloadByAmmo.set(ammoId, magazines[i]!.reload);
   });
 
   // The build is fixed; each loaded ammunition type yields its own profile row.
   const ammoProfiles = ammoIds.map((id) => {
     const ammo = AMMO_TYPES[id] ?? AMMO_TYPES.ball;
-    const { profile, magazineCr } = firearmProfile(params, parts, recv, ammo);
+    const { profile, reload } = firearmProfile(params, parts, recv, ammo);
     return {
       ammo: id,
       label: ammo.label,
       profile,
-      magazineCr: reloadByAmmo.get(id) ?? magazineCr,
+      reload: reloadByAmmo.get(id) ?? reload,
     };
   });
   const primary = ammoProfiles[0]!;
-  const headlineMagCr = primary.magazineCr;
+  const headlineMagCr = primary.reload;
 
   return {
     profile: primary.profile,
     breakdown: [...recv.lines, ...comp.lines],
     issues: validate(params),
     totals: {
-      costCr: round2(recv.baselineCost + comp.costCr),
-      weightKg: totalWeight,
-      magazineCr: headlineMagCr,
+      cost: round2(recv.baselineCost + comp.cost),
+      weight: totalWeight,
+      reload: headlineMagCr,
     },
     sources: [...new Set([SOURCE, ...comp.sources])],
     notes: collectNotes({
@@ -542,8 +542,8 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
 
 interface ComponentBuild {
   lines: WeaponLineItem[];
-  costCr: number; // sum of the Phase-B lines (added to the receiver baseline)
-  weightKg: number;
+  cost: number; // sum of the Phase-B lines (added to the receiver baseline)
+  weight: number;
   secondary?: WeaponEvaluation['secondary'];
   sources: string[];
 }
@@ -598,8 +598,8 @@ function firearmComponents(
           const barrelWeight = b.baseWeight * barrel.weightPct * heavyMult;
           return {
             label: `Extra barrels: ${barrel.label} ×${extraBarrels}${partial ? ' (partial)' : ''}`,
-            costCr: round2(recCost + barrelCost * extraBarrels),
-            weightKg: round2(recWeight + (barrelWeight / 2) * extraBarrels),
+            cost: round2(recCost + barrelCost * extraBarrels),
+            weight: round2(recWeight + (barrelWeight / 2) * extraBarrels),
             notes: `Quickdraw −${extraBarrels}`,
           };
         }),
@@ -610,8 +610,8 @@ function firearmComponents(
         // Cost may be a flat Credit amount or a % of the receiver; weight likewise.
         return component((b) => ({
           label: a.label,
-          costCr: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
-          weightKg: round2(
+          cost: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
+          weight: round2(
             a.weightPct !== undefined ? b.baseWeight * a.weightPct : a.weight,
           ),
           costMod: a.cost !== undefined ? undefined : pctOf(a.costPct ?? 0),
@@ -633,12 +633,12 @@ function firearmComponents(
           secondary = {
             label: sc,
             profile: sub.profile,
-            magazineCr: sub.totals.magazineCr,
+            reload: sub.totals.reload,
           };
           return {
             label: `Secondary barrel: ${sc}`,
-            costCr: round2(b.baseCost * (0.1 + secBarrel.costPct * secHeavy)),
-            weightKg: round2(
+            cost: round2(b.baseCost * (0.1 + secBarrel.costPct * secHeavy)),
+            weight: round2(
               b.baseWeight * (0.1 + secBarrel.weightPct * secHeavy * 0.5),
             ),
             notes: 'complete multi-barrel: +10% receiver + barrel',
@@ -649,10 +649,10 @@ function firearmComponents(
     { baseCost: recv.baselineCost, baseWeight: recv.baselineWeight },
   );
   const lines = build.lines;
-  const costCr = round2(build.cost);
-  const weightKg = round2(build.weight);
+  const cost = round2(build.cost);
+  const weight = round2(build.weight);
 
-  return { lines, costCr, weightKg, secondary, sources };
+  return { lines, cost, weight, secondary, sources };
 }
 
 /**
@@ -665,7 +665,7 @@ function firearmProfile(
   parts: Parts,
   recv: ReceiverBuild,
   ammo: AmmoTypeDef,
-): { profile: WeaponProfile; magazineCr: number } {
+): { profile: WeaponProfile; reload: number } {
   const { receiver, calibre, barrel, feed, features } = parts;
   const { auto, extraBarrels, rapidFire } = parts;
 
@@ -793,7 +793,7 @@ function firearmProfile(
   recoil = Math.max(0, recoil);
 
   // Loaded magazine price: rounds × (Cr/100) × any ammo cost multiplier.
-  const magazineCr = round2(
+  const reload = round2(
     (recv.capacity *
       calibre.ammoCostPer100 *
       recv.ammoCostMult *
@@ -835,7 +835,7 @@ function firearmProfile(
     capacity: recv.capacity,
     traits,
   };
-  return { profile, magazineCr };
+  return { profile, reload };
 }
 
 /** Short descriptive label for a secondary weapon (calibre + mechanism). */
