@@ -688,7 +688,8 @@ function firearmProfile(
   // flechette) round uses the calibre's shorter pellet range, where given.
   const featureRangeMult = features.reduce((m, f) => m * (f.rangeMult ?? 1), 1);
   const baseRange =
-    ammo.spread && calibre.pelletRange !== undefined
+    (ammo.spread || barrel.allAmmoShortRange) &&
+    calibre.pelletRange !== undefined
       ? calibre.pelletRange
       : calibre.range;
   let range = barrel.allDiceToD3
