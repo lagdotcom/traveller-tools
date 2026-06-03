@@ -1,12 +1,13 @@
 /**
- * Weapon-traits glossary — the traits detailed in the Field Catalogue "Weapon
- * Traits" chapter, transcribed so the app can explain what the traits it already
- * stamps on a weapon (Lo-Pen, Spread, Burn, …) actually do at the table.
+ * Weapon-traits glossary — what the traits stamped on a weapon profile actually
+ * do at the table, transcribed so the app can explain them.
  *
- * Scope: only the traits the FC details. Many traits (AP, Blast, Auto, Bulky,
- * Smart, Stun, …) come from the Core Rulebook and "apply unchanged" — those live
- * in the Core text, not here. `key` is the trait name as written on a weapon
- * profile, so `findWeaponTrait` can look one up from a built weapon's traits.
+ * Covers the traits detailed in the Field Catalogue "Weapon Traits" chapter
+ * (Lo-Pen, Spread, Burn, …) plus the Core Rulebook combat traits the engine also
+ * stamps (AP, Auto, Blast, Bulky, Radiation, Scope, Smart, Stun, Very Bulky,
+ * Zero-G). Each entry's `source` says which book it's from. `key` is the trait
+ * name as written on a weapon profile, so `findWeaponTrait` can look one up from
+ * a built weapon's traits.
  */
 
 import type { BookSource } from './types.js';
@@ -31,6 +32,53 @@ export interface WeaponTraitDef {
 }
 
 export const WEAPON_TRAITS: WeaponTraitDef[] = [
+  {
+    key: 'AP',
+    label: 'AP X',
+    source: 'Core Rulebook',
+    summary: 'Ignores Protection equal to its score (same-scale targets only).',
+    description:
+      'The attack ignores an amount of Protection equal to the AP score. Spacecraft-scale targets ignore the AP trait unless the weapon making the attack is also Spacecraft scale.',
+  },
+  {
+    key: 'Auto',
+    label: 'Auto X',
+    source: 'Core Rulebook',
+    summary:
+      'Fires single, burst (+score damage) or full-auto (score attacks).',
+    description:
+      'Fires multiple rounds per pull of the trigger, in three modes (below). Attacks using the Auto trait lose any benefit gained from aiming, and Auto cannot be used in the same action as the Scope trait or an aiming action.',
+    table: {
+      columns: ['Mode', 'Effect'],
+      rows: [
+        ['Single', 'Normal rules.'],
+        [
+          'Burst',
+          'Add the Auto score to damage; uses rounds equal to the Auto score.',
+        ],
+        [
+          'Full auto',
+          'Make attacks equal to the Auto score (targets may differ if within 6m of each other); uses 3× the Auto score in rounds.',
+        ],
+      ],
+    },
+  },
+  {
+    key: 'Blast',
+    label: 'Blast X',
+    source: 'Core Rulebook',
+    summary: 'Damages every target within Blast-score metres.',
+    description:
+      'Damage is rolled against every target within a number of metres equal to the Blast score. Dodge Reactions cannot be rolled against it, though a target between the centre of the Blast and themselves may dive for cover.',
+  },
+  {
+    key: 'Bulky',
+    label: 'Bulky',
+    source: 'Core Rulebook',
+    summary: 'Powerful recoil or very heavy; needs STR 9 to avoid a penalty.',
+    description:
+      'The weapon has powerful recoil or is extremely heavy. It requires STR 9 to use without penalty — a weaker user suffers the difference between their STR DM and +1 as a negative DM.',
+  },
   {
     key: 'Burn',
     label: 'Burn X',
@@ -137,6 +185,14 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
       'Based on the noise, flash and disturbance of small objects from the propulsion mechanism or the passage of the beam/bolt/projectile. All firearms and energy weapons have some; when it is about handgun/rifle level there is no need to note it (detection and location are as normal).',
   },
   {
+    key: 'Radiation',
+    label: 'Radiation',
+    source: 'Core Rulebook',
+    summary: 'Target takes 2D×20 rads (×3 at Spacecraft scale).',
+    description:
+      'The target receives 2D×20 rads, multiplied by three for Spacecraft-scale weapons. If the weapon is also Destructive, every target within 10m receives 2D×20 rads.',
+  },
+  {
     key: 'Ramshackle',
     label: 'Ramshackle -X',
     source: 'Field Catalogue',
@@ -144,6 +200,14 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
       'Negative DM to attack rolls and malfunction results (crude/below-TL).',
     description:
       'Thrown together from available parts or poorly engineered (usually -1 to -4, sometimes more). The DM applies to attack rolls and to malfunction results. Building or repairing a weapon below its Tech Level imposes Ramshackle equal to the TL difference; it can be reduced by the Effect of a Mechanics check when repairing. Being Ramshackle does not by itself make a weapon Unreliable.',
+  },
+  {
+    key: 'Scope',
+    label: 'Scope',
+    source: 'Core Rulebook',
+    summary: 'Aimed shots beyond 100m are not treated as Extreme range.',
+    description:
+      'As long as the Traveller aims before shooting, ignore the rule that treats all attacks made at a range over 100m as Extreme range.',
   },
   {
     key: 'Slow Loader',
@@ -154,12 +218,28 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
       'Fiddly to load: the score is how many minor actions are required to load the weapon (a fiddly SMG magazine ~2-4, a black-powder rifle 10+). An Average (8+) Gun Combat check reduces the loading time by its Effect, to a minimum of one minor action.',
   },
   {
+    key: 'Smart',
+    label: 'Smart',
+    source: 'Core Rulebook',
+    summary: 'Guided: DM = TL minus target, capped +1 to +6.',
+    description:
+      'Intelligently guided. The weapon gains a DM equal to the difference between its TL and the target (usually armour or a vehicle, but it can home in on Smart devices, comms, computers or weapons). The DM is capped between +1 and +6.',
+  },
+  {
     key: 'Spread',
     label: 'Spread X',
     source: 'Field Catalogue',
     summary: 'Adds its score to attack rolls within base range.',
     description:
       'Fires multiple projectiles at once or in rapid succession (score usually 1-4). Within the weapon’s base range the firer adds the Spread value to all attack rolls. Combining with Inaccurate: Inaccurate does not apply within 10m (so Spread alone helps); between 10m and base range both apply — e.g. Spread (2) + Inaccurate (-1) nets +1.',
+  },
+  {
+    key: 'Stun',
+    label: 'Stun',
+    source: 'Core Rulebook',
+    summary: 'Non-lethal: reduces END; at 0 the target is incapacitated.',
+    description:
+      'Deals non-lethal damage that only reduces END (Protection still applies). Once END reaches 0 the target is incapacitated for a number of hours equal to the damage exceeding their END. Stun damage is healed after an hour of rest.',
   },
   {
     key: 'Unreliable',
@@ -185,6 +265,22 @@ export const WEAPON_TRAITS: WeaponTraitDef[] = [
         ['10+', 'Minor fault: shot wasted but the weapon keeps working.'],
       ],
     },
+  },
+  {
+    key: 'Very Bulky',
+    label: 'Very Bulky',
+    source: 'Core Rulebook',
+    summary: 'As Bulky, but needs STR 12 to avoid a penalty.',
+    description:
+      'As Bulky, but requires STR 12 to use without penalty — a weaker user suffers the difference between their STR DM and +2 as a negative DM.',
+  },
+  {
+    key: 'Zero-G',
+    label: 'Zero-G',
+    source: 'Core Rulebook',
+    summary: 'Little or no recoil; usable in low/zero gravity without a check.',
+    description:
+      'The weapon has little or no recoil. It can be used in low or zero gravity without an Athletics (dexterity) check.',
   },
 ];
 
