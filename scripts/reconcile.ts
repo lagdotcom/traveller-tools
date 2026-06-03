@@ -257,6 +257,9 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 8,
     signature: EL,
     traits: { AP: 3, Auto: 2 },
+    // cost: engine Cr442.75 (Cr385 baseline + handgun barrel) is exact; the book
+    // rounds it up to 450 (the prose works from the precise figure).
+    ignore: ['cost'],
     variants: {
       Navy: {
         range: 50,
@@ -264,15 +267,17 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         costCr: 500,
         quickdraw: 4,
         traits: { AP: 4, Scope: true },
-        // Two unmodelled book features here:
+        // The prose confirms the engine's build exactly: assault barrel → Cr462 /
+        // 1.3kg (engine: Cr385 baseline + 20%/30% = 462/1.3). Two book features the
+        // engine can't reproduce remain:
         // • damage: book prints 3D; engine 3D-1 is the AP-4 penalty (net pen +2)
         //   that the book *does* apply to GA-100 (3D+5) — a book inconsistency.
-        // • Scope / Quickdraw 4 / +0.02kg: the Navy's detachable stock houses an
-        //   integrated holographic sight (→ Scope, −2 Quickdraw). The FC describes
-        //   it but gives it no stats, and the Cr500 total leaves no room for the
-        //   standard Cr750 sight, so it isn't modelled.
+        // • Scope / Quickdraw 4 / +0.02kg: the detachable stock that houses the
+        //   holographic sight adds Cr45 / 0.12kg (vs the engine `full` stock's
+        //   38.5 / 0.10) and grants Scope + −2 Quickdraw. The FC gives this
+        //   integrated stock+sight no general stats, so it isn't a modelled component.
         ignore: ['damage', 'trait Scope', 'quickdraw', 'weight'],
-        note: 'Navy: book 3D omits the AP-4 penalty (vs GA-100 3D+5); detachable stock houses an unstatted holographic sight (Scope, Quickdraw 4, +0.02kg).',
+        note: 'Navy: book 3D omits the AP-4 penalty (vs GA-100 3D+5); a detachable stock houses a holographic sight (+Cr45/0.12kg, Scope, Quickdraw −2) the FC does not stat generally.',
       },
     },
   },
