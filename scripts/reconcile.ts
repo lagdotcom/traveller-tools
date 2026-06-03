@@ -168,6 +168,7 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
       'Sawed-Off': {
         range: 5,
         weightKg: 3,
+        quickdraw: 1, // book: shorter/handier than the base shotgun's −1
         // weight reads ~0.5 kg light: inherits the base shotgun's longarm-receiver
         // quirk (worksheet 3 kg vs the rules' 2.5 kg) — with 3 kg it is exact.
         // explosive Lo-Pen: book 2 (calibre only); engine 3 adds explosive's −1 pen.

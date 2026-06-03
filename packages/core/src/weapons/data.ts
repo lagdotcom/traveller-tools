@@ -608,6 +608,12 @@ export interface BarrelDef {
   allDiceToD3?: boolean;
   /** Carbine: −1 per two full dice of base damage. */
   carbineReduction?: boolean;
+  /**
+   * Too short to give a solid round its range advantage — every ammo type
+   * (not just spread) falls back to the calibre's short (pellet) range. Used by
+   * the sawed-off smoothbore, where slug and shell alike are short-range.
+   */
+  allAmmoShortRange?: boolean;
 }
 
 /**
@@ -720,12 +726,16 @@ export const BARRELS: Record<BarrelId, BarrelDef> = {
   // Short-barrel penetration/signature shifts are derived, not book-stated.
   sawedOff: {
     label: 'Sawed-Off',
-    costPct: 0.1,
+    // Sawing off is an after-market mod, not a cheaper barrel — it doesn't refund
+    // the original barrel, so it costs the same as the rifle barrel it replaces
+    // (the weapon ends up at its base price). Weight still drops (less barrel).
+    costPct: 0.3,
     weightPct: 0.1,
     rangeMult: 0.25,
-    quickdraw: 5,
+    quickdraw: 2, // base shotgun −1 → +1 (book), shorter/handier
     penetration: -1,
     signatureShift: 1,
+    allAmmoShortRange: true, // slug/shell alike are short-range from a sawed-off
   },
 };
 
