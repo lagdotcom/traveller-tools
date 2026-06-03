@@ -1102,6 +1102,10 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
     bookT: Record<string, number | string | boolean> | undefined,
     prefix = '',
     reportExtra = false,
+    // For per-ammo/per-warhead sub-rows: the engine's top-level traits. A trait
+    // inherited from the parent unchanged is the weapon's, not the row's — it is
+    // already completeness-checked at the top level, so don't re-flag it per row.
+    parentEngT?: Traits,
   ) => {
     const bookKeys = new Set<string>();
     for (const [rawKey, raw] of Object.entries(bookT ?? {})) {
@@ -1122,6 +1126,9 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
     if (reportExtra)
       for (const [k, ev] of Object.entries(engT)) {
         if (bookKeys.has(k)) continue;
+        // Inherited unchanged from the parent → already flagged at the top level.
+        if (parentEngT && (parentEngT as Record<string, unknown>)[k] === ev)
+          continue;
         diffs.push({
           field: `${prefix}trait ${k}`,
           engine: ev === true ? 'yes' : String(ev),
@@ -1181,6 +1188,7 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
       { ...book.traits, ...figs.traits },
       prefix,
       true,
+      p.traits,
     );
     for (const f of figs.ignore ?? []) ignore.add(prefix + f);
   }
@@ -1206,6 +1214,7 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
       { ...book.traits, ...figs.traits },
       prefix,
       true,
+      p.traits,
     );
     for (const f of figs.ignore ?? []) ignore.add(prefix + f);
   }
