@@ -108,7 +108,8 @@ describe('worked examples — base receiver & grand totals', () => {
     expect(r.breakdown[0].costCr).toBeCloseTo(400, 3); // base longarm
     expect(r.totals.costCr).toBeCloseTo(127.5, 3);
     expect(r.profile.quickdraw).toBe(-1);
-    expect(r.profile.capacity).toBe(1);
+    // Double-barrel single-shot: one round per barrel = 2 (book's "1 + 1").
+    expect(r.profile.capacity).toBe(2);
   });
 });
 

@@ -131,7 +131,8 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     damage: '4D-4',
     weightKg: 4.5,
     costCr: 130,
-    capacity: 1,
+    // Book stat block prints "1 + 1" (one round per barrel, double-barrel) = 2.
+    capacity: 2,
     magazineCr: 2.5,
     quickdraw: -1,
     signature: PN,

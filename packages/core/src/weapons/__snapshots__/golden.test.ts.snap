@@ -1053,10 +1053,10 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
     {
       "ammo": "pellet",
       "label": "Pellet",
-      "magazineCr": 1.25,
+      "magazineCr": 2.5,
       "profile": {
         "auto": 0,
-        "capacity": 1,
+        "capacity": 2,
         "damage": {
           "dice": 4,
           "die": 6,
@@ -1103,7 +1103,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
     {
       "costCr": 75,
       "label": "Receiver Totals",
-      "notes": "Capacity 1",
+      "notes": "Capacity 2",
       "weightKg": 2,
     },
     {
@@ -1131,7 +1131,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
   "notes": [],
   "profile": {
     "auto": 0,
-    "capacity": 1,
+    "capacity": 2,
     "damage": {
       "dice": 4,
       "die": 6,
@@ -1158,7 +1158,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Civilian Sho
   ],
   "totals": {
     "costCr": 127.5,
-    "magazineCr": 1.25,
+    "magazineCr": 2.5,
     "weightKg": 3.7,
   },
 }

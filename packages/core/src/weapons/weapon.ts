@@ -323,7 +323,7 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
     const specPct = spec.pct ?? (isStd ? stdPct : 100);
     const capacity =
       params.mechanism === 'singleShot'
-        ? 1
+        ? neutralCapacity // one round per barrel (folded into neutralCapacity)
         : (spec.rounds ?? Math.round(neutralCapacity * (specPct / 100)));
     const ammoId = spec.ammo ?? ammoIds[0]!;
     const ammo = AMMO_TYPES[ammoId] ?? AMMO_TYPES.ball;
@@ -394,12 +394,14 @@ function resolveParts(params: FirearmParams) {
   const receiver = RECEIVERS[params.receiver] ?? RECEIVERS.handgun;
   const calibre = CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun;
   const features = resolveFeatures(params.features);
+  const extraBarrels = Math.max(0, Math.floor(params.additionalBarrels));
 
   // Capacity-neutral base count (before the capacity-% setting): single-shot
-  // holds one per barrel; smoothbores use fixed per-receiver sizes; otherwise it
-  // is the receiver base × calibre × mechanism × gauss × feature multipliers.
+  // holds one round per barrel (a double-barrel shotgun loads 2); smoothbores use
+  // fixed per-receiver sizes; otherwise it is the receiver base × calibre ×
+  // mechanism × gauss × feature multipliers.
   let neutralCapacity: number;
-  if (params.mechanism === 'singleShot') neutralCapacity = 1;
+  if (params.mechanism === 'singleShot') neutralCapacity = 1 + extraBarrels;
   else if (calibre.smoothbore)
     neutralCapacity = SMOOTHBORE_CAPACITY[params.receiver];
   else {
@@ -442,7 +444,7 @@ function resolveParts(params: FirearmParams) {
     capPct,
     magazines,
     neutralCapacity,
-    extraBarrels: Math.max(0, Math.floor(params.additionalBarrels)),
+    extraBarrels,
   };
 }
 type Parts = ReturnType<typeof resolveParts>;
@@ -470,11 +472,12 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
     capPct >= 100 ? 1 + 0.1 * capPctSteps : 1 + 0.05 * capPctSteps;
   const weightCapMult = 1 + 0.05 * capPctSteps;
 
-  // Single-shot holds one per barrel; otherwise the neutral count scaled by the
-  // standard magazine's capacity %, unless it carries an absolute-count override.
+  // Single-shot holds one round per barrel (already folded into neutralCapacity);
+  // otherwise the neutral count scaled by the standard magazine's capacity %,
+  // unless it carries an absolute-count override.
   const capacity =
     params.mechanism === 'singleShot'
-      ? 1
+      ? parts.neutralCapacity
       : (parts.magazines[0]?.rounds ??
         Math.round(parts.neutralCapacity * (capPct / 100)));
 
