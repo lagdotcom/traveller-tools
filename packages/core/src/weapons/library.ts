@@ -1113,9 +1113,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         stock: 'none',
         furniture: [],
         feed: 'fixed',
-        capacityPct: 100,
+        // 3-round breaching tube (book) — half the standard 6-round assault smoothbore.
+        capacityPct: 50,
         accessories: [],
-        ammo: ['ball'],
+        // A breaching shotgun fires shot, not a solid slug (book: Lo-Pen 5, Spread 4).
+        ammo: ['pellet'],
       },
       accessories: ['laserPointer', 'longRangeScope'],
     },
