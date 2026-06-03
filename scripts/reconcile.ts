@@ -73,7 +73,31 @@ interface BookFigures {
    * e.g. 'Pellet · damage'.
    */
   ignore?: string[];
+  /**
+   * Book computation quirks to *reproduce* the printed stat block when the book's
+   * own maths skipped a step. Each names a cost/weight breakdown step (by label
+   * substring) and which of its multipliers the book left out; the harness divides
+   * that factor back out of the total before comparing, so the engine matches the
+   * (quirky) book figure instead of flagging a diff. See `BookQuirk`.
+   */
+  quirks?: BookQuirk[];
   /** Free notes (page ref, "book error: …", etc.). */
+  note?: string;
+}
+
+/**
+ * One book-computation quirk: "the book forgot to apply step X's cost/weight".
+ * The step's multiplier is recovered from the breakdown (running subtotal after ÷
+ * before) and divided back out. Assumes the step is a receiver-baseline multiplier
+ * — so the whole printed total scales with it (barrel/stock/% accessories are a %
+ * of the baseline); flat-Cr add-ons (rare) aren't re-derived.
+ */
+interface BookQuirk {
+  /** Substring matched against a cost/weight breakdown line-item label. */
+  step: string;
+  /** Which of the step's multipliers the book omitted. */
+  drop: ('cost' | 'weight')[];
+  /** Why — suspected book error, house ruling, etc. (shown in the report). */
   note?: string;
 }
 
@@ -206,6 +230,22 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 10,
     signature: EL,
     traits: { AP: 3, Auto: 4 },
+    // The printed Cr890 = the receiver chain with neither cost applied (×1.25 ×1.2
+    // → Cr1334 in the engine; 1334 / 1.5 ≈ 890). capacity (24 vs engine 18) and
+    // magazine (27 vs 9) remain — they need the Small Gauss base-capacity bonus +
+    // the gauss reload rate, not a quirk.
+    quirks: [
+      {
+        step: 'Increased Auto',
+        drop: ['cost'],
+        note: 'book omitted the Increased-RoF cost increase',
+      },
+      {
+        step: 'Capacity 120%',
+        drop: ['cost'],
+        note: 'book omitted the capacity-% cost increase',
+      },
+    ],
   },
   'GS-40': {
     range: 20,
@@ -915,9 +955,46 @@ function compositeFigures(
   if (base.traits || override.traits)
     merged.traits = { ...base.traits, ...override.traits };
   merged.ignore = [...(base.ignore ?? []), ...(override.ignore ?? [])];
+  merged.quirks = [...(base.quirks ?? []), ...(override.quirks ?? [])];
   merged.note = override.note ?? base.note;
   delete merged.variants;
   return merged;
+}
+
+/**
+ * Reproduce a book's computation quirks (see `BookQuirk`): walk the cost/weight
+ * breakdown accumulating the running subtotal, and for each quirk whose `step`
+ * matches a line, divide that step's multiplier (subtotal after ÷ before) back out
+ * of the total — the book "forgot" to apply it. Returns the adjusted totals plus
+ * any quirk steps that matched no line (a stale quirk, surfaced as a diff).
+ */
+function applyQuirks(
+  e: ReturnType<typeof evaluateWeapon>,
+  quirks: BookQuirk[] | undefined,
+): { costCr: number; weightKg: number; unmatched: string[] } {
+  let costCr = e.totals.costCr;
+  let weightKg = e.totals.weightKg;
+  if (!quirks || quirks.length === 0)
+    return { costCr, weightKg, unmatched: [] };
+  const matched = new Set<BookQuirk>();
+  let runCost = 0;
+  let runWeight = 0;
+  for (const line of e.breakdown) {
+    const beforeCost = runCost;
+    const beforeWeight = runWeight;
+    runCost += line.costCr ?? 0;
+    runWeight += line.weightKg ?? 0;
+    for (const q of quirks) {
+      if (!line.label.includes(q.step)) continue;
+      matched.add(q);
+      if (q.drop.includes('cost') && beforeCost > 0)
+        costCr /= runCost / beforeCost;
+      if (q.drop.includes('weight') && beforeWeight > 0)
+        weightKg /= runWeight / beforeWeight;
+    }
+  }
+  const unmatched = quirks.filter((q) => !matched.has(q)).map((q) => q.step);
+  return { costCr, weightKg, unmatched };
 }
 
 /**
@@ -1006,8 +1083,17 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
         });
       }
   };
-  cmpNum('cost', e.totals.costCr, book.costCr, '', true);
-  cmpNum('weight', e.totals.weightKg, book.weightKg, '', true);
+  // Apply any book-computation quirks (divide out steps the book skipped) before
+  // comparing the build totals; a quirk that matched no step is a stale entry.
+  const adj = applyQuirks(e, book.quirks);
+  for (const step of adj.unmatched)
+    diffs.push({
+      field: `quirk '${step}'`,
+      engine: 'no breakdown step matched',
+      book: 'expected one',
+    });
+  cmpNum('cost', adj.costCr, book.costCr, '', true);
+  cmpNum('weight', adj.weightKg, book.weightKg, '', true);
   cmpNum('magazine', e.totals.magazineCr, book.magazineCr, '', true);
   cmpStr('damage', formatDamage(p.damage), book.damage, '', true);
   cmpNum('range', p.range, book.range, '', true);
@@ -1111,6 +1197,11 @@ function main() {
       for (const d of real) lines.push(row(d));
       if (book.note) lines.push(`      note: ${book.note}`);
     }
+    // Surface applied book quirks (on ✓ and ✗) so the reproduction isn't silent.
+    for (const q of book.quirks ?? [])
+      lines.push(
+        `      quirk: dropped ${q.drop.join('+')} of '${q.step}'${q.note ? ` — ${q.note}` : ''}`,
+      );
     if (SHOW_ROUNDING) for (const d of rounding) lines.push(row(d));
   };
 
