@@ -125,6 +125,10 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
         `${receiver.label} receiver caps output at ${receiverCap}D — excess power is wasted`,
       ),
     );
+  // Power *drawn* per shot = the receiver-capped output. A barrel that caps lower
+  // just wastes the excess (the weapon still draws full power), so shots-per-pack
+  // divide by this draw, not by the barrel-limited delivered dice.
+  const drawDice = dice;
   const barrelCap = ENERGY_BARREL_POWER_CAP[params.barrel];
   if (barrelCap !== undefined && dice > barrelCap) {
     issues.push(
@@ -155,10 +159,13 @@ export function evaluateEnergyWeapon(params: EnergyParams): WeaponEvaluation {
     if (perKg === 0)
       issues.push(error('Energy-weapon powerpacks require TL8+'));
     const kg = Math.max(0, source.kg);
-    capacity = dice > 0 ? Math.floor((perKg * kg) / dice) : 0;
+    capacity = drawDice > 0 ? Math.floor((perKg * kg) / drawDice) : 0;
     primaryPackWeight = kg;
     primaryPackLabel = `Powerpack: ${ENERGY_POWER_CLASS_LABEL[source.rating]} ${kg}kg`;
     primaryReloadCr = round2(POWERPACK_COST_PER_KG[source.rating] * kg);
+    // A detachable pack costs its price to replace (the weapon's reload); an
+    // internal pack is recharged in place, so it has no separate reload price.
+    if (!source.internal) magazineCr = primaryReloadCr;
     powerLine = {
       label: primaryPackLabel,
       costCr: primaryReloadCr,

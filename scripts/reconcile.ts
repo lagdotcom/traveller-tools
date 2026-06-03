@@ -747,6 +747,12 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     quickdraw: 6,
     signature: EN,
     traits: { 'Lo-Pen': 2, 'Zero-G': true },
+    // cost: the book lists the weapon at Cr960 *excluding* the belt pack (its
+    // Cr1000 is the magazine); the engine bakes the loaded pack into the build
+    // (as TES-12's book does), so it reads 1960. weight: the book's own component
+    // table totals 1.95kg but the stat line prints 2.6+1; the engine matches the
+    // table (1.95 + 1kg pack = 2.95). Both are book inconsistencies.
+    ignore: ['cost', 'weight'],
   },
   'IP-2': {
     range: 500,

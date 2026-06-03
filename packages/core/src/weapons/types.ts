@@ -462,6 +462,12 @@ export type PackSpec =
       /** Powerpack mass in kg (shots = power-per-kg × kg ÷ damage dice). */
       kg: number;
       rating: EnergyPowerClass;
+      /**
+       * An internal (built-in, rechargeable) pack: it's part of the weapon and has
+       * no separate reload price. A normal (detachable) pack costs its price to
+       * replace (the weapon's "magazine" cost).
+       */
+      internal?: boolean;
     }
   | {
       kind: 'cartridge';

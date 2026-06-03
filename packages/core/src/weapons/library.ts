@@ -290,7 +290,13 @@ function normalizePacks(v: unknown): PackSpec[] | undefined {
         ejects: bool(item.ejects, true),
       });
     } else {
-      out.push({ kind: 'powerpack', label, kg: num(item.kg, 1), rating });
+      out.push({
+        kind: 'powerpack',
+        label,
+        kg: num(item.kg, 1),
+        rating,
+        ...(item.internal === true ? { internal: true } : {}),
+      });
     }
   }
   return out.length ? out : undefined;
@@ -1348,7 +1354,9 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       receiver: 'minimal',
       damageDice: 2,
       barrel: 'minimal',
-      packs: [{ kind: 'powerpack', rating: 'weak', kg: 0.3 }],
+      // "Bottled Lightning": three disposable weak energy cartridges in a screw-out
+      // rear section (replaced individually or together) → non-ejecting (Hazardous −2).
+      source: { kind: 'cartridge', rating: 'weak', count: 3, ejects: false },
     },
     'Personal Security Solutions',
   ),
@@ -1363,8 +1371,16 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
         mods: ['efficientBeam', 'improvedFocus'],
         barrel: 'carbine',
         stock: 'folding',
+        // Internal 0.1kg reserve (Power 70 → 14 shots, recharged not replaced);
+        // the belt and back packs are detachable alternatives.
+        source: {
+          kind: 'powerpack',
+          label: 'internal',
+          kg: 0.1,
+          rating: 'standard',
+          internal: true,
+        },
         packs: [
-          { kind: 'powerpack', label: 'internal', kg: 0.1, rating: 'standard' },
           { kind: 'powerpack', label: 'belt pack', kg: 1, rating: 'standard' },
           { kind: 'powerpack', label: 'back pack', kg: 3, rating: 'standard' },
         ],
@@ -1380,7 +1396,8 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     damageDice: 3,
     barrel: 'assault',
     stock: 'none',
-    packs: [{ kind: 'powerpack', rating: 'light', kg: 1 }],
+    // Standard 1kg belt-mounted pack: Power 300 (TL9) → 100 shots, Cr1000 to replace.
+    source: { kind: 'powerpack', rating: 'light', kg: 1 },
   }),
   launcher(
     'IP-2',

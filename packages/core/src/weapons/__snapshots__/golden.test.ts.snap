@@ -839,35 +839,17 @@ exports[`golden master — built-in weapon evaluations > reproduces BL-3 1`] = `
       "weightKg": 0.05,
     },
     {
-      "costCr": 1000,
-      "label": "Powerpack: Light 1kg",
-      "notes": "150 shots @ 2 power",
-      "weightKg": 1,
+      "costCr": 5,
+      "label": "Cartridge holder: Weak ×3",
+      "notes": "3 shots",
+      "weightKg": 0.03,
     },
   ],
   "issues": [],
-  "magazines": [
-    {
-      "capacity": 150,
-      "label": "Powerpack: Light 1kg",
-      "magazineCr": 1000,
-      "primary": true,
-      "unit": "shots",
-      "weightKg": 1.55,
-    },
-    {
-      "capacity": 45,
-      "label": "Powerpack 0.3kg",
-      "magazineCr": 150,
-      "primary": false,
-      "unit": "shots",
-      "weightKg": 0.85,
-    },
-  ],
   "notes": [],
   "profile": {
     "auto": 0,
-    "capacity": 150,
+    "capacity": 3,
     "damage": {
       "dice": 2,
       "die": 6,
@@ -882,6 +864,7 @@ exports[`golden master — built-in weapon evaluations > reproduces BL-3 1`] = `
     "signatureKind": "emissions",
     "tl": 9,
     "traits": {
+      "Hazardous": -2,
       "Lo-Pen": 4,
       "Zero-G": true,
     },
@@ -890,9 +873,9 @@ exports[`golden master — built-in weapon evaluations > reproduces BL-3 1`] = `
     "Field Catalogue",
   ],
   "totals": {
-    "costCr": 1440,
-    "magazineCr": 0,
-    "weightKg": 1.55,
+    "costCr": 445,
+    "magazineCr": 15,
+    "weightKg": 0.58,
   },
 }
 `;
@@ -3632,10 +3615,10 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
       "weightKg": 0.1125,
     },
     {
-      "costCr": 1000,
-      "label": "Powerpack: Light 1kg",
-      "notes": "175 shots @ 4 power",
-      "weightKg": 1,
+      "costCr": 150,
+      "label": "Powerpack: Standard 0.1kg",
+      "notes": "14 shots @ 4 power",
+      "weightKg": 0.1,
     },
   ],
   "issues": [
@@ -3643,25 +3626,13 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
       "message": "Carbine barrel limits this laser to 4D — excess power is wasted",
       "severity": "warning",
     },
-    {
-      "message": "Powerpack rating (3D) is below the weapon's 4D output → Unreliable 1",
-      "severity": "warning",
-    },
   ],
   "magazines": [
     {
-      "capacity": 175,
-      "label": "Powerpack: Light 1kg",
-      "magazineCr": 1000,
-      "primary": true,
-      "unit": "shots",
-      "weightKg": 4.2625,
-    },
-    {
-      "capacity": 17,
-      "label": "internal",
+      "capacity": 14,
+      "label": "Powerpack: Standard 0.1kg",
       "magazineCr": 150,
-      "primary": false,
+      "primary": true,
       "unit": "shots",
       "weightKg": 3.3625,
     },
@@ -3685,7 +3656,7 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
   "notes": [],
   "profile": {
     "auto": 0,
-    "capacity": 175,
+    "capacity": 14,
     "damage": {
       "dice": 4,
       "die": 6,
@@ -3701,7 +3672,6 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
     "tl": 11,
     "traits": {
       "Lo-Pen": 2,
-      "Unreliable": 1,
       "Zero-G": true,
     },
   },
@@ -3709,9 +3679,9 @@ exports[`golden master — built-in weapon evaluations > reproduces M-84 1`] = `
     "Field Catalogue",
   ],
   "totals": {
-    "costCr": 7562.5,
+    "costCr": 6712.5,
     "magazineCr": 0,
-    "weightKg": 4.2625,
+    "weightKg": 3.3625,
   },
 }
 `;
@@ -4234,24 +4204,6 @@ exports[`golden master — built-in weapon evaluations > reproduces Nefertem 1`]
     },
   ],
   "issues": [],
-  "magazines": [
-    {
-      "capacity": 100,
-      "label": "Powerpack: Light 1kg",
-      "magazineCr": 1000,
-      "primary": true,
-      "unit": "shots",
-      "weightKg": 2.95,
-    },
-    {
-      "capacity": 100,
-      "label": "Powerpack 1kg",
-      "magazineCr": 1000,
-      "primary": false,
-      "unit": "shots",
-      "weightKg": 2.95,
-    },
-  ],
   "notes": [],
   "profile": {
     "auto": 0,
@@ -4279,7 +4231,7 @@ exports[`golden master — built-in weapon evaluations > reproduces Nefertem 1`]
   ],
   "totals": {
     "costCr": 1960,
-    "magazineCr": 0,
+    "magazineCr": 1000,
     "weightKg": 2.95,
   },
 }
@@ -5781,7 +5733,7 @@ exports[`golden master — built-in weapon evaluations > reproduces TES-12 1`] =
   ],
   "totals": {
     "costCr": 19487.5,
-    "magazineCr": 0,
+    "magazineCr": 2500,
     "weightKg": 13.7,
   },
 }
