@@ -1,3 +1,5 @@
+import type { ArmourPoints, MegaCredits, TechLevel, Tons } from '../flavours';
+
 /**
  * The Core Rulebook's pre-made vehicles. Core has no vehicle *construction*
  * system (that lives in the Vehicle Handbook), so these are a fixed catalogue.
@@ -5,32 +7,36 @@
  * a docking space; the rest is for the stat-block display.
  */
 export interface VehicleArmour {
-  front: number;
-  rear: number;
-  sides: number;
+  front: ArmourPoints;
+  rear: ArmourPoints;
+  sides: ArmourPoints;
 }
 
 export interface VehicleDefinition {
   name: string;
   description: string;
-  tl: number;
+  tl: TechLevel;
   skill: string;
   agility: number;
   speed: string;
   range: string;
   crew: number;
   passengers: number;
-  cargoTons: number;
+  cargoTons: Tons;
   hull: number;
   /** Shipping displacement in tons — drives docking-space size when carried. */
-  shippingTons: number;
-  costMCr: number;
+  shippingTons: Tons;
+  costMCr: MegaCredits;
   armour: VehicleArmour;
   /** Fitted weapon(s), if any (free text). */
   weapons?: string;
 }
 
-const armour = (front: number, rear: number, sides: number): VehicleArmour => ({
+const armour = (
+  front: ArmourPoints,
+  rear: ArmourPoints,
+  sides: ArmourPoints,
+): VehicleArmour => ({
   front,
   rear,
   sides,

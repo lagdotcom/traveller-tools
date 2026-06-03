@@ -16,8 +16,11 @@
  */
 import {
   BUILTIN_WEAPONS,
+  type Credits,
   evaluateWeapon,
   formatDamage,
+  type Kilograms,
+  type Metres,
   type Traits,
   variantParams,
   type WeaponParams,
@@ -30,13 +33,13 @@ const PL = 'physical (low)';
 const PN = 'physical (normal)';
 
 interface BookFigures {
-  costCr?: number;
-  weightKg?: number;
+  costCr?: Credits;
+  weightKg?: Kilograms;
   /** Reload price of the standard magazine. */
-  magazineCr?: number;
+  magazineCr?: Credits;
   /** e.g. '5D', '5D-3', '3D+5'. */
   damage?: string;
-  range?: number;
+  range?: Metres;
   quickdraw?: number;
   auto?: number;
   penetration?: number;
@@ -104,10 +107,10 @@ interface BookQuirk {
 /** The ammo-varying fields of one loaded ammunition / munition type. */
 interface AmmoFigures {
   damage?: string;
-  range?: number;
+  range?: Metres;
   penetration?: number;
   /** Reload price of a magazine loaded with this ammo. */
-  magazineCr?: number;
+  magazineCr?: Credits;
   traits?: Record<string, number | string | boolean>;
   /** Field names (un-prefixed, e.g. 'damage') to skip for this ammo. */
   ignore?: string[];
@@ -116,11 +119,11 @@ interface AmmoFigures {
 /** The per-round figures of one loaded launcher munition (warhead / missile). */
 interface WarheadFigures {
   damage?: string;
-  range?: number;
+  range?: Metres;
   /** Per-round weight of a single munition. */
-  weightKg?: number;
+  weightKg?: Kilograms;
   /** Per-round cost of a single munition. */
-  costCr?: number;
+  costCr?: Credits;
   traits?: Record<string, number | string | boolean>;
   /** Field names (un-prefixed, e.g. 'damage') to skip for this warhead. */
   ignore?: string[];

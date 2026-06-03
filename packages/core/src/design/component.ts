@@ -1,3 +1,5 @@
+import type { TechLevel, Tons } from '../flavours.js';
+import type { BookSource } from '../weapons/types.js';
 import type { ResourceDelta } from './resources.js';
 
 /**
@@ -24,8 +26,8 @@ export interface InstalledComponent {
  * well as visibility of everything else installed.
  */
 export interface DesignContext {
-  chassisSize: number;
-  tl: number;
+  chassisSize: Tons;
+  tl: TechLevel;
   installed: InstalledComponent[];
 }
 
@@ -43,9 +45,9 @@ export interface ComponentDef<S extends Stats = Stats> {
   /** Categories that must also be present for this component to be legal. */
   requires?: string[];
   /** Minimum tech level to install. */
-  minTL?: number;
+  minTL?: TechLevel;
   /** Source book this component comes from, if not the base rules. */
-  source?: string;
+  source?: BookSource;
   /** Signed resource contributions (positive provides, negative consumes). */
   resources: (inst: InstalledComponent, ctx: DesignContext) => ResourceDelta;
   /** Additive contributions to the design's derived stats. */
@@ -58,8 +60,8 @@ export interface ComponentDef<S extends Stats = Stats> {
 export interface Chassis<S extends Stats = Stats> {
   id: string;
   name: string;
-  size: number;
-  tl?: number;
+  size: Tons;
+  tl?: TechLevel;
   /** Capacities the chassis provides (e.g. `{ tons: size, hardpoints: n }`). */
   provides: ResourceDelta;
   baseStats?: Partial<S>;
@@ -69,7 +71,7 @@ export interface Design<S extends Stats = Stats> {
   chassis: Chassis<S>;
   installed: InstalledComponent[];
   /** Design tech level; defaults to the chassis TL. */
-  tl?: number;
+  tl?: TechLevel;
 }
 
 /** Component definitions keyed by id. */

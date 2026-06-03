@@ -12,15 +12,25 @@
  * with d in metres and a in m/s^2.
  */
 
+import type {
+  AstronomicalUnits,
+  Days,
+  Hours,
+  Kilometres,
+  KilometresPerSecond,
+  MetresPerSecond,
+  Minutes,
+  Seconds,
+} from './flavours.js';
 import { DistanceUnit, G_MS2, toKm } from './units.js';
 
 export interface TravelResult {
   /** Total travel time in seconds (accelerate to midpoint, then decelerate). */
-  seconds: number;
+  seconds: Seconds;
   /** Peak velocity reached at the midpoint, in metres per second. */
-  peakVelocityMs: number;
+  peakVelocityMs: MetresPerSecond;
   /** Peak velocity in kilometres per second, for convenience. */
-  peakVelocityKms: number;
+  peakVelocityKms: KilometresPerSecond;
 }
 
 /**
@@ -32,7 +42,7 @@ export interface TravelResult {
  * @param g         Value of 1 G in m/s^2 (defaults to standard gravity).
  */
 export function travel(
-  distance: number,
+  distance: Kilometres | AstronomicalUnits,
   unit: DistanceUnit,
   thrustG: number,
   g: number = G_MS2,
@@ -54,11 +64,11 @@ export function travel(
 }
 
 /** Break a duration in seconds into days / hours / minutes / seconds. */
-export function humanizeDuration(totalSeconds: number): {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
+export function humanizeDuration(totalSeconds: Seconds): {
+  days: Days;
+  hours: Hours;
+  minutes: Minutes;
+  seconds: Seconds;
 } {
   let remaining = Math.round(totalSeconds);
   const days = Math.floor(remaining / 86_400);

@@ -10,7 +10,18 @@ import {
   type Rule,
   summarize,
 } from '../design/index.js';
+import type {
+  ArmourPoints,
+  Credits,
+  HullPoints,
+  MegaCredits,
+  Parsecs,
+  Power,
+  TechLevel,
+  Tons,
+} from '../flavours.js';
 import { jumpFuel } from '../jump.js';
+import type { BookSource } from '../weapons/types.js';
 import type { VehicleDefinition } from './vehicles.js';
 
 /**
@@ -22,10 +33,10 @@ import type { VehicleDefinition } from './vehicles.js';
  */
 
 export interface ShipStats extends Record<string, number> {
-  hullPoints: number;
+  hullPoints: HullPoints;
   thrust: number;
-  jump: number;
-  armour: number;
+  jump: Parsecs;
+  armour: ArmourPoints;
   staterooms: number;
   turrets: number;
   weapons: number;
@@ -48,25 +59,25 @@ export const SHIP_RESOURCES: ResourceDef[] = [
 
 // --- Core Rulebook tables ---------------------------------------------------
 
-const HULL_COST_PER_TON = 0.05; // MCr (Cr50,000)
-const HULL_POINTS_PER_TON = 1 / 2.5; // 1 Hull Point per full 2.5 tons
+const HULL_COST_PER_TON: MegaCredits = 0.05; // MCr (Cr50,000)
+const HULL_POINTS_PER_TON: HullPoints = 1 / 2.5; // 1 Hull Point per full 2.5 tons
 const BASIC_SYSTEMS_POWER = 0.2; // 20% of hull tonnage
 const DRIVE_POWER_PER_RATING = 0.1; // 10% of hull tonnage × rating
 
 const M_DRIVE_HULL_PCT_PER_THRUST = 0.01; // % of hull = Thrust rating
-const M_DRIVE_COST_PER_TON = 2; // MCr
+const M_DRIVE_COST_PER_TON: MegaCredits = 2; // MCr
 const J_DRIVE_HULL_PCT_PER_JUMP = 0.025; // % of hull = Jump rating × 2.5 (+5t, min 10t)
-const J_DRIVE_TON_BONUS = 5;
-const J_DRIVE_MIN_TONS = 10;
-const J_DRIVE_COST_PER_TON = 1.5; // MCr
+const J_DRIVE_TON_BONUS: Tons = 5;
+const J_DRIVE_MIN_TONS: Tons = 10;
+const J_DRIVE_COST_PER_TON: MegaCredits = 1.5; // MCr
 
 // Carried craft / docking space (Core Rulebook): a docking space takes the
 // docked craft's tonnage plus 10% (round up), at MCr0.25 per ton.
 const HANGAR_TONS_MULT = 1.1;
-const HANGAR_COST_PER_TON = 0.25; // MCr per ton of docking space
+const HANGAR_COST_PER_TON: MegaCredits = 0.25; // MCr per ton of docking space
 
 /** Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table). */
-const THRUST_TL: Record<number, number> = {
+const THRUST_TL: Record<number, TechLevel> = {
   1: 9,
   2: 10,
   3: 10,
@@ -78,7 +89,7 @@ const THRUST_TL: Record<number, number> = {
   9: 13,
 };
 /** Minimum TL by Jump rating (Jump Potential table). */
-const JUMP_TL: Record<number, number> = {
+const JUMP_TL: Record<Parsecs, TechLevel> = {
   1: 9,
   2: 11,
   3: 12,
@@ -87,7 +98,7 @@ const JUMP_TL: Record<number, number> = {
   6: 15,
 };
 const MAX_THRUST = 9;
-const MAX_JUMP = 6;
+const MAX_JUMP: Parsecs = 6;
 
 /** Hull configurations (Core Rulebook). Sphere/Reinforced are High Guard. */
 export type HullConfigId = 'standard' | 'streamlined' | 'dispersed';
@@ -127,9 +138,9 @@ export type PowerPlantId = 'fusionTL8' | 'fusionTL12' | 'fusionTL15';
 export interface PowerPlantType {
   id: PowerPlantId;
   name: string;
-  powerPerTon: number;
-  costPerTon: number;
-  minTL: number;
+  powerPerTon: Power;
+  costPerTon: MegaCredits;
+  minTL: TechLevel;
 }
 export const POWER_PLANTS: Record<PowerPlantId, PowerPlantType> = {
   fusionTL8: {
@@ -161,8 +172,8 @@ export type ArmourTypeId = 'crystaliron' | 'bondedSuperdense';
 export interface ArmourType {
   id: ArmourTypeId;
   name: string;
-  minTL: number;
-  tonsPctPerPoint: number;
+  minTL: TechLevel;
+  tonsPctPerPoint: Tons;
   costPctOfHullPerPoint: number;
 }
 export const ARMOUR_TYPES: Record<ArmourTypeId, ArmourType> = {
@@ -182,11 +193,14 @@ export const ARMOUR_TYPES: Record<ArmourTypeId, ArmourType> = {
   },
 };
 /** Maximum armour Protection: TL, or 13, whichever is less. */
-const armourMax = (tl: number) => Math.min(tl, 13);
+const armourMax = (tl: TechLevel) => Math.min(tl, 13);
 
 /** Computer models (Computers table). Computers consume no tonnage. */
 export type ComputerId = '/5' | '/10' | '/15' | '/20' | '/25' | '/30' | '/35';
-export const COMPUTERS: Record<ComputerId, { tl: number; cost: number }> = {
+export const COMPUTERS: Record<
+  ComputerId,
+  { tl: TechLevel; cost: MegaCredits }
+> = {
   '/5': { tl: 7, cost: 0.03 },
   '/10': { tl: 9, cost: 0.16 },
   '/15': { tl: 11, cost: 2 },
@@ -206,10 +220,10 @@ export type SensorId =
 export interface SensorSuite {
   id: SensorId;
   name: string;
-  tl: number;
-  power: number;
-  tons: number;
-  cost: number;
+  tl: TechLevel;
+  power: Power;
+  tons: Tons;
+  cost: MegaCredits;
 }
 export const SENSORS: Record<SensorId, SensorSuite> = {
   basic: { id: 'basic', name: 'Basic', tl: 8, power: 0, tons: 0, cost: 0 },
@@ -311,7 +325,7 @@ export const SYSTEM_TYPES: Record<
 export interface SystemEntry {
   type: SystemTypeId;
   /** Tons allocated. */
-  amount: number;
+  amount: Tons;
 }
 
 /**
@@ -332,7 +346,7 @@ export const SOFTWARE_TYPES: Record<
   {
     id: SoftwareTypeId;
     label: string;
-    costPerLevel: number;
+    costPerLevel: MegaCredits;
     leveled: boolean;
     /** Derived from non-Core sources (High Guard); flagged in the builder. */
     unverified?: boolean;
@@ -386,10 +400,10 @@ export const MOUNTS: Record<
   {
     id: MountId;
     label: string;
-    tons: number;
-    cost: number;
+    tons: Tons;
+    cost: MegaCredits;
     capacity: number;
-    minTL: number;
+    minTL: TechLevel;
   }
 > = {
   fixed: {
@@ -438,9 +452,9 @@ export const WEAPONS: Record<
   {
     id: WeaponId;
     label: string;
-    power: number;
-    cost: number;
-    minTL: number;
+    power: Power;
+    cost: MegaCredits;
+    minTL: TechLevel;
     barbette?: boolean;
   }
 > = {
@@ -491,7 +505,7 @@ export interface WeaponEntry {
 export type BridgeId = 'standard' | 'cockpit' | 'holographic';
 
 /** Bridge tonnage by ship size (Bridges table). */
-function bridgeTons(hull: number): number {
+function bridgeTons(hull: Tons): Tons {
   if (hull <= 50) return 3;
   if (hull <= 99) return 6;
   if (hull <= 200) return 10;
@@ -501,7 +515,7 @@ function bridgeTons(hull: number): number {
 }
 
 /** Hardpoints (≥100t) or firmpoints (<100t) available on a hull. */
-function weaponMounts(hull: number): number {
+function weaponMounts(hull: Tons): number {
   if (hull >= 100) return Math.floor(hull / 100);
   if (hull >= 71) return 3;
   if (hull >= 35) return 2;
@@ -509,7 +523,7 @@ function weaponMounts(hull: number): number {
 }
 
 /** Fuel for four weeks of power-plant operation: 10% of plant size, min 1t. */
-function powerPlantFuel(plantTons: number): number {
+function powerPlantFuel(plantTons: Tons): Tons {
   return plantTons > 0 ? Math.max(1, Math.ceil(plantTons * 0.1)) : 0;
 }
 
@@ -1069,9 +1083,9 @@ export interface CarriedCraft {
   kind: CarriedCraftKind;
   name: string;
   /** The craft's own displacement in tons (drives the hangar size). */
-  tons: number;
+  tons: Tons;
   /** The craft's purchase cost in MCr (added to the carrier's price). */
-  cost: number;
+  cost: MegaCredits;
   count: number;
   /** Full nested ship design (kind === 'ship'); lets the builder re-open it. */
   ship?: ShipParams;
@@ -1080,33 +1094,33 @@ export interface CarriedCraft {
 }
 
 /** Hangar space a single craft of this size requires (Core: bay + 10%). */
-export function hangarTonsFor(craftTons: number): number {
+export function hangarTonsFor(craftTons: Tons): Tons {
   return Math.ceil(craftTons * HANGAR_TONS_MULT);
 }
 
 export interface ShipParams {
-  hullTons: number;
-  tl: number;
+  hullTons: Tons;
+  tl: TechLevel;
   hullConfig: HullConfigId;
   thrust: number;
-  jump: number;
+  jump: Parsecs;
   powerPlantType: PowerPlantId;
-  powerPlantTons: number;
-  fuelTons: number;
+  powerPlantTons: Tons;
+  fuelTons: Tons;
   bridge: BridgeId;
   armourType: ArmourTypeId;
-  armourPoints: number;
+  armourPoints: ArmourPoints;
   computer: ComputerId;
   computerBis: boolean;
   sensors: SensorId;
   staterooms: number;
   lowBerths: number;
-  commonAreasTons: number;
+  commonAreasTons: Tons;
   fuelScoop: boolean;
   /** Holographic hull skin (TL10): cosmetic, draws power, no tonnage. */
   holographicHull: boolean;
   /** Structural reinforcement, in tons (derived rules — see SHIP_RULES). */
-  reinforcementTons: number;
+  reinforcementTons: Tons;
   /** Optional tonnage-based systems (fuel processor, drones, …). */
   systems: SystemEntry[];
   /** Ship's software (cost only). */
@@ -1121,8 +1135,8 @@ export interface ShipParams {
 }
 
 function shipHull(
-  hullTons: number,
-  tl: number,
+  hullTons: Tons,
+  tl: TechLevel,
   configId: HullConfigId,
 ): Chassis<ShipStats> {
   const config = HULL_CONFIGS[configId] ?? HULL_CONFIGS.standard;
@@ -1420,7 +1434,7 @@ export interface CrewMember {
 }
 
 /** Monthly salary in Credits for skill-level-1 crew (Crew Requirements table). */
-const CREW_SALARY: Record<string, number> = {
+const CREW_SALARY: Record<string, Credits> = {
   Pilot: 6000,
   Astrogator: 5000,
   Engineer: 4000,
@@ -1431,34 +1445,34 @@ const CREW_SALARY: Record<string, number> = {
 
 export interface ShipEvaluation extends Evaluation {
   summary: DesignSummary<ShipStats>;
-  cargoTons: number;
+  cargoTons: Tons;
   /** Power demand breakdown (for a book-style Power Requirements panel). */
   powerRequirements: {
-    basic: number;
-    manoeuvre: number;
-    jump: number;
-    sensors: number;
-    weapons: number;
-    fuelProcessor: number;
+    basic: Power;
+    manoeuvre: Power;
+    jump: Power;
+    sensors: Power;
+    weapons: Power;
+    fuelProcessor: Power;
   };
   /** Operating crew (commercial or military). */
   crew: CrewMember[];
   /** Purchase price (MCr), monthly maintenance and crew salary (Cr). */
   runningCosts: {
-    purchaseMCr: number;
-    monthlyMaintenanceCr: number;
-    monthlySalaryCr: number;
+    purchaseMCr: MegaCredits;
+    monthlyMaintenanceCr: Credits;
+    monthlySalaryCr: Credits;
   };
   /** Rulebooks a design draws on (always the Core Rulebook, plus any others). */
-  sources: string[];
+  sources: BookSource[];
 }
 
 /** The base rulebook every design uses; component `source` tags add to it. */
 const BASE_SOURCE = 'Core Rulebook';
 
 /** Books needed to build this design: the base plus any component sources. */
-function designSources(design: Design<ShipStats>): string[] {
-  const set = new Set<string>([BASE_SOURCE]);
+function designSources(design: Design<ShipStats>): BookSource[] {
+  const set = new Set<BookSource>([BASE_SOURCE]);
   for (const inst of design.installed) {
     const src = SHIP_CATALOG[inst.defId]?.source;
     if (src) set.add(src);
@@ -1467,7 +1481,7 @@ function designSources(design: Design<ShipStats>): string[] {
 }
 
 /** Drive + power plant tonnage, used for the engineer crew requirement. */
-function driveAndPlantTons(params: ShipParams): number {
+function driveAndPlantTons(params: ShipParams): Tons {
   const m = params.hullTons * M_DRIVE_HULL_PCT_PER_THRUST * params.thrust;
   const j =
     params.jump > 0
@@ -1532,7 +1546,7 @@ function crewRoster(params: ShipParams, depth = 0): CrewMember[] {
   return roster;
 }
 
-const crewSalary = (crew: CrewMember[]): number =>
+const crewSalary = (crew: CrewMember[]): Credits =>
   crew.reduce((sum, c) => sum + c.count * (CREW_SALARY[c.role] ?? 0), 0);
 
 const NUMERIC_FIELDS: Array<keyof ShipParams> = [
@@ -1672,8 +1686,9 @@ export function evaluateShip(raw: ShipParams): ShipEvaluation {
   // Standard (production) designs get a 10% discount off the printed purchase
   // price; the component table still shows full prices. Maintenance is 0.1% of
   // the (discounted) purchase price per year.
-  const componentCost = summary.resources.cost?.used ?? 0;
-  const purchaseMCr = componentCost * (params.standardDesign ? 0.9 : 1);
+  const componentCost: MegaCredits = summary.resources.cost?.used ?? 0;
+  const purchaseMCr: MegaCredits =
+    componentCost * (params.standardDesign ? 0.9 : 1);
   const crew = crewRoster(params);
   return {
     summary,

@@ -6,16 +6,18 @@
  * week to complete — precisely 148 + 6D hours.
  */
 
+import type { Hours, Parsecs, Tons } from './flavours';
+
 /** Jump drives are rated Jump-1 through Jump-6 in the core rules. */
-export const MIN_JUMP = 1;
-export const MAX_JUMP = 6;
+export const MIN_JUMP: Parsecs = 1;
+export const MAX_JUMP: Parsecs = 6;
 
 /** Fraction of hull tonnage consumed as fuel, per parsec jumped. */
 export const JUMP_FUEL_FRACTION = 0.1;
 
 export interface JumpFuelResult {
   /** Fuel required for the jump, in tons. */
-  fuelTons: number;
+  fuelTons: Tons;
   /** Fuel as a percentage of the hull tonnage. */
   fuelPercentOfHull: number;
 }
@@ -26,7 +28,7 @@ export interface JumpFuelResult {
  * @param hullTons    Total tonnage of the ship's hull.
  * @param jumpNumber  Parsecs to be jumped (the jump distance).
  */
-export function jumpFuel(hullTons: number, jumpNumber: number): JumpFuelResult {
+export function jumpFuel(hullTons: Tons, jumpNumber: Parsecs): JumpFuelResult {
   if (hullTons <= 0) throw new RangeError('hullTons must be positive');
   if (jumpNumber <= 0) throw new RangeError('jumpNumber must be positive');
 
@@ -53,8 +55,8 @@ export interface JumpValidation {
  * @param driveRating Installed jump drive rating (defaults to MAX_JUMP).
  */
 export function validateJump(
-  jumpNumber: number,
-  driveRating: number = MAX_JUMP,
+  jumpNumber: Parsecs,
+  driveRating: Parsecs = MAX_JUMP,
 ): JumpValidation {
   if (!Number.isInteger(jumpNumber)) {
     return {
@@ -79,11 +81,11 @@ export function validateJump(
 
 export interface JumpDuration {
   /** Minimum duration in hours (148 + 6 * 1). */
-  minHours: number;
+  minHours: Hours;
   /** Average duration in hours (148 + 6 * 3.5). */
-  avgHours: number;
+  avgHours: Hours;
   /** Maximum duration in hours (148 + 6 * 6). */
-  maxHours: number;
+  maxHours: Hours;
 }
 
 /**
