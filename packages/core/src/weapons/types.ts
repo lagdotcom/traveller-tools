@@ -20,6 +20,11 @@ export interface Damage {
   /** Die size: 6 normally, 3 once "reduced to D3s". */
   die: 3 | 6;
   mod: number;
+  /**
+   * "Dice of dice" (e.g. `2DD`): `dice` D6 are rolled to determine *how many* D6
+   * of damage to roll. Used by Core fusion/plasma heavy weapons and nukes.
+   */
+  diceOfDice?: boolean;
 }
 
 /** Signature tracks (Physical for chemical guns, Emissions for gauss). */

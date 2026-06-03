@@ -136,7 +136,10 @@ export interface WeaponMagazine {
 /** Format a Damage as the book does: `3D`, `3D-3`, `3D3+1` (D3 dice), `1`. */
 export function formatDamage(dmg: Damage): string {
   if (dmg.dice <= 0) return String(Math.max(0, dmg.mod));
-  const base = `${dmg.dice}D${dmg.die === 3 ? '3' : ''}`;
+  // "Dice of dice": `2DD` — roll `dice` D6 to get the number of damage D6.
+  const base = dmg.diceOfDice
+    ? `${dmg.dice}DD`
+    : `${dmg.dice}D${dmg.die === 3 ? '3' : ''}`;
   if (dmg.mod === 0) return base;
   return `${base}${dmg.mod > 0 ? '+' : ''}${dmg.mod}`;
 }

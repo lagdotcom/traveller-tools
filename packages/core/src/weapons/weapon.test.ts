@@ -29,6 +29,18 @@ describe('formatDamage', () => {
     expect(formatDamage({ dice: 3, die: 3, mod: 1 })).toBe('3D3+1');
     expect(formatDamage({ dice: 0, die: 6, mod: 1 })).toBe('1');
   });
+
+  it('formats "dice of dice" (DD) damage', () => {
+    expect(formatDamage({ dice: 2, die: 6, mod: 0, diceOfDice: true })).toBe(
+      '2DD',
+    );
+    expect(formatDamage({ dice: 1, die: 6, mod: 0, diceOfDice: true })).toBe(
+      '1DD',
+    );
+    expect(formatDamage({ dice: 6, die: 6, mod: 3, diceOfDice: true })).toBe(
+      '6DD+3',
+    );
+  });
 });
 
 // The six worked worksheets that use the rules-text base values reproduce
