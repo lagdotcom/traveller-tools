@@ -14,6 +14,8 @@
  * (`data.ts`) carry the value plus a `// reconcile` note; nothing is invented.
  */
 
+import type { Credits, Kilograms, Metres, TechLevel } from '../flavours.js';
+
 /** Damage as dice of a given die size plus a flat modifier (e.g. `3D-3`). */
 export interface Damage {
   dice: number;
@@ -363,7 +365,7 @@ export interface FirearmParams {
   /** Conventional slug-thrower (the original/default class). */
   kind: 'firearm';
   /** Tech level the weapon is built at (gates components, sets some traits). */
-  tl: number;
+  tl: TechLevel;
   receiver: ReceiverTypeId;
   /**
    * The calibre. Gauss is implied by the calibre (the gauss calibres carry a
@@ -447,7 +449,7 @@ export interface MagazineSpec {
   /** Absolute round count — a manual override for a book-listed magazine size. */
   rounds?: number;
   /** Manual reload-price override (Cr) for a book-listed magazine cost. */
-  costCr?: number;
+  costCr?: Credits;
 }
 
 /**
@@ -460,7 +462,7 @@ export type PackSpec =
       kind: 'powerpack';
       label?: string;
       /** Powerpack mass in kg (shots = power-per-kg × kg ÷ damage dice). */
-      kg: number;
+      kg: Kilograms;
       rating: EnergyPowerClass;
       /**
        * An internal (built-in, rechargeable) pack: it's part of the weapon and has
@@ -487,7 +489,7 @@ export type PackSpec =
  */
 export interface EnergyParams {
   kind: 'energy';
-  tl: number;
+  tl: TechLevel;
   weaponType: EnergyWeaponTypeId;
   receiver: EnergyReceiverId;
   /** Delivered damage in whole D6 (capped by receiver power class + barrel). */
@@ -523,14 +525,14 @@ export interface EnergyParams {
  */
 export interface ProjectorParams {
   kind: 'projector';
-  tl: number;
+  tl: TechLevel;
   structure: ProjectorStructureId;
   propellant: ProjectorPropellantId;
   fuel: ProjectorFuelId;
   /** Kilograms of fuel carried (1kg = 1 attack). */
-  fuelKg: number;
+  fuelKg: Kilograms;
   /** Kilograms of propellant carried (attacks = kg × attacks-per-kg). */
-  propellantKg: number;
+  propellantKg: Kilograms;
   /**
    * Receiver features — projectors take the capability features (Armoured /
    * Bulwarked) from the shared list, applied as a multiplicative cost/weight chain.
@@ -547,7 +549,7 @@ export interface ProjectorParams {
  */
 export interface LauncherParams {
   kind: 'launcher';
-  tl: number;
+  tl: TechLevel;
   receiver: LauncherReceiverId;
   /**
    * Receiver features (Lightweight, Bullpup, …), applied as a multiplicative
@@ -592,7 +594,7 @@ export interface LauncherParams {
  */
 export interface GrenadeParams {
   kind: 'grenade';
-  tl: number;
+  tl: TechLevel;
   type: GrenadeTypeId;
   size: GrenadeSizeId;
 }
@@ -608,10 +610,10 @@ export type WeaponParams =
 // --- The derived weapon profile ---------------------------------------------
 
 export interface WeaponProfile {
-  tl: number;
+  tl: TechLevel;
   damage: Damage;
   /** Effective range in metres. */
-  range: number;
+  range: Metres;
   /** Auto score (0 = none). */
   auto: number;
   /** Recoil score (see Field Catalogue p.32). */
@@ -635,9 +637,9 @@ export interface WeaponProfile {
 export interface WeaponLineItem {
   label: string;
   /** Cost contribution in Credits (the running total's delta for this line). */
-  costCr: number;
+  costCr: Credits;
   /** Weight contribution in kilograms. */
-  weightKg: number;
+  weightKg: Kilograms;
   /**
    * Display override for the cost column — e.g. a percentage modifier ("+25%")
    * for a component that scales the receiver rather than adding a flat Credit

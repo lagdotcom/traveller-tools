@@ -10,6 +10,15 @@
  * multipliers below are applied in `weapon.ts`.
  */
 import type {
+  Credits,
+  Fraction,
+  Kilograms,
+  Metres,
+  Multiplier,
+  Rate,
+  TechLevel,
+} from '../flavours.js';
+import type {
   AccessoryId,
   AmmoTypeId,
   BarrelId,
@@ -41,8 +50,8 @@ const d = (dice: number, mod = 0, die: 3 | 6 = 6): Damage => ({
 
 export interface ReceiverDef {
   label: string;
-  baseCost: number;
-  baseWeight: number;
+  baseCost: Credits;
+  baseWeight: Kilograms;
   baseCapacity: number;
   quickdraw: number;
 }
@@ -136,9 +145,9 @@ export const GAUSS_CAPACITY_MULT = 3;
 
 export interface MechanismDef {
   label: string;
-  costMult: number;
+  costMult: Multiplier;
   /** Capacity multiplier (repeater halves); disregarded for smoothbores. */
-  capacityMult: number;
+  capacityMult: Multiplier;
   /** Auto score granted (burst 2, full-auto 3). */
   auto: number;
 }
@@ -171,7 +180,7 @@ export const MECHANISMS: Record<MechanismId, MechanismDef> = {
 export interface RapidFireDef {
   label: string;
   minAuto: number;
-  weightMult: number;
+  weightMult: Multiplier;
   /** +1 damage die per this many full base dice. */
   dicePer: number;
   heatDicePerDie: number;
@@ -196,15 +205,18 @@ export const RAPID_FIRE: Record<'rf' | 'vrf', RapidFireDef> = {
   },
 };
 
-/** Increased Auto Rate table: extra cost/weight per point of Auto added. */
-export const INCREASED_AUTO: Array<{ cost: number; weight: number }> = [
-  { cost: 1, weight: 1 }, // +0 (no increase)
-  { cost: 1.1, weight: 1.05 }, // +1
-  { cost: 1.25, weight: 1.1 }, // +2
-  { cost: 1.5, weight: 1.2 }, // +3
-  { cost: 2, weight: 1.4 }, // +4
-  { cost: 3, weight: 1.6 }, // +5
-  { cost: 4, weight: 1.8 }, // +6
+/** Increased Auto Rate table: cost/weight multiplier per point of Auto added. */
+export const INCREASED_AUTO: Array<{
+  costMult: Multiplier;
+  weightMult: Multiplier;
+}> = [
+  { costMult: 1, weightMult: 1 }, // +0 (no increase)
+  { costMult: 1.1, weightMult: 1.05 }, // +1
+  { costMult: 1.25, weightMult: 1.1 }, // +2
+  { costMult: 1.5, weightMult: 1.2 }, // +3
+  { costMult: 2, weightMult: 1.4 }, // +4
+  { costMult: 3, weightMult: 1.6 }, // +5
+  { costMult: 4, weightMult: 1.8 }, // +6
 ];
 
 // --- Calibres / ammunition --------------------------------------------------
@@ -213,15 +225,15 @@ export interface CalibreDef {
   label: string;
   damage: Damage;
   /** Cr per 100 rounds (a loaded magazine prices off this). */
-  ammoCostPer100: number;
+  ammoCostPer100: Rate<Credits, '100 rounds'>;
   /** Base range in metres (with a solid/ball projectile). */
-  range: number;
+  range: Metres;
   /** Pellet base range for smoothbores, if applicable. */
-  pelletRange?: number;
-  receiverCostMult: number;
-  receiverWeightMult: number;
+  pelletRange?: Metres;
+  receiverCostMult: Multiplier;
+  receiverWeightMult: Multiplier;
   /** Base-capacity multiplier from the calibre. */
-  capacityMult: number;
+  capacityMult: Multiplier;
   penetration: number;
   signatureKind: SignatureKind;
   signature: SignatureLevel;
@@ -591,11 +603,11 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
 export interface BarrelDef {
   label: string;
   /** Cost as a fraction of the receiver baseline. */
-  costPct: number;
+  costPct: Fraction;
   /** Weight as a fraction of the receiver baseline. */
-  weightPct: number;
+  weightPct: Fraction;
   /** Range multiplier (minimal overrides to a flat 5 m). */
-  rangeMult: number;
+  rangeMult: Multiplier;
   /** Quickdraw bonus granted by a short barrel. */
   quickdraw: number;
   /** Penetration modifier. */
@@ -743,8 +755,8 @@ export const BARRELS: Record<BarrelId, BarrelDef> = {
 
 export interface StockDef {
   label: string;
-  costPct: number;
-  weightPct: number;
+  costPct: Fraction;
+  weightPct: Fraction;
 }
 
 export const STOCKS: Record<StockId, StockDef> = {
@@ -756,10 +768,10 @@ export const STOCKS: Record<StockId, StockDef> = {
 
 export interface FurnitureDef {
   label: string;
-  costPct: number;
-  weightPct: number;
+  costPct: Fraction;
+  weightPct: Fraction;
   quickdraw: number;
-  minTL?: number;
+  minTL?: TechLevel;
   /** A play-time rule not captured as a stat/trait. */
   note?: string;
 }
@@ -797,9 +809,9 @@ export const FURNITURE: Record<FurnitureId, FurnitureDef> = {
 
 export interface FeedDef {
   label: string;
-  costMult: number;
-  weightMult: number;
-  capacityMult: number;
+  costMult: Multiplier;
+  weightMult: Multiplier;
+  capacityMult: Multiplier;
   quickdraw: number;
   traits: Traits;
   /**
@@ -866,16 +878,16 @@ export const FEEDS: Record<FeedId, FeedDef> = {
 
 export interface ReceiverFeatureDef {
   label: string;
-  costMult: number;
-  weightMult: number;
-  capacityMult: number;
+  costMult: Multiplier;
+  weightMult: Multiplier;
+  capacityMult: Multiplier;
   quickdraw: number;
-  minTL?: number;
+  minTL?: TechLevel;
   signatureShift?: number;
   /** Range multiplier (Advanced Projectile is +25% → 1.25). */
-  rangeMult?: number;
+  rangeMult?: Multiplier;
   /** Multiplier applied to ammunition cost (extreme stealth ×20). */
-  ammoCostMult?: number;
+  ammoCostMult?: Multiplier;
   /** Flat damage modifier (Recoil Compensation: −1 at 1pt, −3 at 2pts). */
   damageMod?: number;
   /** Recoil modifier (Recoil Compensation reduces Recoil by up to 2). */
@@ -901,9 +913,9 @@ export interface ReceiverFeatureDef {
 /** One level of a leveled feature; missing fields default to "no effect". */
 export interface ReceiverFeatureLevel {
   label: string;
-  costMult: number;
-  weightMult?: number;
-  capacityMult?: number;
+  costMult: Multiplier;
+  weightMult?: Multiplier;
+  capacityMult?: Multiplier;
   quickdraw?: number;
   signatureShift?: number;
   damageMod?: number;
@@ -1252,15 +1264,15 @@ export const resolveFeatures = (
 export interface AccessoryDef {
   label: string;
   /** Flat Credit cost, or undefined when `costPct` (of receiver) is used. */
-  cost?: number;
-  costPct?: number;
-  weight: number;
+  cost?: Credits;
+  costPct?: Fraction;
+  weight: Kilograms;
   /** Weight as a fraction of receiver (gravitic support etc.); rare. */
-  weightPct?: number;
+  weightPct?: Fraction;
   quickdraw: number;
-  minTL?: number;
+  minTL?: TechLevel;
   /** Range multiplier applied to the profile (suppressors shorten range). */
-  rangeMult?: number;
+  rangeMult?: Multiplier;
   penetration?: number;
   signatureShift?: number;
   traits?: Traits;
@@ -1467,9 +1479,9 @@ export function collectNotes(opts: {
 
 export interface AmmoTypeDef {
   label: string;
-  minTL: number;
+  minTL: TechLevel;
   /** Cost as a multiple of ball ammunition. */
-  costMult: number;
+  costMult: Multiplier;
   penetration?: number;
   /** Damage modifier added per die of base damage (enhanced wounding +2/die). */
   damagePerDie?: number;

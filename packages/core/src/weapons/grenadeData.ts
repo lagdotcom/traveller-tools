@@ -7,21 +7,22 @@
  * A "—" Mini entry in the book means that payload isn't produced as a
  * mini-grenade; those are `mini: null` here.
  */
+import type { Credits, Kilograms, TechLevel } from '../flavours.js';
 import type { Damage, GrenadeTypeId, Traits } from './types.js';
 
 const d = (dice: number, mod = 0): Damage => ({ dice, die: 6, mod });
 
 /** Cost (Cr), weight (kg), per-hit damage and traits for one grenade size. */
 export interface GrenadeSizeStats {
-  cost: number;
-  weight: number;
+  cost: Credits;
+  weight: Kilograms;
   damage: Damage | null;
   traits: Traits;
 }
 
 export interface GrenadeDef {
   label: string;
-  minTL: number;
+  minTL: TechLevel;
   /** Mini-grenade stats, or null when that payload isn't made as a mini. */
   mini: GrenadeSizeStats | null;
   hand: GrenadeSizeStats;

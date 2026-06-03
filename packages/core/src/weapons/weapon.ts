@@ -6,6 +6,7 @@
  * baseline, walks an explicit pipeline rather than the additive `summarize`.
  */
 import type { Evaluation, Issue } from '../design/index.js';
+import type { Credits, Kilograms } from '../flavours.js';
 import {
   ACCESSORIES,
   AMMO_TYPES,
@@ -76,7 +77,7 @@ import {
 export interface WeaponEvaluation extends Evaluation {
   profile: WeaponProfile;
   breakdown: WeaponLineItem[];
-  totals: { costCr: number; weightKg: number; magazineCr: number };
+  totals: { costCr: Credits; weightKg: Kilograms; magazineCr: Credits };
   /** Play-time rules carried by chosen components (not captured as stats/traits). */
   notes?: string[];
   /**
@@ -87,7 +88,7 @@ export interface WeaponEvaluation extends Evaluation {
     ammo: AmmoTypeId;
     label: string;
     profile: WeaponProfile;
-    magazineCr: number;
+    magazineCr: Credits;
   }[];
   /**
    * One profile per loaded munition (launchers only) — the analogue of
@@ -100,14 +101,14 @@ export interface WeaponEvaluation extends Evaluation {
     label: string;
     profile: WeaponProfile;
     /** Reload price of a full load. */
-    magazineCr: number;
+    magazineCr: Credits;
     /** Per-round weight (a single munition), as the book lists it. */
-    weightKg: number;
+    weightKg: Kilograms;
     /** Per-round cost (a single munition), as the book lists it. */
-    costCr: number;
+    costCr: Credits;
   }[];
   /** A mounted secondary weapon's own profile, shown as a second data line. */
-  secondary?: { label: string; profile: WeaponProfile; magazineCr: number };
+  secondary?: { label: string; profile: WeaponProfile; magazineCr: Credits };
   /**
    * The interchangeable magazine / power-source options (firearms & energy). The
    * first is the standard one baked into the build; the rest are alternatives.
@@ -124,9 +125,9 @@ export interface WeaponMagazine {
   /** The noun for `capacity` — firearms hold rounds, energy weapons shots. */
   unit: 'rounds' | 'shots';
   /** The weapon's loaded weight with this magazine/pack fitted. */
-  weightKg: number;
+  weightKg: Kilograms;
   /** Reload / refill price for this option (primary ammo for firearms). */
-  magazineCr: number;
+  magazineCr: Credits;
   /** The standard magazine baked into the headline build. */
   primary: boolean;
 }
@@ -507,7 +508,11 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
     each(features, (f) => step(f.label, f.costMult, f.weightMult)),
     when(
       autoSteps > 0,
-      step(`Increased Auto +${autoSteps}`, incAuto.cost, incAuto.weight),
+      step(
+        `Increased Auto +${autoSteps}`,
+        incAuto.costMult,
+        incAuto.weightMult,
+      ),
     ),
     // RF cost = ×(Auto + 2); VRF cost = ×5. Both multiply the receiver weight.
     when(

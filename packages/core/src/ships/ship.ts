@@ -13,10 +13,13 @@ import {
 import type {
   ArmourPoints,
   Credits,
+  Fraction,
   HullPoints,
   MegaCredits,
+  Multiplier,
   Parsecs,
   Power,
+  Rate,
   TechLevel,
   Tons,
 } from '../flavours.js';
@@ -59,22 +62,22 @@ export const SHIP_RESOURCES: ResourceDef[] = [
 
 // --- Core Rulebook tables ---------------------------------------------------
 
-const HULL_COST_PER_TON: MegaCredits = 0.05; // MCr (Cr50,000)
-const HULL_POINTS_PER_TON: HullPoints = 1 / 2.5; // 1 Hull Point per full 2.5 tons
+const HULL_COST_PER_TON: Rate<MegaCredits, Tons> = 0.05; // MCr (Cr50,000)
+const HULL_POINTS_PER_TON: Rate<HullPoints, Tons> = 1 / 2.5; // 1 Hull Point per full 2.5 tons
 const BASIC_SYSTEMS_POWER = 0.2; // 20% of hull tonnage
 const DRIVE_POWER_PER_RATING = 0.1; // 10% of hull tonnage × rating
 
 const M_DRIVE_HULL_PCT_PER_THRUST = 0.01; // % of hull = Thrust rating
-const M_DRIVE_COST_PER_TON: MegaCredits = 2; // MCr
+const M_DRIVE_COST_PER_TON: Rate<MegaCredits, Tons> = 2; // MCr
 const J_DRIVE_HULL_PCT_PER_JUMP = 0.025; // % of hull = Jump rating × 2.5 (+5t, min 10t)
 const J_DRIVE_TON_BONUS: Tons = 5;
 const J_DRIVE_MIN_TONS: Tons = 10;
-const J_DRIVE_COST_PER_TON: MegaCredits = 1.5; // MCr
+const J_DRIVE_COST_PER_TON: Rate<MegaCredits, Tons> = 1.5; // MCr
 
 // Carried craft / docking space (Core Rulebook): a docking space takes the
 // docked craft's tonnage plus 10% (round up), at MCr0.25 per ton.
 const HANGAR_TONS_MULT = 1.1;
-const HANGAR_COST_PER_TON: MegaCredits = 0.25; // MCr per ton of docking space
+const HANGAR_COST_PER_TON: Rate<MegaCredits, Tons> = 0.25; // MCr per ton of docking space
 
 /** Minimum TL by Manoeuvre Drive Thrust rating (Thrust Potential table). */
 const THRUST_TL: Record<number, TechLevel> = {
@@ -109,8 +112,8 @@ export type HullConfigId = 'standard' | 'streamlined' | 'dispersed';
 export interface HullConfig {
   id: HullConfigId;
   name: string;
-  costMult: number;
-  hullPointMult: number;
+  costMult: Multiplier;
+  hullPointMult: Multiplier;
   armourAllowed: boolean;
 }
 export const HULL_CONFIGS: Record<HullConfigId, HullConfig> = {
@@ -142,8 +145,8 @@ export type PowerPlantId = 'fusionTL8' | 'fusionTL12' | 'fusionTL15';
 export interface PowerPlantType {
   id: PowerPlantId;
   name: string;
-  powerPerTon: Power;
-  costPerTon: MegaCredits;
+  powerPerTon: Rate<Power, Tons>;
+  costPerTon: Rate<MegaCredits, Tons>;
   minTL: TechLevel;
 }
 export const POWER_PLANTS: Record<PowerPlantId, PowerPlantType> = {
@@ -177,8 +180,8 @@ export interface ArmourType {
   id: ArmourTypeId;
   name: string;
   minTL: TechLevel;
-  tonsPctPerPoint: Tons;
-  costPctOfHullPerPoint: number;
+  tonsPctPerPoint: Rate<Fraction, ArmourPoints>;
+  costPctOfHullPerPoint: Rate<Fraction, ArmourPoints>;
 }
 export const ARMOUR_TYPES: Record<ArmourTypeId, ArmourType> = {
   crystaliron: {

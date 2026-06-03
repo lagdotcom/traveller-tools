@@ -10,6 +10,15 @@
  * like a firearm's loaded magazine).
  */
 import type {
+  Attacks,
+  Credits,
+  Fraction,
+  Kilograms,
+  Metres,
+  Rate,
+  TechLevel,
+} from '../flavours.js';
+import type {
   Damage,
   ProjectorFuelId,
   ProjectorPropellantId,
@@ -24,11 +33,11 @@ const d = (dice: number, mod = 0): Damage => ({ dice, die: 6, mod });
 export interface ProjectorStructureDef {
   label: string;
   /** Frame weight as a fraction of the payload (fuel + propellant) carried. */
-  weightPct: number;
+  weightPct: Fraction;
   /** Maximum payload in kg before the weapon becomes unwieldy (DM-2 penalties). */
-  maxPayload: number;
+  maxPayload: Kilograms;
   /** Cost in Credits per kg of the weapon's total (loaded) weight. */
-  costPerKg: number;
+  costPerKg: Rate<Credits, Kilograms>;
   /** Blast trait level. */
   blast: number;
   quickdraw: number;
@@ -74,15 +83,15 @@ export const PROJECTOR_STRUCTURES: Record<
 
 export interface ProjectorPropellantDef {
   label: string;
-  minTL: number;
+  minTL: TechLevel;
   /** Attacks delivered per kg of propellant. */
-  attacksPerKg: number;
+  attacksPerKg: Rate<Attacks, Kilograms>;
   /** Effective range in metres. */
-  range: number;
+  range: Metres;
   /** Consumable (reload) cost per kg. */
-  costPerKg: number;
+  costPerKg: Rate<Credits, Kilograms>;
   /** Generated gas needs one-off machinery, priced per kg of propellant. */
-  machineryPerKg?: number;
+  machineryPerKg?: Rate<Credits, Kilograms>;
 }
 
 export const PROJECTOR_PROPELLANTS: Record<
@@ -117,11 +126,11 @@ export const PROJECTOR_PROPELLANTS: Record<
 
 export interface ProjectorFuelDef {
   label: string;
-  minTL: number;
+  minTL: TechLevel;
   /** Damage per attack (null = a non-damaging effect such as an irritant). */
   damage: Damage | null;
   /** Consumable (reload) cost per kg. */
-  costPerKg: number;
+  costPerKg: Rate<Credits, Kilograms>;
   /** Suppressant foam halves the weapon's effective range. */
   halfRange?: boolean;
   traits: Traits;

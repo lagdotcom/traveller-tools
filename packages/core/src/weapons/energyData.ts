@@ -10,6 +10,15 @@
  * rather than inventing a confirmed value.
  */
 import type {
+  Credits,
+  Kilograms,
+  Metres,
+  Multiplier,
+  Power,
+  Rate,
+  TechLevel,
+} from '../flavours.js';
+import type {
   EnergyModId,
   EnergyPowerClass,
   EnergyReceiverId,
@@ -36,10 +45,10 @@ export const ENERGY_POWER_CLASS_LABEL: Record<EnergyPowerClass, string> = {
 
 export interface EnergyReceiverDef {
   label: string;
-  baseCost: number;
-  baseWeight: number;
+  baseCost: Credits;
+  baseWeight: Kilograms;
   /** Base range in metres (before barrel multiplier). */
-  baseRange: number;
+  baseRange: Metres;
   /** Highest power class (and thus damage) the receiver can deliver. */
   maxPower: EnergyPowerClass;
   /**
@@ -106,8 +115,8 @@ export const ENERGY_BARREL_POWER_CAP: Partial<Record<string, number>> = {
 
 /** Powerpack capacity (power points per kg) and the strongest cartridge by TL. */
 export const POWERPACK_RATINGS: Array<{
-  tl: number;
-  perKg: number;
+  tl: TechLevel;
+  perKg: Rate<Power, Kilograms>;
   cartridgeMax: EnergyPowerClass | null;
 }> = [
   { tl: 8, perKg: 100, cartridgeMax: null },
@@ -128,14 +137,17 @@ export const POWERPACK_RATINGS: Array<{
 export const POWERPACK_SIZES = { internal: 0.1, belt: 1, backpack: 3 } as const;
 
 /** Power-points-per-kg available at a tech level (uses the highest TL band ≤ tl). */
-export function powerPerKg(tl: number): number {
-  let perKg = 0;
+export function powerPerKg(tl: TechLevel): Rate<Power, Kilograms> {
+  let perKg: Rate<Power, Kilograms> = 0;
   for (const band of POWERPACK_RATINGS) if (tl >= band.tl) perKg = band.perKg;
   return perKg;
 }
 
 /** Powerpack cost per kg, by the pack's power class. */
-export const POWERPACK_COST_PER_KG: Record<EnergyPowerClass, number> = {
+export const POWERPACK_COST_PER_KG: Record<
+  EnergyPowerClass,
+  Rate<Credits, Kilograms>
+> = {
   weak: 500,
   light: 1000,
   standard: 1500,
@@ -145,7 +157,7 @@ export const POWERPACK_COST_PER_KG: Record<EnergyPowerClass, number> = {
 /** Per-shot disposable cartridge cost/weight, by power class. */
 export const ENERGY_CARTRIDGE: Record<
   EnergyPowerClass,
-  { cost: number; weight: number }
+  { cost: Credits; weight: Kilograms }
 > = {
   weak: { cost: 5, weight: 0.01 },
   light: { cost: 8, weight: 0.01 },
@@ -157,11 +169,11 @@ export const ENERGY_CARTRIDGE: Record<
 
 export interface EnergyModDef {
   label: string;
-  costMult: number;
-  weightMult: number;
-  minTL: number;
+  costMult: Multiplier;
+  weightMult: Multiplier;
+  minTL: TechLevel;
   /** Base-range multiplier (Efficient Beam Generation). */
-  rangeMult?: number;
+  rangeMult?: Multiplier;
   /** Flat damage bonus, applied only to lasers doing ≥2D (Improved Beam Focus). */
   damageMod?: number;
   /** Penetration bonus (Intensified Pulse). */

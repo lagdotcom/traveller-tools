@@ -8,6 +8,13 @@
  * displayed profile and its price is the reload cost, not part of the build.
  */
 import type {
+  Credits,
+  Kilograms,
+  Metres,
+  Multiplier,
+  TechLevel,
+} from '../flavours.js';
+import type {
   Damage,
   DeliveryId,
   LauncherReceiverId,
@@ -33,13 +40,13 @@ const d = (dice: number, mod = 0): Damage => ({ dice, die: 6, mod });
  */
 export interface DeliveryDef {
   label: string;
-  minTL: number;
+  minTL: TechLevel;
   /** Round cost as a multiple of the payload (hand-grenade) price. */
-  costMult: number;
+  costMult: Multiplier;
   /** Round weight as a multiple of the payload weight. */
-  weightMult: number;
+  weightMult: Multiplier;
   /** Base range in metres. */
-  range: number;
+  range: Metres;
   traits: Traits;
   /** RPG/missile carry a larger warhead than the hand payload (damage flagged). */
   largerWarhead?: boolean;
@@ -88,13 +95,13 @@ export const DELIVERY_SYSTEMS: Record<DeliveryId, DeliveryDef> = {
 
 export interface LauncherReceiverDef {
   label: string;
-  cost: number;
-  weight: number;
+  cost: Credits;
+  weight: Kilograms;
   /** Base range in metres. */
-  range: number;
+  range: Metres;
   /** Fixed magazine capacity, or 'varies' (support launchers — user sets it). */
   capacity: number | 'varies';
-  minTL: number;
+  minTL: TechLevel;
   traits: Traits;
 }
 
@@ -254,11 +261,11 @@ export interface MissileMode {
  */
 export interface MissileWarheadDef {
   label: string;
-  minTL: number;
+  minTL: TechLevel;
   /** Range in metres. */
-  range: number;
-  weight: number;
-  cost: number;
+  range: Metres;
+  weight: Kilograms;
+  cost: Credits;
   /** Traits shared across every mode (e.g. Smart). */
   traits: Traits;
   modes: MissileMode[];

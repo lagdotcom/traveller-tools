@@ -15,16 +15,17 @@
  *  - Phase B (`pctComponent` / `component`) adds components as a % of that frozen
  *    baseline (or a flat catalogue price).
  */
+import type { Credits, Fraction, Kilograms, Multiplier } from '../flavours.js';
 import { modPct, pctOf, round2 } from './shared.js';
 import type { WeaponLineItem } from './types.js';
 
 export interface Build {
   /** Running cost — full precision through Phase A, summed in Phase B. */
-  cost: number;
-  weight: number;
+  cost: Credits;
+  weight: Kilograms;
   /** The receiver baseline (rounded), frozen by `baseline`; Phase B scales off it. */
-  baseCost: number;
-  baseWeight: number;
+  baseCost: Credits;
+  baseWeight: Kilograms;
   lines: WeaponLineItem[];
 }
 
@@ -67,7 +68,7 @@ export const each =
 
 /** Set the base cost/weight and emit the base line (no modifier shown). */
 export const base =
-  (label: string, cost: number, weight: number): Op =>
+  (label: string, cost: Credits, weight: Kilograms): Op =>
   (b) => {
     b.cost = cost;
     b.weight = weight;
@@ -80,7 +81,7 @@ export const base =
  * (it neither changes the total nor earns a line).
  */
 export const step =
-  (label: string, costMult: number, weightMult = 1): Op =>
+  (label: string, costMult: Multiplier, weightMult: Multiplier = 1): Op =>
   (b) => {
     if (costMult === 1 && weightMult === 1) return;
     b.lines.push({
@@ -100,7 +101,7 @@ export const step =
  * roll their features/mods into the single receiver line rather than itemising).
  */
 export const mul =
-  (costMult: number, weightMult = 1): Op =>
+  (costMult: Multiplier, weightMult: Multiplier = 1): Op =>
   (b) => {
     b.cost *= costMult;
     b.weight *= weightMult;
@@ -133,8 +134,8 @@ export const component =
 /** A component priced as a percentage of the receiver baseline. */
 export const pctComponent = (
   label: string,
-  costFrac: number,
-  weightFrac: number,
+  costFrac: Fraction,
+  weightFrac: Fraction,
   notes?: string,
 ): Op =>
   component((b) => ({
