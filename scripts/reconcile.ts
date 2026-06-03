@@ -898,7 +898,16 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     // laser signatures (the other three built-in lasers are all "normal").
     ignore: ['damage', 'range', 'quickdraw', 'signature'],
     variants: {
-      'TEA-12': { range: 450, weightKg: 10.01, costCr: 17500, quickdraw: -4 },
+      'TEA-12': {
+        range: 450,
+        weightKg: 10.01,
+        costCr: 17500,
+        quickdraw: -4,
+        // The "rifle-like" TEA-12 removes the bipod (its weight 10.01 matches the
+        // build minus the 1.2kg bipod), but the book's cost still carries the
+        // bipod's Cr937 — a stat-block slip (engine drops both), so cost diverges.
+        ignore: ['cost'],
+      },
     },
   },
 };

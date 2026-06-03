@@ -1546,7 +1546,14 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
       furniture: ['bipod'],
     },
     undefined,
-    [{ name: 'TEA-12', override: { barrel: 'carbine', stock: 'folding' } }],
+    [
+      {
+        // "Greatly reduces weight and enables a strong soldier to use it as a
+        // rifle-like weapon" — so the bipod comes off too (furniture cleared).
+        name: 'TEA-12',
+        override: { barrel: 'carbine', stock: 'folding', furniture: [] },
+      },
+    ],
   ),
 ];
 
