@@ -848,11 +848,17 @@ function firearmProfile(
   // Powered feed makes the weapon Bulky (but, unlike RF, adds no damage die/AP —
   // the printed chain-gun stat blocks keep the base damage).
   if (poweredFeed) traits.Bulky = true;
-  // A twin mount fires as VRF — an extra damage die per two base dice. The only
-  // changes from the single weapon are damage and (in evaluateFirearm) the ×2
-  // cost/weight; the book keeps the chain gun's Bulky (it is not Very Bulky).
-  if (mount === 'twin')
-    damage = { ...damage, dice: damage.dice + Math.floor(heatDice / 2) };
+  // Twin mount (FC): a twin of Auto-4+ weapons is "considered RF" (+1 die per 3
+  // base dice); twinning an already-RF weapon (powered feed / rapidFire) is
+  // "considered VRF" (+1 per 2). That status comes from the *mount*, so the
+  // Auto-6 minimum for a standalone VRF weapon doesn't apply — Auto stays 4. The
+  // only other change from the single weapon is the ×2 cost/weight (in
+  // evaluateFirearm); it keeps the single weapon's Bulky. So the powered-feed
+  // (RF) Chain Gun twinned is VRF: 5D +2 → 7D.
+  if (mount === 'twin') {
+    const dicePer = rapidFire || poweredFeed ? 2 : 3;
+    damage = { ...damage, dice: damage.dice + Math.floor(heatDice / dicePer) };
+  }
 
   // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,
   // less any Recoil Compensation.

@@ -227,9 +227,13 @@ PackSpec` (a `powerpack {kg, rating}` or `cartridge {count, rating, ejects?}`),
   only** — so it's a Phase-B `component` reading the frozen baseline (barrel/
   furniture, % of the original baseline, are unaffected), not a baseline-scaling
   step. Feasible only on longarm/LSW/heavy (validated). A **twin mount** (`mount:
-'twin'`) doubles the whole weapon's cost/weight and adds a VRF damage die per two
-  base dice (5D→7D) — its only changes from the single weapon are damage, cost and
-  weight (it keeps the chain gun's Bulky). Both are book **variants**
+'twin'`) doubles the whole weapon's cost/weight and adds extra damage dice — its
+  only changes from the single weapon are damage, cost and weight (it keeps the
+  single weapon's Bulky). The FC: a twin of Auto-4+ weapons is "considered RF" (+1
+  die per 3 base dice), a twin of an already-RF weapon (powered feed / rapidFire)
+  is "considered VRF" (+1 per 2). That status is granted by the **mount**, so the
+  Auto-6 minimum for a standalone VRF weapon doesn't apply (Auto stays 4) — the
+  powered-feed Chain Gun twinned is VRF: 5D→7D. Both are book **variants**
   (prose-only, no component breakdown): the engine reproduces damage/Auto/traits
   exactly and cost/weight to ~3% (the printed figures are hand-authored), so
   reconcile ignores their cost (inherited from the base) and weight, flagged.
