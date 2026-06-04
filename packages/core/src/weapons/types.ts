@@ -166,6 +166,9 @@ export type StockId = 'none' | 'folding' | 'fixed' | 'full';
 /** Rapid-fire capability (beyond an ordinary Auto score). */
 export type RapidFireMode = 'none' | 'rf' | 'vrf';
 
+/** Weapon mounting: a single weapon, or a twin (multiple) mount. */
+export type WeaponMount = 'single' | 'twin';
+
 export type FeedId = 'fixed' | 'standard' | 'extended' | 'drum' | 'belt';
 
 /** Receiver features (multi-select; some are mutually exclusive — see rules). */
@@ -382,6 +385,21 @@ export interface FirearmParams {
    * Bulky/Very Bulky, and greatly increases Heat.
    */
   rapidFire: RapidFireMode;
+  /**
+   * Powered/forced feed (a chain gun): raises Auto to ≥4 and drives sustained
+   * fire. The FC "triples the cost and weight of the receiver"; reproducing the
+   * printed chain-gun stat blocks needs the RF cost rule (receiver ×(Auto+2))
+   * with the powered-feed weight tripling (×3), applied to the receiver only.
+   * Unlike `rapidFire` it adds Bulky but **not** the RF damage-die / AP bonus.
+   * Only feasible on longarm / LSW / support (heavy) receivers.
+   */
+  poweredFeed?: boolean;
+  /**
+   * A twin (multiple) mount: two identical weapons firing together. The FC
+   * treats a twin-mounted RF weapon as VRF — doubling cost/weight, adding a
+   * damage die per two base dice, and the Very Bulky trait.
+   */
+  mount?: WeaponMount;
   features: ReceiverFeatureRef[];
   barrel: BarrelId;
   /** Heavy-profile barrel (doubles barrel weight & cost). */

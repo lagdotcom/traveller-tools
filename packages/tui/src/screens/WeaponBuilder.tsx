@@ -63,6 +63,7 @@ import {
   variantParams,
   type WeaponClass,
   type WeaponDefinition,
+  type WeaponMount,
   type WeaponParams,
   type WeaponVariant,
 } from '@traveller-tools/core';
@@ -156,6 +157,10 @@ const RAPIDFIRE = choiceMap<RapidFireMode>([
   ['rf', 'Rapid-Fire (RF)'],
   ['vrf', 'Very Rapid-Fire (VRF)'],
 ]);
+const MOUNT = choiceMap<WeaponMount>([
+  ['single', 'Single'],
+  ['twin', 'Twin Mount'],
+]);
 const EWTYPE = choiceMap<EnergyWeaponTypeId>([
   ['laser', 'Laser'],
   ['microwave', 'Microwave'],
@@ -197,6 +202,8 @@ const firearmValues = (f: FirearmParams) => ({
   mechanism: MECHANISM.toLabel(f.mechanism),
   autoIncrease: String(f.autoIncrease),
   rapidFire: RAPIDFIRE.toLabel(f.rapidFire),
+  poweredFeed: f.poweredFeed ? 'yes' : 'no',
+  mount: MOUNT.toLabel(f.mount ?? 'single'),
   additionalBarrels: String(f.additionalBarrels),
   feed: FEED.toLabel(f.feed),
   capacityPct: String(f.capacityPct),
@@ -340,6 +347,8 @@ function buildFirearm(v: FormValues, lists: Lists): FirearmParams {
     mechanism: MECHANISM.toId(v.mechanism),
     autoIncrease: num(v.autoIncrease),
     rapidFire: RAPIDFIRE.toId(v.rapidFire),
+    ...(v.poweredFeed === 'yes' ? { poweredFeed: true } : {}),
+    ...(MOUNT.toId(v.mount) === 'twin' ? { mount: 'twin' as const } : {}),
     features: lists.features,
     barrel: BARREL.toId(v.barrel),
     heavyBarrel: v.heavyBarrel === 'yes',
@@ -850,6 +859,8 @@ export function WeaponBuilderScreen({
         { key: 'mechanism', label: 'Mechanism', options: MECHANISM.labels },
         { key: 'autoIncrease', label: 'Increase Auto (+)' },
         { key: 'rapidFire', label: 'Rapid-Fire', options: RAPIDFIRE.labels },
+        { key: 'poweredFeed', label: 'Powered feed', options: YN },
+        { key: 'mount', label: 'Mount', options: MOUNT.labels },
       ],
     },
     // Receiver features are added "once the receiver characteristics are known"

@@ -330,6 +330,8 @@ function normalizeFirearmParams(p: Record<string, unknown>): FirearmParams {
       { none: 0, rf: 0, vrf: 0 },
       d.rapidFire,
     ),
+    ...(bool(p.poweredFeed, false) ? { poweredFeed: true } : {}),
+    ...(p.mount === 'twin' ? { mount: 'twin' as const } : {}),
     features: normalizeFeatures(p.features),
     barrel: pick<BarrelId>(p.barrel, BARRELS, d.barrel),
     heavyBarrel: bool(p.heavyBarrel, d.heavyBarrel),
@@ -1500,8 +1502,14 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     },
     undefined,
     [
-      { name: 'Chain Gun', override: { feed: 'belt' } },
-      { name: 'Twin Chain Gun', override: { feed: 'belt' } },
+      // Powered feed → Auto 4 + Bulky (the Cr750/50-round belt is the inherited
+      // magazine; belt feed's Inaccurate/QD aren't in the printed stat block).
+      { name: 'Chain Gun', override: { poweredFeed: true } },
+      // A twin chain-gun mount fires as VRF (7D, Very Bulky, ×2 cost/weight).
+      {
+        name: 'Twin Chain Gun',
+        override: { poweredFeed: true, mount: 'twin' },
+      },
     ],
   ),
   weapon(

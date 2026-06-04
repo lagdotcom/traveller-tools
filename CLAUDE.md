@@ -217,6 +217,21 @@ PackSpec` (a `powerpack {kg, rating}` or `cartridge {count, rating, ejects?}`),
   Very Bulky. Both feed the Heat rate (×2 / ×3 on the base dice). The AP is granted
   flat (max'd with any penetration-table AP). Validation flags an Auto score below
   the threshold.
+- **Powered feed / twin mount** (`params.poweredFeed`, `params.mount`): the two
+  ways the FC converts a weapon to RF/VRF besides a high Auto score — the
+  MDD-15's Chain Gun and Twin Chain Gun. **Powered feed** (a chain gun) forces
+  Auto to ≥4, adds Bulky, and — unlike `rapidFire` — adds **no** RF damage-die/AP
+  (the printed chain-gun keeps 5D). The FC says it "triples the cost and weight of
+  the receiver"; reproducing the stat block needs the RF cost rule (receiver
+  ×(Auto+2)) with the powered-feed weight tripling (×3), applied to the **receiver
+  only** — so it's a Phase-B `component` reading the frozen baseline (barrel/
+  furniture, % of the original baseline, are unaffected), not a baseline-scaling
+  step. Feasible only on longarm/LSW/heavy (validated). A **twin mount** (`mount:
+'twin'`) doubles the whole weapon's cost/weight, adds a VRF damage die per two
+  base dice (5D→7D) and Very Bulky (superseding Bulky). Both are book **variants**
+  (prose-only, no component breakdown): the engine reproduces damage/Auto/traits
+  exactly and cost/weight to ~3% (the printed figures are hand-authored), so
+  reconcile ignores their cost (inherited from the base) and weight, flagged.
 - **Weapon Heat** (FC heating table, `RECEIVER_HEAT` in `data.ts`): an autofiring
   firearm generates `(base dice × heat multiplier) + Auto` Heat per round (the
   multiplier is 1 / 2 / 3 for auto / RF / VRF); it dissipates per idle

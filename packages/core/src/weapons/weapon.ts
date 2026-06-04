@@ -211,6 +211,23 @@ function validate(params: FirearmParams): Issue[] {
       ),
     );
 
+  // Powered feed (chain gun) is only feasible on longarm / LSW / support
+  // (heavy) receivers, and needs an auto-capable mechanism to drive.
+  if (params.poweredFeed) {
+    if (!['longarm', 'lsw', 'heavy'].includes(params.receiver))
+      issues.push(
+        error(
+          'Powered feed is only feasible on a longarm, light support weapon or support (heavy) receiver',
+        ),
+      );
+    if (mechAuto === 0)
+      issues.push(
+        error(
+          'Powered feed needs a burst-capable or fully-automatic mechanism',
+        ),
+      );
+  }
+
   // RF/VRF need a high Auto score (RF ≥4, VRF ≥6).
   if (params.rapidFire === 'rf' || params.rapidFire === 'vrf') {
     const rf = RAPID_FIRE[params.rapidFire];
@@ -309,8 +326,14 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const recv = firearmReceiver(params, parts);
   const comp = firearmComponents(params, parts, recv);
 
-  const totalWeight = round2(recv.baselineWeight + comp.weight);
-  const totalCost = round2(recv.baselineCost + comp.cost);
+  // A twin mount is two identical weapons firing together — double the whole
+  // weapon's cost and weight (the profile's VRF damage/Very Bulky come from
+  // firearmProfile).
+  const mountMult = parts.mount === 'twin' ? 2 : 1;
+  const singleWeight = round2(recv.baselineWeight + comp.weight);
+  const singleCost = round2(recv.baselineCost + comp.cost);
+  const totalWeight = round2(singleWeight * mountMult);
+  const totalCost = round2(singleCost * mountMult);
   const { calibre, neutralCapacity, capPct: stdPct } = parts;
   const capWeightMult = (pct: number) => 1 + 0.05 * ((pct - 100) / 10);
   // The empty feed device is a fraction of the weapon's purchase price (FC: a
@@ -380,12 +403,25 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
   const primary = ammoProfiles[0]!;
   const headlineMagCr = primary.reload;
 
+  const twinLine: WeaponLineItem[] =
+    mountMult === 2
+      ? [
+          {
+            label: 'Twin Mount',
+            cost: round2(singleCost),
+            weight: round2(singleWeight),
+            costMod: '+100%',
+            weightMod: '+100%',
+          },
+        ]
+      : [];
+
   return {
     profile: primary.profile,
-    breakdown: [...recv.lines, ...comp.lines],
+    breakdown: [...recv.lines, ...comp.lines, ...twinLine],
     issues: validate(params),
     totals: {
-      cost: round2(recv.baselineCost + comp.cost),
+      cost: totalCost,
       weight: totalWeight,
       reload: headlineMagCr,
     },
@@ -405,7 +441,11 @@ export function evaluateFirearm(params: FirearmParams): WeaponEvaluation {
 function resolveParts(params: FirearmParams) {
   const autoSteps = Math.max(0, Math.min(6, Math.floor(params.autoIncrease)));
   const mechanism = MECHANISMS[params.mechanism] ?? MECHANISMS.semiAuto;
-  const auto = mechanism.auto > 0 ? mechanism.auto + autoSteps : 0;
+  const poweredFeed = !!params.poweredFeed;
+  const mount = params.mount === 'twin' ? 'twin' : 'single';
+  // Powered feed forces the rate up to at least Auto 4 (the chain-gun minimum).
+  const baseAuto = mechanism.auto > 0 ? mechanism.auto + autoSteps : 0;
+  const auto = poweredFeed ? Math.max(baseAuto, 4) : baseAuto;
   const receiver = RECEIVERS[params.receiver] ?? RECEIVERS.handgun;
   const calibre = CALIBRES[params.calibre] ?? CALIBRES.mediumHandgun;
   const features = resolveFeatures(params.features);
@@ -464,6 +504,8 @@ function resolveParts(params: FirearmParams) {
     magazines,
     neutralCapacity,
     extraBarrels,
+    poweredFeed,
+    mount,
   };
 }
 type Parts = ReturnType<typeof resolveParts>;
@@ -567,6 +609,22 @@ function firearmComponents(
 
   const build = runBuild(
     [
+      // Powered feed (chain gun): the FC "triples the cost and weight of the
+      // receiver". Reproducing the printed chain-gun stat blocks needs the RF
+      // cost rule (receiver ×(Auto+2)) with the powered-feed weight tripling
+      // (×3), applied to the receiver *only* (the barrel/furniture, computed as
+      // a % of the original baseline, are unaffected) — so it is a Phase-B
+      // component reading the frozen baseline, not a baseline-scaling step.
+      when(
+        parts.poweredFeed,
+        component((b) => ({
+          label: 'Powered Feed (Chain Gun)',
+          cost: round2(b.baseCost * (parts.auto + 2 - 1)),
+          weight: round2(b.baseWeight * (3 - 1)),
+          costMod: pctOf(parts.auto + 2 - 1),
+          weightMod: pctOf(3 - 1),
+        })),
+      ),
       // Barrel — shown for any non-default or heavy/priced barrel.
       when(
         params.barrel !== 'rifle' ||
@@ -671,7 +729,7 @@ function firearmProfile(
   ammo: AmmoTypeDef,
 ): { profile: WeaponProfile; reload: number } {
   const { receiver, calibre, barrel, feed, features } = parts;
-  const { auto, extraBarrels, rapidFire } = parts;
+  const { auto, extraBarrels, rapidFire, poweredFeed, mount } = parts;
 
   let damage: Damage = { ...calibre.damage };
   const traits: Traits = { ...calibre.traits };
@@ -786,6 +844,16 @@ function firearmProfile(
     const baseAp = typeof traits.AP === 'number' ? traits.AP : 0;
     traits.AP = Math.max(baseAp, heatDice);
     (traits as Partial<Record<FlagTraitName, true>>)[rapidFire.trait] = true;
+  }
+  // Powered feed makes the weapon Bulky (but, unlike RF, adds no damage die/AP —
+  // the printed chain-gun stat blocks keep the base damage).
+  if (poweredFeed) traits.Bulky = true;
+  // A twin mount fires as VRF: an extra die per two base dice and Very Bulky
+  // (which supersedes Bulky). The ×2 cost/weight is applied by `evaluateFirearm`.
+  if (mount === 'twin') {
+    damage = { ...damage, dice: damage.dice + Math.floor(heatDice / 2) };
+    delete traits.Bulky;
+    (traits as Partial<Record<FlagTraitName, true>>)['Very Bulky'] = true;
   }
 
   // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,

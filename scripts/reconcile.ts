@@ -938,13 +938,28 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         note: 'book omits the anti-materiel receiver surcharge (+150% cost/+50% weight)',
       },
     ],
+    // The book gives the variants as prose only (no component breakdown), so
+    // their printed cost/weight are hand-authored, not formula-derived. The
+    // engine's powered-feed rule (receiver ×(Auto+2) cost, ×3 weight) + the
+    // inherited anti-materiel surcharge quirk reproduces them to ~3% (Chain Gun
+    // ~Cr26.1k/55.1kg vs 28.1k/56.7; cost is inherited-ignored from the base, so
+    // weight is ignored to match), and the rule reproduces the damage / Auto /
+    // Bulky·Very-Bulky traits exactly. The anti-materiel quirk is inherited from
+    // the base — not re-declared here (it would double-rescale).
     variants: {
-      'Chain Gun': { weight: 56.7, cost: 28100, traits: { Auto: 4 } },
+      'Chain Gun': {
+        weight: 56.7,
+        cost: 28100,
+        traits: { Auto: 4 }, // Bulky + Scope inherited from the base
+        ignore: ['weight'],
+      },
       'Twin Chain Gun': {
         damage: '7D',
         weight: 113.4,
         cost: 56200,
-        traits: { Auto: 4 },
+        traits: { Auto: 4, 'Very Bulky': true },
+        // Very Bulky supersedes the base's (inherited) Bulky.
+        ignore: ['weight', 'trait Bulky'],
       },
     },
   },
