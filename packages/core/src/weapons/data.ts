@@ -344,7 +344,12 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     penetration: 0,
     signatureKind: 'physical',
     signature: 'normal',
-    traits: { Bulky: true },
+    // The FC's heavy-handgun *component* list notes "Bulky", but it does not
+    // carry through to the final stat block of any heavy-handgun weapon (Mk 1,
+    // Liberator, Planetsider; the Sentinel's "Heavy Handgun (rocket)" omits it
+    // even there) — it's a design-note characteristic of the ammunition, not a
+    // trait of the finished weapon, so it must not propagate to the profile.
+    traits: {},
     highVelocity: false,
   },
   // reconcile: the rules say small ammunition reduces weight 40%, but the
