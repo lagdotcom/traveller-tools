@@ -984,9 +984,8 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     // Gun's worksheet does charge it, which the engine follows → −13).
     // Bulky now comes from the Large (support-class) receiver — the "bulk" the
     // gyrostabiliser note alludes to (it's a class, not a weight: Jimpy-G is 14kg
-    // and not Bulky). signature (low) stays unexplained: no FC rule distinguishes
-    // laser signatures (the other three built-in lasers are all "normal").
-    ignore: ['damage', 'range', 'quickdraw', 'signature'],
+    // and not Bulky). (signature is suppressed globally — no derivable rule.)
+    ignore: ['damage', 'range', 'quickdraw'],
     variants: {
       'TEA-12': {
         range: 450,
@@ -1020,6 +1019,11 @@ const TOLERANCE: Record<string, { abs: number; rel: number }> = {
   range: { abs: 1, rel: 0 },
 };
 const SHOW_ROUNDING = process.argv.includes('--rounding');
+// Signature is derived from the worked examples, not a rules table, and the book is
+// wildly inconsistent about when it shifts (physical normal vs high/low, etc.) — no
+// derivable rule reconciles it, so signature diffs are suppressed by default. Pass
+// `--signature` to list them.
+const SHOW_SIGNATURE = process.argv.includes('--signature');
 
 /**
  * Trait-name aliases applied to the *book* key before comparing — the book
@@ -1361,7 +1365,12 @@ function diffParams(params: WeaponParams, book: BookFigures): Diff[] {
   });
 
   // Drop spot exceptions (confirmed book errors the engine is right about).
-  return diffs.filter((d) => !ignore.has(d.field));
+  return diffs.filter((d) => {
+    // Signature has no derivable rule (see SHOW_SIGNATURE) — drop those diffs unless
+    // explicitly requested. Matches the top-level 'signature' and 'secondary · signature'.
+    if (!SHOW_SIGNATURE && /(^|· )signature$/.test(d.field)) return false;
+    return !ignore.has(d.field);
+  });
 }
 
 /**
