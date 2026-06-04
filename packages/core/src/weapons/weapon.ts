@@ -848,13 +848,11 @@ function firearmProfile(
   // Powered feed makes the weapon Bulky (but, unlike RF, adds no damage die/AP —
   // the printed chain-gun stat blocks keep the base damage).
   if (poweredFeed) traits.Bulky = true;
-  // A twin mount fires as VRF: an extra die per two base dice and Very Bulky
-  // (which supersedes Bulky). The ×2 cost/weight is applied by `evaluateFirearm`.
-  if (mount === 'twin') {
+  // A twin mount fires as VRF — an extra damage die per two base dice. The only
+  // changes from the single weapon are damage and (in evaluateFirearm) the ×2
+  // cost/weight; the book keeps the chain gun's Bulky (it is not Very Bulky).
+  if (mount === 'twin')
     damage = { ...damage, dice: damage.dice + Math.floor(heatDice / 2) };
-    delete traits.Bulky;
-    (traits as Partial<Record<FlagTraitName, true>>)['Very Bulky'] = true;
-  }
 
   // Recoil = base damage dice + Auto (when firing auto) + class & calibre mods,
   // less any Recoil Compensation.

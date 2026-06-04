@@ -227,8 +227,9 @@ PackSpec` (a `powerpack {kg, rating}` or `cartridge {count, rating, ejects?}`),
   only** — so it's a Phase-B `component` reading the frozen baseline (barrel/
   furniture, % of the original baseline, are unaffected), not a baseline-scaling
   step. Feasible only on longarm/LSW/heavy (validated). A **twin mount** (`mount:
-'twin'`) doubles the whole weapon's cost/weight, adds a VRF damage die per two
-  base dice (5D→7D) and Very Bulky (superseding Bulky). Both are book **variants**
+'twin'`) doubles the whole weapon's cost/weight and adds a VRF damage die per two
+  base dice (5D→7D) — its only changes from the single weapon are damage, cost and
+  weight (it keeps the chain gun's Bulky). Both are book **variants**
   (prose-only, no component breakdown): the engine reproduces damage/Auto/traits
   exactly and cost/weight to ~3% (the printed figures are hand-authored), so
   reconcile ignores their cost (inherited from the base) and weight, flagged.

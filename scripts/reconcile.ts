@@ -954,12 +954,13 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         ignore: ['weight'],
       },
       'Twin Chain Gun': {
+        // Only damage / weight / cost differ from the Chain Gun; it keeps the
+        // chain gun's Bulky (Auto + Bulky + Scope all inherited).
         damage: '7D',
         weight: 113.4,
         cost: 56200,
-        traits: { Auto: 4, 'Very Bulky': true },
-        // Very Bulky supersedes the base's (inherited) Bulky.
-        ignore: ['weight', 'trait Bulky'],
+        traits: { Auto: 4 },
+        ignore: ['weight'],
       },
     },
   },
