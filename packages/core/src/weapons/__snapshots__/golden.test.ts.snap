@@ -1446,10 +1446,10 @@ exports[`golden master — built-in weapon evaluations > reproduces Cryojet 1`] 
       "weightMod": "+20%",
     },
     {
-      "cost": 195,
+      "cost": 175.5,
       "label": "Secondary weapon: Heavy Smoothbore · Repeater",
       "notes": "complete mounted weapon (cost unverified)",
-      "weight": 4.2,
+      "weight": 3.78,
     },
   ],
   "issues": [],
@@ -1514,9 +1514,9 @@ exports[`golden master — built-in weapon evaluations > reproduces Cryojet 1`] 
     "Field Catalogue",
   ],
   "totals": {
-    "cost": 2127,
+    "cost": 2107.5,
     "reload": 1100,
-    "weight": 21.36,
+    "weight": 20.94,
   },
 }
 `;

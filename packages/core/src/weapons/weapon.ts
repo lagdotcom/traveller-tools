@@ -527,7 +527,7 @@ interface ReceiverBuild {
 function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
   const { receiver, calibre, mechanism, features, autoSteps, incAuto, capPct } =
     parts;
-  const { auto, rapidFire } = parts;
+  const { auto, rapidFire, feed } = parts;
   const capPctSteps = (capPct - 100) / 10;
   const costCapMult =
     capPct >= 100 ? 1 + 0.1 * capPctSteps : 1 + 0.05 * capPctSteps;
@@ -569,6 +569,10 @@ function firearmReceiver(params: FirearmParams, parts: Parts): ReceiverBuild {
       capPct !== 100,
       step(`Capacity ${capPct}%`, costCapMult, weightCapMult),
     ),
+    // The feed device can modify the receiver cost/weight (FC: a fixed magazine
+    // is part of the weapon and reduces both by 10%); standard/extended/drum/belt
+    // are ×1, so this is a no-op for them.
+    step(`${feed.label}`, feed.costMult, feed.weightMult),
     baseline('Receiver Totals', `Capacity ${capacity}`),
   ]);
 
