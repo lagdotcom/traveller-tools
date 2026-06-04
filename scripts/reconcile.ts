@@ -920,6 +920,24 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     reload: 750,
     quickdraw: -9,
     traits: { Auto: 3, Bulky: true, Scope: true },
+    // Book error (engine is right, per FC + the 13mm Crunch Gun): the MDD-15 stat
+    // block omits the anti-materiel receiver surcharge (FC: +150% cost / +50%
+    // weight) — its receiver totals read Cr3600/10kg (support × full-auto only).
+    // The quirk reproduces that omission, so weight matches exactly (35.2). Cost
+    // then lands on the book's own component sum (Cr8150 = 3600 receiver + 3600
+    // barrel + 900 mount + 50 scope); the printed total Cr9050 is +900 over that —
+    // a second, internal book inconsistency — so cost is flagged. quickdraw −10 vs
+    // −9: the engine counts the long and heavy barrel QD separately where the book
+    // lists −1 for the long-heavy barrel.
+    ignore: ['cost', 'quickdraw'],
+    quirks: [
+      {
+        step: 'Anti-Materiel',
+        cost: 1,
+        weight: 1,
+        note: 'book omits the anti-materiel receiver surcharge (+150% cost/+50% weight)',
+      },
+    ],
     variants: {
       'Chain Gun': { weight: 56.7, cost: 28100, traits: { Auto: 4 } },
       'Twin Chain Gun': {
