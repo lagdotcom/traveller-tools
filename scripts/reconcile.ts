@@ -956,20 +956,63 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
     capacity: 7,
     reload: 150,
     quickdraw: -9,
-    traits: { Bulky: true },
+    // Rugged/Accurised are the feature traits; Scope the accessory; Bulky the
+    // support-class receiver. (High Quality is a play-time DM note, not a trait.)
+    traits: { Bulky: true, Rugged: true, Accurised: true, Scope: true },
+    // Same book error as the MDD-15 (and confirmed by the user's component
+    // breakdown): the MDS-15 stat block omits the anti-materiel receiver
+    // surcharge (FC: +150% cost / +50% weight). Its receiver totals read
+    // Cr26325/6.54kg — the feature chain off the plain support receiver with NO
+    // anti-materiel cost/weight mult. The quirk reproduces that omission, so the
+    // weight matches exactly (13.61). The printed cost total Cr59720 is +8775
+    // over the book's own component sum (~Cr50945) — a second internal book
+    // inconsistency, as on the MDD-15 — so cost is flagged. quickdraw −9 vs −13:
+    // the engine charges the bipod (−4) the stat block omits (the 13mm Crunch
+    // Gun worksheet does charge it). The Rugged/Accurised feature traits and the
+    // top-level Scope are engine-derived but absent from the printed line.
+    ignore: ['cost', 'quickdraw', 'weight'],
+    quirks: [
+      {
+        step: 'Anti-Materiel',
+        cost: 1,
+        weight: 1,
+        note: 'book omits the anti-materiel receiver surcharge (+150% cost/+50% weight)',
+      },
+    ],
     ammo: {
       ball: { traits: { Scope: true } },
       apAdvanced: {
         damage: '5D-5',
         reload: 480,
         traits: { AP: 6, Scope: true },
+        // The book's reload prices carry a small flat empty-magazine component
+        // (~Cr45–60) on top of the ammunition that is internally inconsistent
+        // (ball implies +45, apAdvanced +60) and is far below the FC's
+        // 1%-of-weapon-cost rule for an 84k-credit heavy weapon, so the engine
+        // (ammo cost only) under-counts the non-primary rows; ignored.
+        ignore: ['magazine'],
       },
     },
     variants: {
       'cut down': {
         range: 250,
+        // Loads explosive (primary) + pellet; the explosive primary adds Lo-Pen
+        // 2 on top of the inherited Bulky/Rugged/Accurised/Scope, and its
+        // standard magazine (Cr650) is the headline reload.
+        damage: '7D-3',
+        traits: { 'Lo-Pen': 2 },
+        reload: 650,
         weight: 10.76,
         cost: 47435,
+        ignore: ['cost', 'weight', 'quickdraw'],
+        quirks: [
+          {
+            step: 'Anti-Materiel',
+            cost: 1,
+            weight: 1,
+            note: 'book omits the anti-materiel receiver surcharge',
+          },
+        ],
         ammo: {
           explosive: {
             damage: '7D-3',
@@ -980,6 +1023,8 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
             damage: '5D-3',
             reload: 150,
             traits: { 'Lo-Pen': 4, Spread: 3 },
+            // Same flat empty-magazine component as the base apAdvanced row.
+            ignore: ['magazine'],
           },
         },
       },

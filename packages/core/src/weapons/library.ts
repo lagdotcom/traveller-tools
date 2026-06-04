@@ -1532,7 +1532,14 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     [
       {
         name: 'cut down',
-        override: { barrel: 'assault', ammo: ['explosive', 'pellet'] },
+        // Explosive is the new primary; its standard magazine is the book's
+        // Cr650 (the base's Cr150 ball magazine doesn't apply once the loaded
+        // ammo changes).
+        override: {
+          barrel: 'assault',
+          ammo: ['explosive', 'pellet'],
+          magazines: [{ rounds: 7, cost: 650 }],
+        },
       },
     ],
   ),

@@ -683,7 +683,12 @@ export const BARRELS: Record<BarrelId, BarrelDef> = {
     quickdraw: 2,
     penetration: 0,
     signatureShift: 0,
-    reduceHighVelocityDie: true,
+    // reconcile: the FC contradicts itself on whether an Assault barrel reduces
+    // high-velocity damage. The Assault-specific prose says it does (3D+3→2D+3),
+    // but the general rule ("reduced by one dice for a Minimal, Short or Handgun
+    // barrel") and the Barrel Lengths table (Assault = "—") both say it does NOT.
+    // The MDS-15 (cut down) stat block agrees with the table/general rule (its
+    // assault-barrel anti-materiel keeps 5D), so no reduceHighVelocityDie here.
   },
   carbine: {
     label: 'Carbine',
