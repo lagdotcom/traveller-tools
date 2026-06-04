@@ -758,6 +758,11 @@ export const BUILTIN_WEAPONS: WeaponDefinition[] = [
     stock: 'full',
     furniture: ['bipod'],
     accessories: ['scope'],
+    // The worksheet lists a 3-round magazine; the capacity %-chain derives 5
+    // (lsw 50 × anti-materiel 0.4 × repeater 0.5 × 50%), so pin the book count.
+    // A rounds override doesn't touch the cost/weight chain (capacityPct stays
+    // 50% for those), so the reconciling cost/weight are untouched.
+    magazines: [{ rounds: 3 }],
     ammo: ['ball', 'explosive', 'incendiary', 'apAdvanced'],
   }),
   weapon('Flintlock Jazail', 'Long-barrelled archaic black-powder rifle', {

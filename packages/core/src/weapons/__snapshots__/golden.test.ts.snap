@@ -8,7 +8,7 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
       "label": "Ball",
       "profile": {
         "auto": 0,
-        "capacity": 5,
+        "capacity": 3,
         "damage": {
           "dice": 5,
           "die": 6,
@@ -29,14 +29,14 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
           "Scope": true,
         },
       },
-      "reload": 106.4375,
+      "reload": 76.4375,
     },
     {
       "ammo": "explosive",
       "label": "Explosive",
       "profile": {
         "auto": 0,
-        "capacity": 5,
+        "capacity": 3,
         "damage": {
           "dice": 7,
           "die": 6,
@@ -58,14 +58,14 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
           "Scope": true,
         },
       },
-      "reload": 450,
+      "reload": 270,
     },
     {
       "ammo": "incendiary",
       "label": "Incendiary",
       "profile": {
         "auto": 0,
-        "capacity": 5,
+        "capacity": 3,
         "damage": {
           "dice": 5,
           "die": 6,
@@ -87,14 +87,14 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
           "Scope": true,
         },
       },
-      "reload": 450,
+      "reload": 270,
     },
     {
       "ammo": "apAdvanced",
       "label": "Armour-Piercing (Advanced)",
       "profile": {
         "auto": 0,
-        "capacity": 5,
+        "capacity": 3,
         "damage": {
           "dice": 5,
           "die": 6,
@@ -116,7 +116,7 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
           "Scope": true,
         },
       },
-      "reload": 300,
+      "reload": 180,
     },
   ],
   "breakdown": [
@@ -149,7 +149,7 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
     {
       "cost": 1406.25,
       "label": "Receiver Totals",
-      "notes": "Capacity 5",
+      "notes": "Capacity 3",
       "weight": 5.625,
     },
     {
@@ -205,7 +205,7 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
   ],
   "profile": {
     "auto": 0,
-    "capacity": 5,
+    "capacity": 3,
     "damage": {
       "dice": 5,
       "die": 6,
@@ -231,7 +231,7 @@ exports[`golden master — built-in weapon evaluations > reproduces 13mm Crunch 
   ],
   "totals": {
     "cost": 3143.75,
-    "reload": 106.4375,
+    "reload": 76.4375,
     "weight": 13.1375,
   },
 }
