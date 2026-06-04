@@ -600,7 +600,7 @@ function firearmComponents(
   parts: Parts,
   recv: ReceiverBuild,
 ): ComponentBuild {
-  const { barrel, stock, extraBarrels } = parts;
+  const { barrel, stock, extraBarrels, receiver } = parts;
   const heavyMult = params.heavyBarrel ? 2 : 1;
   // The secondary weapon contributes a line *and* its own profile + sources, so
   // its op stashes those side outputs as it runs.
@@ -668,9 +668,13 @@ function firearmComponents(
         // Cost may be a flat Credit amount or a % of the receiver; weight likewise.
         // A fully flat-priced accessory (no % of baseline) doesn't scale with it.
         const isFlat = a.costPct === undefined && a.weightPct === undefined;
+        // Suppressors price off the *receiver* price (the base receiver type),
+        // not the calibre/feature-modified baseline.
+        const costBase =
+          a.costBasis === 'receiver' ? receiver.baseCost : undefined;
         return component((b) => ({
           label: a.label,
-          cost: round2(a.cost ?? b.baseCost * (a.costPct ?? 0)),
+          cost: round2(a.cost ?? (costBase ?? b.baseCost) * (a.costPct ?? 0)),
           weight: round2(
             a.weightPct !== undefined ? b.baseWeight * a.weightPct : a.weight,
           ),

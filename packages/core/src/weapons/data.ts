@@ -1287,6 +1287,14 @@ export interface AccessoryDef {
   /** Flat Credit cost, or undefined when `costPct` (of receiver) is used. */
   cost?: Credits;
   costPct?: Fraction;
+  /**
+   * What `costPct` is a fraction of: the calibre/feature-modified receiver
+   * baseline (default), or the receiver type's own base price (`'receiver'`).
+   * Suppressors cost a % of the *receiver price* per the FC — the base receiver,
+   * before the ammunition/calibre cost multiplier (the Mk 1's 100% suppressor is
+   * Cr175, the handgun receiver, not its Cr210 heavy-handgun baseline).
+   */
+  costBasis?: 'receiver';
   weight: Kilograms;
   /** Weight as a fraction of receiver (gravitic support etc.); rare. */
   weightPct?: Fraction;
@@ -1305,6 +1313,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
   suppressorBasic: {
     label: 'Suppressor (Basic)',
     costPct: 0.5,
+    costBasis: 'receiver',
     weight: 0.2,
     quickdraw: -2,
     signatureShift: -1,
@@ -1314,6 +1323,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
   suppressor: {
     label: 'Suppressor',
     costPct: 1,
+    costBasis: 'receiver',
     weight: 0.3,
     quickdraw: -3,
     signatureShift: -2,
@@ -1324,6 +1334,7 @@ export const ACCESSORIES: Record<AccessoryId, AccessoryDef> = {
   suppressorExtreme: {
     label: 'Suppressor (Extreme)',
     costPct: 2,
+    costBasis: 'receiver',
     weight: 0.5,
     quickdraw: -4,
     signatureShift: -3,

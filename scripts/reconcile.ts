@@ -428,6 +428,13 @@ const BOOK_FIGURES: Record<string, BookFigures> = {
         quickdraw: 5,
         signature: 'physical (small)',
         traits: { 'Lo-Pen': 2 },
+        // The book's suppressed stat block applied only some of the FC standard
+        // suppressor's effects (Quickdraw −3, signature −2, cost = receiver
+        // price, Penetration −1 → Lo-Pen 2) and omitted the rest the rules
+        // specify — +0.3 kg, −50% range and Inaccurate −1; the magazine reload
+        // also stays at the base price (the engine's empty-magazine cost scales
+        // with the suppressor-inflated total). The engine applies the full rule.
+        ignore: ['weight', 'range', 'magazine', 'trait Inaccurate'],
       },
     },
   },
