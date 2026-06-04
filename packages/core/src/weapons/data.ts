@@ -882,6 +882,20 @@ export const FEEDS: Record<FeedId, FeedDef> = {
     traits: { Inaccurate: -1, Hazardous: -1 },
     emptyMagCostPct: 0.05,
   },
+  // A fixed ('semi-internal') drum, as on some auto-shotguns / grenade launchers:
+  // the drum's capacity and jam-proneness, but built in — no Quickdraw penalty
+  // (nothing protrudes to snag) and reloaded in place (no detachable empties to
+  // buy). The FC gives only the build cost (+5% of the receiver); it states no
+  // weight figure, so weight is left unchanged (reconcile: no oracle pins it).
+  fixedDrum: {
+    label: 'Fixed Drum Magazine',
+    costMult: 1.05,
+    weightMult: 1,
+    capacityMult: 2.5,
+    quickdraw: 0,
+    traits: { Inaccurate: -1, Hazardous: -1 },
+    emptyMagCostPct: 0,
+  },
   belt: {
     label: 'Belt',
     costMult: 1,

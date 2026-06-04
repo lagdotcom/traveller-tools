@@ -169,7 +169,13 @@ export type RapidFireMode = 'none' | 'rf' | 'vrf';
 /** Weapon mounting: a single weapon, or a twin (multiple) mount. */
 export type WeaponMount = 'single' | 'twin';
 
-export type FeedId = 'fixed' | 'standard' | 'extended' | 'drum' | 'belt';
+export type FeedId =
+  | 'fixed'
+  | 'standard'
+  | 'extended'
+  | 'drum'
+  | 'fixedDrum'
+  | 'belt';
 
 /** Receiver features (multi-select; some are mutually exclusive — see rules). */
 export type ReceiverFeatureId =
