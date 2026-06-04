@@ -242,6 +242,13 @@ export interface CalibreDef {
   highVelocity: boolean;
   /** Smoothbores ignore mechanism capacity limits and price off solid shot. */
   smoothbore?: boolean;
+  /**
+   * The round is loaded hot enough to retain penetration in a short barrel, so
+   * the barrel's penetration penalty doesn't apply (the book's heavy-handgun
+   * component lists show no penetration mods, so a Mk 1 with a handgun barrel
+   * still nets 0 — no Lo-Pen — where a medium handgun would net −1).
+   */
+  retainsPenetration?: boolean;
   /** Minimum receiver type (index into ['handgun','assault','longarm','lsw','heavy']). */
   minReceiver?: ReceiverTypeId;
   /** Electromagnetic round (forces a gauss receiver). */
@@ -350,6 +357,10 @@ export const CALIBRES: Record<CalibreId, CalibreDef> = {
     // even there) — it's a design-note characteristic of the ammunition, not a
     // trait of the finished weapon, so it must not propagate to the profile.
     traits: {},
+    // Heavy rounds retain penetration in a short barrel: the book's heavy-handgun
+    // component lists show no penetration modifiers, so the barrel penalty is not
+    // applied (a suppressor still reduces penetration — that's an accessory).
+    retainsPenetration: true,
     highVelocity: false,
   },
   // reconcile: the rules say small ammunition reduces weight 40%, but the

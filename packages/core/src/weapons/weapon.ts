@@ -763,10 +763,15 @@ function firearmProfile(
     ? 5
     : Math.round(baseRange * featureRangeMult * barrel.rangeMult);
 
-  // Barrels lose penetration on high-velocity rounds; smoothbores are already
-  // low-velocity (fixed base Penetration) so a short barrel doesn't reduce them.
+  // A short barrel reduces penetration, except for smoothbores (already
+  // low-velocity, fixed base Penetration). Rounds that retain penetration (heavy
+  // handgun) shrug off a normal/short barrel's penalty too — but not a *minimal*
+  // barrel (a stub that "annuls high-velocity effects"; `allDiceToD3` marks it),
+  // which is why the Liberator's minimal barrel keeps its HEAP round at net 0.
+  const barrelReducesPen =
+    !calibre.smoothbore && !(calibre.retainsPenetration && !barrel.allDiceToD3);
   let penetration =
-    calibre.penetration + (calibre.smoothbore ? 0 : barrel.penetration);
+    calibre.penetration + (barrelReducesPen ? barrel.penetration : 0);
 
   // Signature (physical for chemical guns, emissions for gauss).
   // Gauss signature is the Emissions of the EM pulse, not a muzzle flash, so a
